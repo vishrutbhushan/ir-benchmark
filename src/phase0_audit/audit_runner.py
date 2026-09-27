@@ -9,6 +9,7 @@ from src.phase0_audit.content_validator import detect_error_page, detect_languag
 from src.phase0_audit.duplicate_detector import find_near_duplicate_clusters
 from src.phase0_audit.sampler import extract_body_text_metrics, sample_manifest_documents
 from src.utils.file_utils import write_json, write_jsonl, write_text
+from src.utils.visualizer import generate_phase0_charts
 
 
 def run_corpus_audit(
@@ -177,6 +178,13 @@ def run_corpus_audit(
         },
     }
 
+    # Generate visual charts
+    try:
+        charts = generate_phase0_charts(audit_summary, output_dir)
+        logger.info(f"Generated {len(charts)} visual charts in {output_dir / 'charts'}")
+    except Exception as e:
+        logger.warning(f"Could not generate visual charts: {e}")
+
     # Write JSON outputs
     write_json(audit_summary, output_dir / "audit_report.json")
     write_json(dedup_results, output_dir / "duplicate_clusters.json")
@@ -201,6 +209,12 @@ def generate_markdown_audit_report(summary: dict[str, Any], dedup: dict[str, Any
         "",
         f"**Sample Size Analyzed:** {sample_size} documents across technologies.",
         f"**Text-Length Threshold:** < {summary['min_char_length_threshold']} characters.",
+        "",
+        "## Visual Charts & Graphs",
+        "",
+        "![Phase 0 Exclusions Breakdown](charts/phase0_exclusion_breakdown.png)",
+        "",
+        "![Phase 0 Document Lengths](charts/phase0_tech_lengths.png)",
         "",
         "## 1. Exclusion Categories Summary",
         "",

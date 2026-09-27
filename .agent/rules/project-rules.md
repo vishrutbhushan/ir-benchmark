@@ -69,4 +69,5 @@ This document is the single source of truth for hard project constraints, archit
 * **README Maintenance**: Every time, `README.md` must be kept up to date with changes. The README should be simple, highlighting the overall idea and exact commands to run, rather than low-level implementation details.
 * **Git Commit on Every Change**: Every time changes are made, create a descriptive git commit.
 * **STRICT RULE — NEVER PUSH CODE**: Never run `git push` or push code to any remote repository under any circumstances.
+* **Visualized Outputs**: All phase analytical outputs must be visualized with charts and graphs (e.g., category distributions, document length distributions, exclusion breakdowns, code block/date prevalence) saved hierarchically in `outputs/<phase>/charts/`, along with visual markdown figures and interactive dashboards.
 

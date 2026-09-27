@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from src.utils.file_utils import stream_jsonl, write_json, write_text
+from src.utils.visualizer import generate_phase1_charts
 
 
 def compute_corpus_statistics(records: Iterable[dict[str, Any]]) -> dict[str, Any]:
@@ -108,6 +109,14 @@ def generate_markdown_statistics_report(stats: dict[str, Any]) -> str:
         f"**Average Document Length:** {stats['average_doc_words']:,} words ({stats['average_doc_chars']:,} characters)",
         f"**Total Vocabulary / Body Words:** {stats['aggregate_body_words']:,}",
         "",
+        "## Visual Charts & Graphs",
+        "",
+        "![Phase 1 Category Distribution](charts/phase1_category_distribution.png)",
+        "",
+        "![Phase 1 Code Prevalence](charts/phase1_code_prevalence.png)",
+        "",
+        "![Phase 1 Top Technologies](charts/phase1_top_technologies.png)",
+        "",
         "## 1. Code Block & Technical Token Extraction",
         "",
         f"- **Documents with Code Blocks:** {code['docs_with_code']:,} ({code['pct_docs_with_code']}%)",
@@ -158,8 +167,16 @@ def generate_markdown_statistics_report(stats: dict[str, Any]) -> str:
 
 
 def generate_and_save_statistics(records_path: Path, output_dir: Path) -> dict[str, Any]:
-    """Reads structured records file and produces both JSON and Markdown reports."""
+    """Reads structured records file and produces JSON, Markdown, and Visual Chart reports."""
     stats = compute_corpus_statistics(stream_jsonl(records_path))
+
+    # Generate charts
+    try:
+        generate_phase1_charts(stats, output_dir)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Failed to generate Phase 1 charts: {e}")
+
     write_json(stats, output_dir / "corpus_statistics.json")
     md_content = generate_markdown_statistics_report(stats)
     write_text(md_content, output_dir / "corpus_statistics.md")

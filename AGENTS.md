@@ -14,3 +14,4 @@ The detailed rules and hard constraints are maintained in:
 6. **Git Commits**: Create a descriptive git commit every time changes are made.
 7. **NEVER PUSH CODE**: Never execute `git push` or push code to any remote repository.
 8. **Agent Memory**: Whenever the user provides hard instructions, design choices, or constraints, immediately append them to [.agent/rules/project-rules.md](file:///c:/Code/ir-benchmark/.agent/rules/project-rules.md).
+9. **Visualized Outputs**: All phase analytical outputs must be visualized with charts and graphs (saved in `outputs/<phase>/charts/`, plus interactive HTML dashboards and markdown figures).

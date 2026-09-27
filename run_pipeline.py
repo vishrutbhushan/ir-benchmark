@@ -21,6 +21,7 @@ from pathlib import Path
 from src.phase0_audit.audit_runner import run_corpus_audit
 from src.phase1_extraction.extraction_runner import run_structured_extraction
 from src.utils.logging_utils import setup_logger
+from src.utils.visualizer import generate_interactive_dashboard_html
 
 
 def parse_args() -> argparse.Namespace:
@@ -148,8 +149,19 @@ def main() -> None:
             sample_per_tech=args.sample_per_tech,
         )
 
+    # Compile / update visual interactive dashboard
+    p0_json_path = args.output_dir / "phase0" / "audit_report.json"
+    p1_json_path = args.output_dir / "phase1" / "corpus_statistics.json"
+    p0_data = json.loads(p0_json_path.read_text(encoding="utf-8")) if p0_json_path.exists() else None
+    p1_data = json.loads(p1_json_path.read_text(encoding="utf-8")) if p1_json_path.exists() else None
+
+    dashboard_path = args.output_dir / "dashboard.html"
+    generate_interactive_dashboard_html(p0_data, p1_data, dashboard_path)
+    print(f"Visual dashboard generated: {dashboard_path}")
+
     print("=== Pipeline Step Finished Successfully ===")
 
 
 if __name__ == "__main__":
     main()
+

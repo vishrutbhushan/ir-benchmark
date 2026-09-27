@@ -4,6 +4,14 @@
 **Average Document Length:** 2,254.2 words (15,787.4 characters)
 **Total Vocabulary / Body Words:** 1,095,519
 
+## Visual Charts & Graphs
+
+![Phase 1 Category Distribution](charts/phase1_category_distribution.png)
+
+![Phase 1 Code Prevalence](charts/phase1_code_prevalence.png)
+
+![Phase 1 Top Technologies](charts/phase1_top_technologies.png)
+
 ## 1. Code Block & Technical Token Extraction
 
 - **Documents with Code Blocks:** 349 (71.81%)
