@@ -27,10 +27,10 @@ All pipeline phases are executed through the unified master runner `run_pipeline
 Audits the raw HTML corpus for empty/JS-rendered bodies, language detection, error pages, and near-duplicate SimHash clusters:
 
 ```bash
-# Run audit on a sample of 500 documents across technologies
-python run_pipeline.py --phase 0 --sample-size 500
+# Run balanced audit across all 11 technical categories (equal representation)
+python run_pipeline.py --phase 0 --sample-per-category 60 --sample-size 660
 ```
-- **Outputs**: `outputs/phase0/audit_report.md`, `outputs/phase0/audit_report.json`, `outputs/phase0/charts/`, `outputs/phase0/sample_inspections.jsonl`
+- **Outputs**: `outputs/phase0/audit_report.md`, `outputs/phase0/audit_report.json`, `outputs/phase0/charts/` (6 visual plots), `outputs/phase0/sample_inspections.jsonl`
 - **Logs**: `logs/phase0/audit.log`
 
 ### 2. Phase 1 — Structured Extraction

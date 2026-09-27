@@ -1,112 +1,74 @@
 {
-  "total_documents_analyzed": 1076,
-  "total_clusters": 18,
-  "total_duplicate_documents": 51,
+  "total_documents_analyzed": 652,
+  "total_clusters": 9,
+  "total_duplicate_documents": 23,
   "clusters": [
     {
       "cluster_id": 1,
-      "representative_doc_id": "document_018971",
-      "representative_title": "Web | gRPC",
-      "cluster_size": 2,
+      "representative_doc_id": "document_047117",
+      "representative_title": "Get script content | Cloudflare API",
+      "cluster_size": 3,
       "member_doc_ids": [
-        "document_018971",
-        "document_018961"
+        "document_047117",
+        "document_046227",
+        "document_046559"
       ],
       "member_urls": [
-        "https://grpc.io/docs/platforms/web/?ref=apidog.com",
-        "https://grpc.io/docs/languages/dart/?ref=tamerlan.dev"
+        "https://developers.cloudflare.com/api/typescript/resources/workers/subresources/scripts/subresources/content/methods/get/",
+        "https://developers.cloudflare.com/api/typescript/resources/zero_trust/subresources/gateway/subresources/lists/methods/update/",
+        "https://developers.cloudflare.com/api/resources/accounts/subresources/speed_settings/subresources/transformations/methods/get/"
       ]
     },
     {
       "cluster_id": 2,
-      "representative_doc_id": "document_029194",
-      "representative_title": "Unusual Network Connection to Suspicious Web Service | Prebuilt detection rules reference",
+      "representative_doc_id": "document_036999",
+      "representative_title": "Structured Streaming - Apache Iceberg™",
       "cluster_size": 2,
       "member_doc_ids": [
-        "document_029194",
-        "document_029626"
+        "document_036999",
+        "document_037147"
       ],
       "member_urls": [
-        "https://www.elastic.co/docs/reference/security/prebuilt-rules/rules/macos/command_and_control_unusual_network_connection_to_suspicious_web_service",
-        "https://www.elastic.co/docs/reference/elasticsearch/curator/option_mns"
+        "https://iceberg.apache.org/docs/1.5.2/spark-structured-streaming/",
+        "https://iceberg.apache.org/docs/1.8.1/daft/"
       ]
     },
     {
       "cluster_id": 3,
-      "representative_doc_id": "document_002454",
-      "representative_title": "venv — Creation of virtual environments — Python 3.14.7 documentation",
-      "cluster_size": 3,
+      "representative_doc_id": "document_004357",
+      "representative_title": "Uses of Class org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext (Spring Boot 2.7.9 API)",
+      "cluster_size": 2,
       "member_doc_ids": [
-        "document_002454",
-        "document_002594",
-        "document_002739"
+        "document_004357",
+        "document_004570"
       ],
       "member_urls": [
-        "https://docs.python.org/3/library/venv.html?ref=xaviergeerinck.com",
-        "https://docs.python.org/3/library/venv.html?ref=blog.streamlit.io",
-        "https://docs.python.org/3/library/venv.html?ref=blog.teclado.com"
+        "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html",
+        "https://docs.spring.io/spring-boot/docs/2.4.13/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html"
       ]
     },
     {
       "cluster_id": 4,
-      "representative_doc_id": "document_075473",
-      "representative_title": "round — Ray 2.58.0",
-      "cluster_size": 3,
+      "representative_doc_id": "document_077270",
+      "representative_title": "nvmath.bindings.cusolverDn.create_params — nvmath-python",
+      "cluster_size": 5,
       "member_doc_ids": [
-        "document_075473",
-        "document_076089",
-        "document_076313"
+        "document_077270",
+        "document_078038",
+        "document_077249",
+        "document_078932",
+        "document_078738"
       ],
       "member_urls": [
-        "https://docs.ray.io/en/latest/data/api/doc/ray.data.expressions.Expr.round.html",
-        "https://docs.ray.io/en/master/data/api/doc/ray.data.datasource.RowBasedFileDatasink.supports_distributed_writes.html",
-        "https://docs.ray.io/en/master/data/api/doc/ray.data.expressions.Expr.log2.html"
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverDn.create_params.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverSp.dcsreigvsi_host.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverSp.destroy.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverDn.ssyevdx.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusparse.zbsrilu02_buffer_size.html"
       ]
     },
     {
       "cluster_id": 5,
-      "representative_doc_id": "document_037118",
-      "representative_title": "Branching and Tagging - Apache Iceberg™",
-      "cluster_size": 6,
-      "member_doc_ids": [
-        "document_037118",
-        "document_037016",
-        "document_037001",
-        "document_037122",
-        "document_036980",
-        "document_037050"
-      ],
-      "member_urls": [
-        "https://iceberg.apache.org/docs/1.6.0/branching/",
-        "https://iceberg.apache.org/docs/1.10.1/bladepipe/",
-        "https://iceberg.apache.org/docs/1.4.3/dell/",
-        "https://iceberg.apache.org/docs/1.10.2/schemas/",
-        "https://iceberg.apache.org/docs/nightly/view-configuration/",
-        "https://iceberg.apache.org/docs/1.10.1/partitioning/"
-      ]
-    },
-    {
-      "cluster_id": 6,
-      "representative_doc_id": "document_078950",
-      "representative_title": "nvmath.bindings.cublas.swap_ex_64 — nvmath-python",
-      "cluster_size": 5,
-      "member_doc_ids": [
-        "document_078950",
-        "document_077440",
-        "document_079236",
-        "document_077540",
-        "document_079014"
-      ],
-      "member_urls": [
-        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cublas.swap_ex_64.html",
-        "https://docs.nvidia.com/cuda/nvmath-python/latest/bindings/generated/nvmath.bindings.cusparse.dbsrilu02_analysis.html",
-        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cublas.csyrk_64.html",
-        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverDn.dpotrf.html",
-        "https://docs.nvidia.com/cuda/nvmath-python/latest/device-apis/generated/nvmath.device.random.rand.html"
-      ]
-    },
-    {
-      "cluster_id": 7,
       "representative_doc_id": "document_012847",
       "representative_title": "Streams Redirect | Apache Kafka",
       "cluster_size": 3,
@@ -122,167 +84,59 @@
       ]
     },
     {
-      "cluster_id": 8,
-      "representative_doc_id": "document_010252",
-      "representative_title": "Docker Engine | Docker Docs",
+      "cluster_id": 6,
+      "representative_doc_id": "document_076562",
+      "representative_title": "VALID_NP_HPARAMS — Ray 2.58.0",
       "cluster_size": 2,
       "member_doc_ids": [
-        "document_010252",
-        "document_010114"
+        "document_076562",
+        "document_076102"
       ],
       "member_urls": [
-        "https://docs.docker.com/engine/",
-        "https://docs.docker.com/compose/support-and-feedback/feedback/"
+        "https://docs.ray.io/en/latest/tune/api/doc/ray.tune.logger.aim.AimLoggerCallback.VALID_NP_HPARAMS.html",
+        "https://docs.ray.io/en/master/train/api/doc/ray.train.RunConfig.storage_path.html"
+      ]
+    },
+    {
+      "cluster_id": 7,
+      "representative_doc_id": "document_071518",
+      "representative_title": "Terminology | Jaeger",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_071518",
+        "document_071486"
+      ],
+      "member_urls": [
+        "https://www.jaegertracing.io/docs/2.4/architecture/terminology/",
+        "https://www.jaegertracing.io/docs/2.2/architecture/terminology/"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "representative_doc_id": "document_071584",
+      "representative_title": "Search | CSRC",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_071584",
+        "document_071591"
+      ],
+      "member_urls": [
+        "https://csrc.nist.gov/publications/draft-pubs",
+        "https://csrc.nist.gov/publications/draft-pubs?utm_source=chatgpt.com"
       ]
     },
     {
       "cluster_id": 9,
-      "representative_doc_id": "document_071163",
-      "representative_title": "Architecture | Jaeger",
+      "representative_doc_id": "document_069757",
+      "representative_title": "RSAHashedKeyGenParams | Grafana k6 documentation",
       "cluster_size": 2,
       "member_doc_ids": [
-        "document_071163",
-        "document_071155"
+        "document_069757",
+        "document_068913"
       ],
       "member_urls": [
-        "https://www.jaegertracing.io/docs/2.12/architecture/",
-        "https://www.jaegertracing.io/docs/2.6/architecture/"
-      ]
-    },
-    {
-      "cluster_id": 10,
-      "representative_doc_id": "document_047622",
-      "representative_title": "Rules | Cloudflare API",
-      "cluster_size": 6,
-      "member_doc_ids": [
-        "document_047622",
-        "document_045763",
-        "document_046607",
-        "document_046202",
-        "document_046693",
-        "document_047121"
-      ],
-      "member_urls": [
-        "https://developers.cloudflare.com/api/resources/token_validation/subresources/rules/",
-        "https://developers.cloudflare.com/api/resources/botnet_feed/subresources/configs/subresources/asn/methods/delete/",
-        "https://developers.cloudflare.com/api/resources/realtime_kit/subresources/meetings/methods/get_meeting_participants/",
-        "https://developers.cloudflare.com/api/typescript/resources/ai_gateway/subresources/billing/subresources/topup/methods/create/",
-        "https://developers.cloudflare.com/api/resources/email_security/subresources/settings/subresources/sending_domain_restrictions/methods/get/",
-        "https://developers.cloudflare.com/api/typescript/resources/radar/subresources/bots/methods/list/"
-      ]
-    },
-    {
-      "cluster_id": 11,
-      "representative_doc_id": "document_036957",
-      "representative_title": "Hive - Apache Iceberg™",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_036957",
-        "document_037000"
-      ],
-      "member_urls": [
-        "https://iceberg.apache.org/docs/1.4.0/hive/",
-        "https://iceberg.apache.org/docs/1.9.2/hive/"
-      ]
-    },
-    {
-      "cluster_id": 12,
-      "representative_doc_id": "document_003871",
-      "representative_title": "Web Security :: Spring Framework",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_003871",
-        "document_003882"
-      ],
-      "member_urls": [
-        "https://docs.spring.io/spring-framework/reference/6.2/web/webflux/security.html",
-        "https://docs.spring.io/spring-framework/reference/6.2/testing/mockmvc.html"
-      ]
-    },
-    {
-      "cluster_id": 13,
-      "representative_doc_id": "document_017865",
-      "representative_title": "Untitled | Apache Cassandra Documentation",
-      "cluster_size": 3,
-      "member_doc_ids": [
-        "document_017865",
-        "document_017846",
-        "document_017837"
-      ],
-      "member_urls": [
-        "https://cassandra.apache.org/doc/4.1/cassandra/tools/nodetool/resumehandoff.html",
-        "https://cassandra.apache.org/doc/4.1/cassandra/tools/nodetool/stopdaemon.html",
-        "https://cassandra.apache.org/doc/4.1/cassandra/tools/nodetool/setdefaultrf.html"
-      ]
-    },
-    {
-      "cluster_id": 14,
-      "representative_doc_id": "document_064075",
-      "representative_title": "HAProxy version 3.4.4 - Starter Guide",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_064075",
-        "document_064080"
-      ],
-      "member_urls": [
-        "https://docs.haproxy.org/3.4/intro.html",
-        "http://docs.haproxy.org/2.7/intro.html"
-      ]
-    },
-    {
-      "cluster_id": 15,
-      "representative_doc_id": "document_073871",
-      "representative_title": "torch.chunk — PyTorch 2.14 documentation",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_073871",
-        "document_072083"
-      ],
-      "member_urls": [
-        "https://docs.pytorch.org/docs/2.14/generated/torch.chunk.html",
-        "https://docs.pytorch.org/docs/2.14/generated/torch.unbind.html"
-      ]
-    },
-    {
-      "cluster_id": 16,
-      "representative_doc_id": "document_018659",
-      "representative_title": "Authentication using HTTP basic | Apache Pulsar",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_018659",
-        "document_018537"
-      ],
-      "member_urls": [
-        "https://pulsar.apache.org/docs/4.0.x/security-basic-auth/",
-        "https://pulsar.apache.org/docs/4.2.x/security-basic-auth/"
-      ]
-    },
-    {
-      "cluster_id": 17,
-      "representative_doc_id": "document_003881",
-      "representative_title": "HttpEntity :: Spring Framework",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_003881",
-        "document_003829"
-      ],
-      "member_urls": [
-        "https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-controller/ann-methods/httpentity.html",
-        "https://docs.spring.io/spring-framework/reference/web/websocket/stomp/server-config.html"
-      ]
-    },
-    {
-      "cluster_id": 18,
-      "representative_doc_id": "document_029160",
-      "representative_title": "Getting started with the Elasticsearch Java Rest 5 client | Java",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_029160",
-        "document_028911"
-      ],
-      "member_urls": [
-        "https://www.elastic.co/docs/reference/elasticsearch/clients/java/transport/rest5-client/usage",
-        "https://www.elastic.co/docs/reference/logstash/monitoring-troubleshooting"
+        "https://grafana.com/docs/k6/next/javascript-api/crypto/rsahashedkeygenparams/",
+        "https://grafana.com/docs/k6/next/testing-guides/injecting-faults-with-xk6-disruptor/examples/"
       ]
     }
   ]

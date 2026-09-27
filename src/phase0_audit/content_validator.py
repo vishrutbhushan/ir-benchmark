@@ -6,26 +6,53 @@ from typing import Any
 import langdetect
 from langdetect import DetectorFactory
 
-# Enforce deterministic language detection
 DetectorFactory.seed = 42
 
+LANGUAGE_NAMES = {
+    "en": "English",
+    "eng": "English",
+    "ja": "Japanese",
+    "jpn": "Japanese",
+    "zh": "Chinese",
+    "zh-cn": "Chinese (Simplified)",
+    "zh-tw": "Chinese (Traditional)",
+    "zho": "Chinese",
+    "da": "Danish",
+    "dan": "Danish",
+    "de": "German",
+    "deu": "German",
+    "fr": "French",
+    "fra": "French",
+    "es": "Spanish",
+    "spa": "Spanish",
+    "ru": "Russian",
+    "rus": "Russian",
+    "ko": "Korean",
+    "kor": "Korean",
+    "pt": "Portuguese",
+    "por": "Portuguese",
+    "it": "Italian",
+    "ita": "Italian",
+    "nl": "Dutch",
+    "nld": "Dutch",
+}
 
 ERROR_PATTERNS = [
-    r"\b404\b.*(?:not found|error|page)",
-    r"\bpage not found\b",
-    r"\b403\b.*(?:forbidden|access denied)",
-    r"\baccess denied\b",
-    r"\b500\b.*(?:internal server error)",
-    r"\bservice unavailable\b",
-    r"\bthis page does not exist\b",
-    r"\bdocument not found\b",
+    (r"\b404\b.*(?:not found|error|page)", "404_not_found"),
+    (r"\bpage not found\b", "404_not_found"),
+    (r"\b403\b.*(?:forbidden|access denied)", "403_forbidden"),
+    (r"\baccess denied\b", "403_access_denied"),
+    (r"\b500\b.*(?:internal server error)", "500_server_error"),
+    (r"\bservice unavailable\b", "503_service_unavailable"),
+    (r"\bthis page does not exist\b", "404_not_found"),
+    (r"\bdocument not found\b", "404_not_found"),
 ]
 
 HTML_TAG_PATTERN = re.compile(r"<\s*(html|body|head|div|p|span|table|article)[^>]*>", re.IGNORECASE)
 
 
 def is_non_html(html_content: str, mime_type: str | None = None) -> bool:
-    """Checks if the document content is not valid HTML (e.g., pure JSON, binary, or plain text)."""
+    """Checks if the document content is not valid HTML (e.g. pure JSON, binary, or plain text)."""
     if mime_type and "html" not in mime_type.lower():
         return True
 
@@ -33,51 +60,87 @@ def is_non_html(html_content: str, mime_type: str | None = None) -> bool:
     if not stripped:
         return True
 
-    # Check for raw JSON or XML without HTML structure
     if (stripped.startswith("{") and stripped.endswith("}")) or (stripped.startswith("[") and stripped.endswith("]")):
         return True
 
-    # Check for basic HTML tags
     if not HTML_TAG_PATTERN.search(html_content):
         return True
 
     return False
 
 
-def detect_error_page(title: str, body_text: str) -> tuple[bool, str]:
-    """Detects HTTP 200 responses that are actually error or redirect pages."""
+def detect_error_page(title: str, body_text: str) -> tuple[bool, str, str]:
+    """
+    Detects HTTP 200 responses that are actually error or redirect pages.
+    Returns (is_error, error_type, matched_snippet).
+    """
     combined_target = f"{title}\n{body_text[:1000]}".lower()
 
-    for pattern in ERROR_PATTERNS:
+    for pattern, err_type in ERROR_PATTERNS:
         match = re.search(pattern, combined_target)
         if match:
-            return True, match.group(0)
+            return True, err_type, match.group(0)
 
-    return False, ""
+    return False, "none", ""
 
 
-def detect_language(body_text: str, manifest_languages: str | None = None) -> tuple[str, bool]:
+def detect_language(body_text: str, manifest_languages: str | None = None) -> dict[str, Any]:
     """
-    Detects language using langdetect and cross-references manifest content_languages.
-    Returns (detected_language, is_english).
+    Detects language with probabilities and maps to human-readable names.
+    Cross-references manifest content_languages.
     """
-    # Quick text check
     sample_text = body_text.strip()[:2000]
 
     if len(sample_text) < 50:
-        # If text is too short, trust manifest if available
         if manifest_languages:
             is_eng = "eng" in manifest_languages.lower()
-            return manifest_languages, is_eng
-        return "unknown", False
+            code = manifest_languages.split(",")[0].strip()
+            name = LANGUAGE_NAMES.get(code.lower(), code)
+            return {
+                "lang_code": code,
+                "lang_name": name,
+                "is_english": is_eng,
+                "confidence": 0.5,
+                "source": "manifest",
+            }
+        return {
+            "lang_code": "unknown",
+            "lang_name": "Unknown",
+            "is_english": False,
+            "confidence": 0.0,
+            "source": "none",
+        }
 
     try:
-        lang = langdetect.detect(sample_text)
-        is_eng = (lang == "en")
-        return lang, is_eng
+        langs = langdetect.detect_langs(sample_text)
+        top_lang = langs[0]
+        code = top_lang.lang
+        conf = round(top_lang.prob, 3)
+        is_eng = (code == "en")
+        name = LANGUAGE_NAMES.get(code, code.upper())
+        return {
+            "lang_code": code,
+            "lang_name": name,
+            "is_english": is_eng,
+            "confidence": conf,
+            "source": "langdetect",
+        }
     except Exception:
-        # Fallback to manifest languages
         if manifest_languages:
             is_eng = "eng" in manifest_languages.lower()
-            return manifest_languages, is_eng
-        return "undetermined", False
+            code = manifest_languages.split(",")[0].strip()
+            name = LANGUAGE_NAMES.get(code.lower(), code)
+            return {
+                "lang_code": code,
+                "lang_name": name,
+                "is_english": is_eng,
+                "confidence": 0.5,
+                "source": "manifest_fallback",
+            }
+        return {
+            "lang_code": "undetermined",
+            "lang_name": "Undetermined",
+            "is_english": False,
+            "confidence": 0.0,
+            "source": "fallback",
+        }

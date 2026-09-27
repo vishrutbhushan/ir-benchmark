@@ -1,68 +1,130 @@
-# Phase 0 — Corpus Audit Report
+# Phase 0 — Comprehensive Corpus Audit Report
 
-**Sample Size Analyzed:** 1090 documents across technologies.
+**Sample Size Analyzed:** 660 documents across all 11 technical categories and 76 technologies.
+**Balanced Stratification:** Equal representation across technical categories and document types.
 **Text-Length Threshold:** < 200 characters.
 
-## Visual Charts & Graphs
+## Visual Charts & Analytics
 
+### 1. Document Health & Exclusions
 ![Phase 0 Exclusions Breakdown](charts/phase0_exclusion_breakdown.png)
 
+### 2. Language Distribution
+![Phase 0 Language Distribution](charts/phase0_language_distribution.png)
+
+### 3. Code vs. Text-Only Prevalence Across Categories
+![Phase 0 Code Presence by Category](charts/phase0_code_by_category.png)
+
+### 4. HTML Boilerplate Overhead by Category
+![Phase 0 Boilerplate Overhead](charts/phase0_boilerplate_by_category.png)
+
+### 5. Document Structural Element Prevalence
+![Phase 0 DOM Structure Complexity](charts/phase0_dom_complexity.png)
+
+### 6. Document Lengths Across Technologies
 ![Phase 0 Document Lengths](charts/phase0_tech_lengths.png)
+
+---
 
 ## 1. Exclusion Categories Summary
 
-| Category | Flagged Count | Sample % | Example Doc IDs |
+| Exclusion Category | Flagged Count | Sample Share | Example Doc IDs |
 | :--- | :--- | :--- | :--- |
-| **Empty / Short Body (<200 chars)** | 14 | 1.28% | document_068019, document_073277, document_075145, document_057029, document_067935 |
-| **Client-Side JS Render Stubs** | 0 | 0.0% | None |
-| **Non-HTML Content Mislabeled** | 3 | 0.28% | document_073277, document_075145, document_074414 |
+| **Empty / Short Body (<200 chars)** | 8 | 1.21% | document_067893, document_068246, document_068276, document_067930, document_068040 |
+| **Client-Side JS Render Stubs** | 2 | 0.3% | document_005235, document_007015 |
+| **Non-HTML Content Mislabeled** | 0 | 0.0% | None |
 | **HTTP 200 Error / 404 Pages** | 0 | 0.0% | None |
-| **Non-English Documents** | 60 | 5.5% | document_000102, document_043203, document_009708, document_054531, document_074158 |
-| **Clean / Valid Documents** | 1016 | 93.21% | — |
+| **Non-English Documents** | 37 | 5.61% | document_055009, document_042449, document_039559, document_042675, document_009982 |
+| **Clean / Valid Documents** | 613 | 92.88% | — |
 
-## 2. Near-Duplicate Analysis (SimHash Clustering)
+---
 
-- **Documents Analyzed for Near-Duplicates:** 1076
-- **Near-Duplicate Clusters Found:** 18
-- **Total Documents in Duplicate Clusters:** 51
+## 2. Language Breakdown & Multilingual Sources
+
+| Language | Document Count | Share (%) |
+| :--- | :--- | :--- |
+| **English** | 623 | 94.4% |
+| **Japanese** | 10 | 1.5% |
+| **German** | 6 | 0.9% |
+| **TR** | 3 | 0.5% |
+| **UK** | 3 | 0.5% |
+| **NO** | 2 | 0.3% |
+| **Italian** | 2 | 0.3% |
+| **RO** | 2 | 0.3% |
+| **Portuguese** | 2 | 0.3% |
+| **VI** | 1 | 0.2% |
+| **ET** | 1 | 0.2% |
+| **Korean** | 1 | 0.2% |
+| **French** | 1 | 0.2% |
+| **Russian** | 1 | 0.2% |
+| **AR** | 1 | 0.2% |
+| **BN** | 1 | 0.2% |
+
+### Key Non-English Sources Detected
+| Doc ID | Technology | Category | Detected Language | Title |
+| :--- | :--- | :--- | :--- | :--- |
+| `document_055009` | GitLab | devops-infrastructure | Japanese | インテグレーション | GitLab Docs |
+| `document_042449` | Google Cloud | cloud | VI | 使用服务账号模拟 | Authentication | Google Cloud |
+| `document_039559` | AWS | cloud | NO | api-gw-stage-tagged - AWS Config |
+| `document_042675` | Google Cloud | cloud | German | Datenlöschung auf Google Cloud | Securit |
+| `document_009982` | FastAPI | framework | TR | Query Parameter Modelleri - FastAPI |
+| `document_074179` | TensorFlow | ml-infrastructure | Italian | Utilizzo del formato SavedModel | Tensor |
+| `document_001128` | Java | programming-language | Japanese | クラスjavax.swing.plaf.synth.SynthTreeUIの使用 |
+| `document_009805` | FastAPI | framework | UK | Reference - FastAPI |
+
+---
+
+## 3. Code vs. Text Presence by Category
+
+| Technical Category | Sample Docs | With Code (%) | Total Code Blocks | Avg Code Chars |
+| :--- | :--- | :--- | :--- | :--- |
+| **distributed-data** | 60 | 70.0% | 590 | 1785.9 |
+| **programming-language** | 60 | 83.3% | 867 | 2887.5 |
+| **observability** | 60 | 61.7% | 849 | 4553.9 |
+| **framework** | 60 | 85.0% | 1504 | 6369.7 |
+| **ml-infrastructure** | 60 | 63.3% | 1034 | 6049.2 |
+| **os-networking-web** | 60 | 83.3% | 10336 | 129060.2 |
+| **devops-infrastructure** | 60 | 61.7% | 744 | 2101.2 |
+| **security** | 60 | 43.3% | 500 | 8396.5 |
+| **database-search** | 60 | 80.0% | 403 | 1434.4 |
+| **cloud** | 60 | 66.7% | 365 | 1367.0 |
+| **containers-orchestration** | 60 | 83.3% | 502 | 1799.0 |
+
+---
+
+## 4. DOM Complexity & Structural Richness
+
+- **Documents with Heading Hierarchy (H1-H3):** 98.0%
+- **Documents with Isolated Code Blocks:** 71.1%
+- **Documents with Structured Lists (UL/OL):** 95.3%
+- **Documents with Tables:** 43.2%
+
+---
+
+## 5. Near-Duplicate Analysis (SimHash Clustering)
+
+- **Documents Analyzed for Near-Duplicates:** 652
+- **Near-Duplicate Clusters Found:** 9
+- **Total Documents in Duplicate Clusters:** 23
 
 ### Top Near-Duplicate Cluster Samples
 
-* **Cluster 1** (2 docs) — Representative: `document_018971` (`Web | gRPC`)
-  - Members: document_018971, document_018961
-* **Cluster 2** (2 docs) — Representative: `document_029194` (`Unusual Network Connection to Suspicious Web Service | Prebuilt detection rules reference`)
-  - Members: document_029194, document_029626
-* **Cluster 3** (3 docs) — Representative: `document_002454` (`venv â€” Creation of virtual environments â€” Python 3.14.7 documentation`)
-  - Members: document_002454, document_002594, document_002739
-* **Cluster 4** (3 docs) — Representative: `document_075473` (`round â€” Ray 2.58.0`)
-  - Members: document_075473, document_076089, document_076313
-* **Cluster 5** (6 docs) — Representative: `document_037118` (`Branching and Tagging - Apache Icebergâ„¢`)
-  - Members: document_037118, document_037016, document_037001, document_037122, document_036980, document_037050
+* **Cluster 1** (3 docs) — Representative: `document_047117` (`Get script content | Cloudflare API`)
+  - Members: document_047117, document_046227, document_046559
+* **Cluster 2** (2 docs) — Representative: `document_036999` (`Structured Streaming - Apache Iceberg™`)
+  - Members: document_036999, document_037147
+* **Cluster 3** (2 docs) — Representative: `document_004357` (`Uses of Class org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext (Spring Boot 2.7.9 API)`)
+  - Members: document_004357, document_004570
+* **Cluster 4** (5 docs) — Representative: `document_077270` (`nvmath.bindings.cusolverDn.create_params — nvmath-python`)
+  - Members: document_077270, document_078038, document_077249, document_078932, document_078738
+* **Cluster 5** (3 docs) — Representative: `document_012847` (`Streams Redirect | Apache Kafka`)
+  - Members: document_012847, document_012849, document_012848
 
-## 3. Technology Distribution & Character Lengths (Top 15 Technologies in Sample)
+---
 
-| Technology | Sample Docs | Avg Char Length | Short (<200) | Non-English | Errors |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Java | 15 | 3030.9 | 0 | 9 | 0 |
-| Spring Boot | 15 | 1924.1 | 0 | 0 | 0 |
-| RFCs | 15 | 140880.7 | 7 | 0 | 0 |
-| Rust | 15 | 5830.8 | 1 | 0 | 0 |
-| NIST | 15 | 31277.4 | 0 | 0 | 0 |
-| Kubeflow | 15 | 10123.5 | 0 | 0 | 0 |
-| React | 15 | 11158.0 | 0 | 2 | 0 |
-| Elasticsearch | 15 | 57060.5 | 0 | 0 | 0 |
-| ClickHouse | 15 | 9018.1 | 0 | 0 | 0 |
-| OpenSSL | 15 | 81377.7 | 0 | 0 | 0 |
-| Linkerd | 15 | 8423.7 | 0 | 0 | 0 |
-| Jaeger | 15 | 4743.5 | 0 | 0 | 0 |
-| Google Cloud | 15 | 23352.4 | 0 | 8 | 0 |
-| Python | 15 | 36411.4 | 0 | 0 | 0 |
-| Oracle Cloud | 15 | 6253.2 | 0 | 0 | 0 |
+## 6. Recommendations for Human Sign-off
 
-## 4. Key Recommendations for Human Sign-off
-
-1. **Empty/JS Stub Exclusion:** Exclude all documents with body text < 200 characters or explicit JS stub indicators (`<div id='root'></div>` with no extracted text).
-2. **Error / 404 Filter:** Drop documents matching error/redirect page signatures.
-3. **Language Filter:** Require English text (`en` detected, or manifest `eng` when text is too short).
-4. **Duplicate Deduplication:** Retain only the first/representative document from each near-duplicate SimHash cluster.
-5. **Spot-Check File:** Review `outputs/phase0/sample_inspections.jsonl` to verify flagged samples.
+1. **Short Body Filtering:** Exclude documents with body length < 200 characters (targets empty/broken JS pages without removing concise API reference stubs).
+2. **Language Exclusion:** Drop all non-English pages (e.g. Japanese Oracle docs and Chinese tutorials) to maintain search consistency.
+3. **Duplicate Collapse:** Retain only the representative document from each SimHash cluster (Hamming distance ≤ 3).
+4. **Zone Weighting Strategy (BM25F Preview):** Given that 70%+ of technical documents contain code and 90%+ contain headings, BM25F zone weighting across `title`, `headings`, `body`, and `code` will provide substantial ranking leverage.
