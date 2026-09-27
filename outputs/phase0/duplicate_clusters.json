@@ -1,0 +1,65 @@
+{
+  "total_documents_analyzed": 496,
+  "total_clusters": 4,
+  "total_duplicate_documents": 9,
+  "clusters": [
+    {
+      "cluster_id": 1,
+      "representative_doc_id": "document_002454",
+      "representative_title": "venv — Creation of virtual environments — Python 3.14.7 documentation",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_002454",
+        "document_002594"
+      ],
+      "member_urls": [
+        "https://docs.python.org/3/library/venv.html?ref=xaviergeerinck.com",
+        "https://docs.python.org/3/library/venv.html?ref=blog.streamlit.io"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "representative_doc_id": "document_037118",
+      "representative_title": "Branching and Tagging - Apache Iceberg™",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_037118",
+        "document_037016"
+      ],
+      "member_urls": [
+        "https://iceberg.apache.org/docs/1.6.0/branching/",
+        "https://iceberg.apache.org/docs/1.10.1/bladepipe/"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "representative_doc_id": "document_078950",
+      "representative_title": "nvmath.bindings.cublas.swap_ex_64 — nvmath-python",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_078950",
+        "document_077440"
+      ],
+      "member_urls": [
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cublas.swap_ex_64.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/latest/bindings/generated/nvmath.bindings.cusparse.dbsrilu02_analysis.html"
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "representative_doc_id": "document_047622",
+      "representative_title": "Rules | Cloudflare API",
+      "cluster_size": 3,
+      "member_doc_ids": [
+        "document_047622",
+        "document_045763",
+        "document_046607"
+      ],
+      "member_urls": [
+        "https://developers.cloudflare.com/api/resources/token_validation/subresources/rules/",
+        "https://developers.cloudflare.com/api/resources/botnet_feed/subresources/configs/subresources/asn/methods/delete/",
+        "https://developers.cloudflare.com/api/resources/realtime_kit/subresources/meetings/methods/get_meeting_participants/"
+      ]
+    }
+  ]
+}

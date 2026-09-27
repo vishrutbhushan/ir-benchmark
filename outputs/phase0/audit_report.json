@@ -1,0 +1,573 @@
+{
+  "sample_size": 500,
+  "min_char_length_threshold": 200,
+  "exclusion_category_counts": {
+    "empty_or_short_body": 4,
+    "js_stub_detected": 0,
+    "non_html": 2,
+    "error_page": 0,
+    "non_english": 26,
+    "normal_valid": 470
+  },
+  "exclusion_percentages": {
+    "empty_or_short_body": 0.8,
+    "js_stub_detected": 0.0,
+    "non_html": 0.4,
+    "error_page": 0.0,
+    "non_english": 5.2,
+    "normal_valid": 94.0
+  },
+  "near_duplicate_stats": {
+    "analyzed_docs": 496,
+    "clusters_count": 4,
+    "duplicate_docs_count": 9
+  },
+  "technology_breakdown": {
+    "Java": {
+      "sample_count": 10,
+      "short_count": 0,
+      "non_english_count": 5,
+      "error_count": 0,
+      "avg_char_length": 3490.4
+    },
+    "Spring Boot": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 2210.3
+    },
+    "RFCs": {
+      "sample_count": 7,
+      "short_count": 1,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 91080.3
+    },
+    "Rust": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 8792.5
+    },
+    "NIST": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 38506.2
+    },
+    "Kubeflow": {
+      "sample_count": 10,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 11096.7
+    },
+    "React": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6802.5
+    },
+    "Elasticsearch": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 55070.9
+    },
+    "ClickHouse": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 9697.7
+    },
+    "OpenSSL": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 77353.2
+    },
+    "Linkerd": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 7631.2
+    },
+    "Jaeger": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 4736.9
+    },
+    "Google Cloud": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 2,
+      "error_count": 0,
+      "avg_char_length": 23627.6
+    },
+    "Python": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 24940.9
+    },
+    "Oracle Cloud": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6114.7
+    },
+    "TensorFlow": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 4,
+      "error_count": 0,
+      "avg_char_length": 36461.5
+    },
+    "Envoy": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 2899.0
+    },
+    "gRPC": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 5938.3
+    },
+    "Cloudflare": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 80726.8
+    },
+    "HBase": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 29020.2
+    },
+    "Grafana": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 22070.9
+    },
+    "GitLab": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 2,
+      "error_count": 0,
+      "avg_char_length": 7214.8
+    },
+    "FastAPI": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 4,
+      "error_count": 0,
+      "avg_char_length": 34450.6
+    },
+    "OpenSearch": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 19266.8
+    },
+    "Angular": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 4717.0
+    },
+    "Maven": {
+      "sample_count": 7,
+      "short_count": 1,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 1781.3
+    },
+    "OpenID Connect": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 42760.3
+    },
+    "Cassandra": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 4557.3
+    },
+    "GitHub": {
+      "sample_count": 4,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 7803.0
+    },
+    "Apache Beam": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 10136.9
+    },
+    "Kotlin": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 12407.0
+    },
+    "Linux Kernel": {
+      "sample_count": 10,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 5405.9
+    },
+    "Hadoop": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 3646.2
+    },
+    "DigitalOcean": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 3400.8
+    },
+    "MongoDB": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 13355.4
+    },
+    "Pulsar": {
+      "sample_count": 12,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6862.2
+    },
+    "Neo4j": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 15816.0
+    },
+    "Jenkins": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 8756.6
+    },
+    "PostgreSQL": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 3731.7
+    },
+    "Istio": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 15186.1
+    },
+    "Django": {
+      "sample_count": 11,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 8677.3
+    },
+    "Docker": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 19254.7
+    },
+    "Podman": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 5688.4
+    },
+    "Go": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 53410.2
+    },
+    "Nginx": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6161.0
+    },
+    "MLflow": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 8760.5
+    },
+    "RabbitMQ": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 12885.2
+    },
+    "Ray": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 3421.4
+    },
+    "Hugging Face": {
+      "sample_count": 7,
+      "short_count": 1,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 13337.7
+    },
+    "Apache HTTP Server": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 2,
+      "error_count": 0,
+      "avg_char_length": 8573.3
+    },
+    "Kubernetes": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 58736.0
+    },
+    "PyTorch": {
+      "sample_count": 6,
+      "short_count": 1,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 36717.7
+    },
+    "Spring": {
+      "sample_count": 3,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 17224.0
+    },
+    "Prometheus": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 15356.6
+    },
+    "Helm": {
+      "sample_count": 11,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 5442.5
+    },
+    "ZooKeeper": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6724.8
+    },
+    "Git": {
+      "sample_count": 7,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 15582.6
+    },
+    "Apache Iceberg": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 27565.5
+    },
+    "AWS": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 4,
+      "error_count": 0,
+      "avg_char_length": 6264.4
+    },
+    "Node.js": {
+      "sample_count": 9,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 82435.1
+    },
+    "JavaScript": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 14822.6
+    },
+    "CUDA": {
+      "sample_count": 5,
+      "short_count": 0,
+      "non_english_count": 2,
+      "error_count": 0,
+      "avg_char_length": 45774.6
+    },
+    "Terraform": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 10946.2
+    },
+    "TypeScript": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 15532.2
+    },
+    "Redis": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 8478.0
+    },
+    "OpenTelemetry": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 13592.5
+    },
+    "Spark": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 54469.0
+    },
+    "Kafka": {
+      "sample_count": 1,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 866.0
+    },
+    "Vault": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 6891.0
+    },
+    "Gradle": {
+      "sample_count": 3,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 2669.0
+    },
+    "HAProxy": {
+      "sample_count": 3,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 915545.3
+    },
+    "MySQL": {
+      "sample_count": 8,
+      "short_count": 0,
+      "non_english_count": 1,
+      "error_count": 0,
+      "avg_char_length": 7937.9
+    },
+    "OWASP": {
+      "sample_count": 1,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 17314.0
+    },
+    "Azure": {
+      "sample_count": 3,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 7731.0
+    },
+    "Hive": {
+      "sample_count": 6,
+      "short_count": 0,
+      "non_english_count": 0,
+      "error_count": 0,
+      "avg_char_length": 16476.8
+    }
+  },
+  "example_flagged_docs": {
+    "empty_or_short_body": [
+      "document_068019",
+      "document_073277",
+      "document_075145",
+      "document_057029"
+    ],
+    "js_stub_detected": [],
+    "non_html": [
+      "document_073277",
+      "document_075145"
+    ],
+    "error_page": [],
+    "non_english": [
+      "document_000102",
+      "document_043203",
+      "document_009708",
+      "document_054531",
+      "document_074158"
+    ]
+  }
+}

@@ -27,6 +27,8 @@ share/python-wheels/
 MANIFEST
 technical_web_corpus
 technical_web_corpus.zip
+outputs/**/structured_records*.jsonl
+
 
 # PyInstaller
 #   Usually these files are written by a python script from a template
