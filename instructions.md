@@ -69,7 +69,7 @@ Given you already have `technical_web_corpus/documents/html/<technology>/*.html`
 
 ## Phase 5 — Query Suite Design
 
-**Human (this one is mostly yours, not the agent's):**
+**Human:**
 * Write the 20 queries by hand, across your categories: exact terminology, paraphrasing, negation/exclusion, homonyms/ambiguous terms, temporal/version constraints, multi-constraint combinations.
 * Tag each query with its category in a structured file (`query_id, query_text, category`) — needed later for the failure-analysis breakdown.
 * Sanity-check that the corpus actually contains documents that could plausibly answer each query (no point testing a query with zero relevant docs in your corpus) — this requires knowing your corpus content, so it's a human judgment call, though the agent can help by keyword-searching the corpus first to confirm coverage.
@@ -89,7 +89,7 @@ Given you already have `technical_web_corpus/documents/html/<technology>/*.html`
 
 ## Phase 7 — Human Annotation (Gold Set Construction)
 
-**Human (this is the core manual bottleneck, split across your team):**
+**Human:**
 * For each query, judge every pooled document as relevant / not relevant (binary, or 3-point if you prefer) — blind to which engine retrieved it.
 * Assign 2 queries to be double-judged by two different people independently, to report inter-annotator agreement.
 * Record judgments in a structured format (`query_id, doc_id, relevance_label, annotator_id`).
