@@ -1,74 +1,95 @@
 # Technical IR Benchmark
 
-An Information Retrieval benchmark comparing a hand-coded **Classic IR engine** (BM25 → zone-weighted BM25F) against a **Neural IR engine** (pretrained dense embeddings with exact matrix ranking) on a technical web documentation corpus.
+Course project comparing classic BM25/TF-IDF with neural retrieval on technical
+HTML documents. This work implements the neural side; teammates own classic ranking.
+Development branch: `develop_vishrut`.
 
----
+## Run
 
-## Setup
-
-Activate your virtual environment and install dependencies:
-
-```bash
-# Using the existing virtual environment
-.venv\Scripts\activate
-
-# Install required packages
-pip install -r requirements-technical-web-corpus.txt
-pip install trafilatura langdetect matplotlib pillow
-```
-
----
-
-## Pipeline Execution
-
-All pipeline phases are executed through the unified master runner `run_pipeline.py`. Each run automatically generates visual charts (`.png`), markdown summaries, and an interactive HTML dashboard (`outputs/dashboard.html`).
-
-### 1. Phase 0 — Corpus Audit
-Audits the raw HTML corpus for empty/JS-rendered bodies, language detection, error pages, and near-duplicate SimHash clusters:
+Use the single `.venv` and existing requirements file:
 
 ```bash
-# Run balanced audit across all 11 technical categories (equal representation)
-python run_pipeline.py --phase 0 --sample-per-category 60 --sample-size 660
+source .venv/bin/activate
+python -m pip install -r requirements-technical-web-corpus.txt
+python run_pipeline.py --phase serve
 ```
-- **Outputs**: `outputs/phase0/audit_report.md`, `outputs/phase0/audit_report.json`, `outputs/phase0/charts/` (6 visual plots), `outputs/phase0/sample_inspections.jsonl`
-- **Logs**: `logs/phase0/audit.log`
 
-### 2. Phase 1 — Structured Extraction
-Parses HTML pages into structured records (titles, heading hierarchy, sections, boilerplate-free body, isolated code blocks, and ISO dates):
+Open **http://127.0.0.1:8000** for search, filters and pagination. The current local
+index contains 68,418 documents / 767,679 passages, with 1,024-dimensional vectors
+stored on disk (~1.46 GiB). Search uses hand-coded cosine and max-passage document
+ranking. The summary hierarchy is removed. No database server is required; SQLite
+stores source text/metadata and NumPy files store vectors. Bounded caches speed reuse.
+
+Build, check or search from the CLI:
 
 ```bash
-# Run stratified extraction across all technology categories
-python run_pipeline.py --phase 1 --stratified --max-docs 500
-
-# Run full corpus extraction
-python run_pipeline.py --phase 1
+python run_pipeline.py --phase all --workers 8 --batch-size 512
+python run_pipeline.py --phase validate --workers 8
+python run_pipeline.py --phase search --query "PostgreSQL JSONB indexing" --limit 10
+python run_pipeline.py --phase verify
+python -m unittest discover -s tests -v
 ```
-- **Outputs**: `outputs/phase1/structured_records.jsonl`, `outputs/phase1/corpus_statistics.md`, `outputs/phase1/corpus_statistics.json`, `outputs/phase1/charts/`
-- **Logs**: `logs/phase1/extraction.log`
 
-### 3. Run All Phases & Interactive Dashboard
-Execute the end-to-end pipeline in sequence:
+`all`: validate/recover sources → fix the working dataset → extract → chunk → embed
+→ verify. Completed unchanged stages are reused; interrupted embedding builds resume.
+Individual stages: `prepare` (including shared corpus fixes), `extract`, `chunk`, `embed`.
+The model is pinned Qwen3-Embedding-0.6B.
+
+## Shared corpus
+
+Both teammates use **`technical_web_corpus/` directly**, including its normal
+`metadata/corpus_manifest.jsonl`. Accepted repairs are applied to the HTML files;
+excluded captures are outside the working dataset. No separate allowlist is needed.
+The corrected dataset contains 68,418 documents, across 11 categories / 76 technologies.
+The original 79,268-document ZIP remains unchanged; local recovery copies and original
+metadata are in `outputs/corpus_backup/`. Full hash/coverage checks verify the corrected
+files; this is not a claim of perfect content extraction.
+
+Neural preprocessing is separate from classic preprocessing. It preserves negation,
+case, versions, identifiers and code whitespace, using the model's tokenizer.
+
+## Learning data
+
+| Task | Self-contained CSV | Size |
+|---|---|---|
+| Zone weights | `data/neural/zone_weights/training.csv` | 44 queries, 264 pairs; 262 usable |
+| NB and centroid classification | `data/neural/classification/training.csv` | 420 documents; 14 classes |
+
+The first table includes query/document details, relevance and four zone cosines.
+The second includes full document text, class ID/name and split. Use only its `text`
+column as classifier input. Both classifiers share its 280/70/70 train/validation/test
+split. No CSV joins or user annotation are needed. Class labels describe source domains.
 
 ```bash
-python run_pipeline.py --phase all
+python run_pipeline.py --phase development-features --batch-size 32
+python run_pipeline.py --phase classification-data
 ```
-- **Visual Dashboard**: Open `outputs/dashboard.html` in any browser for an interactive, graphical overview of corpus health and extraction metrics.
 
----
+These commands prepare learning data. Weight fitting, classifier training/routing
+and separate production zone indexes remain pending. The four development zones
+are title, headings, body and code; table text joins body. The book starts with
+Boolean zone matches; our cosine features are a neural adaptation. See
+[design and book alignment](docs/DESIGN.md).
 
-## Directory Structure
+## Files and results
 
-```text
-ir-benchmark/
-├── run_pipeline.py            # Master CLI runner
-├── src/                       # Modular pipeline source code
-│   ├── phase0_audit/          # Corpus sampling, validation, and near-duplicate detection
-│   ├── phase1_extraction/     # HTML parsing, boilerplate removal, and statistics
-│   └── utils/                 # Logging, file I/O, SimHash, and chart visualizer
-├── outputs/                   # Hierarchical phase outputs, charts, and dashboard.html
-│   ├── dashboard.html         # Interactive visual analytics dashboard
-│   ├── phase0/charts/         # Phase 0 exclusion & length charts (.png)
-│   └── phase1/charts/         # Phase 1 category & code prevalence charts (.png)
-├── logs/                      # Hierarchical execution logs
-└── technical_web_corpus/      # Raw HTML documents and crawl metadata
-```
+- `src/corpus_validation/`: archive checks and fixes to the shared working dataset.
+- `src/neural/preprocessing/`: independent structured extraction and token windows.
+- `src/neural/learning/`: separate zone-feature and classification-data modules.
+- `src/neural/search.py`, `server.py`, `web/`: cosine ranking and local UI.
+- `outputs/`: corrected-corpus checks, extraction, durable model/index, charts and dashboards.
+- `logs/`: stage logs. Both output folders are Git-ignored.
+
+[Verification report](outputs/neural/verification/report.md) ·
+[Corpus-fix report](outputs/corpus_fix/report.md) ·
+[Development report](outputs/neural/development/report.md) ·
+[Classification report](outputs/neural/classification/report.md) ·
+[History](docs/PROJECT_HISTORY.md)
+
+The 25 candidate queries in `queries.jsonl` support engineering verification.
+Final 20-query selection, relevance judgments, hand-coded NDCG@5/MAP and comparative
+failure analysis remain evaluation work. No relevance improvements are claimed yet.
+
+Original crawler (only for intentionally collecting a new corpus):
+`python build_technical_web_corpus.py --crawl CC-MAIN-2026-34`.
+Do not resume it into the corrected working corpus.

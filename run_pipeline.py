@@ -8,20 +8,19 @@ outputs and logging.
 Usage examples:
     python run_pipeline.py --phase 0 --sample-size 1000
     python run_pipeline.py --phase 1 --max-docs 500
-    python run_pipeline.py --phase all
+    python run_pipeline.py --phase all  # complete neural corpus/index
+    python run_pipeline.py --phase serve
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
-from src.phase0_audit.audit_runner import run_corpus_audit
-from src.phase1_extraction.extraction_runner import run_structured_extraction
 from src.utils.logging_utils import setup_logger
-from src.utils.visualizer import generate_interactive_dashboard_html
 
 
 def parse_args() -> argparse.Namespace:
@@ -30,10 +29,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--phase",
-        choices=["0", "1", "phase0", "phase1", "all"],
-        default="0",
-        help="Pipeline phase to execute (0=Corpus Audit, 1=Structured Extraction, all=all phases).",
+        choices=["0", "1", "phase0", "phase1", "validate", "prepare", "extract", "chunk", "embed", "all", "neural-all", "search", "serve", "verify", "development-features", "classification-data"],
+        default="all",
+        help="all=full neural build; serve/search/verify=reuse index; 0/1=legacy classic preparation.",
     )
+    parser.add_argument("--archive-path", type=Path, default=Path("technical_web_corpus.zip"))
+    parser.add_argument("--workers", type=int, default=8, help="Workers for full raw validation.")
     parser.add_argument(
         "--corpus-root",
         type=Path,
@@ -93,11 +94,21 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional path to a JSON file containing doc_ids to exclude from Phase 1 extraction.",
     )
+    parser.add_argument('--device', choices=['cuda','cpu'], default='cuda')
+    parser.add_argument('--batch-size', type=int, default=512)
+    parser.add_argument('--query')
+    parser.add_argument('--limit', type=int, default=20)
+    parser.add_argument('--technology', default='')
+    parser.add_argument('--category', default='')
+    parser.add_argument('--host', default='127.0.0.1')
+    parser.add_argument('--port', type=int, default=8000)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    os.environ.setdefault('MPLCONFIGDIR',str(Path('.cache/matplotlib').resolve()))
+    os.environ.setdefault('HF_HOME',str(Path('.cache/huggingface').resolve()))
 
     phase = args.phase.lower()
     if phase.startswith("phase"):
@@ -105,8 +116,42 @@ def main() -> None:
 
     print(f"=== Running IR Benchmark Pipeline [Phase: {phase}] ===")
 
+    if phase == "validate":
+        from src.corpus_validation.runner import run_validation
+        logger = setup_logger("corpus_validation", args.logs_dir / "corpus_validation" / "validation.log")
+        run_validation(args.archive_path, args.corpus_root, args.output_dir / "corpus_validation", logger, args.workers)
+        return
+
+    if phase in {'prepare','extract','chunk','embed','all','neural-all','search','serve','verify','development-features','classification-data'}:
+        if args.max_docs is not None:
+            raise ValueError('Neural stages always process the full retained corpus; --max-docs is legacy-only')
+        if args.workers < 1 or args.batch_size < 1:
+            raise ValueError('Workers and batch size must be positive')
+        from src.neural.pipeline import run
+        # Mirror stdout/stderr to the stage log while retaining live progress.
+        import contextlib
+        class Tee:
+            def __init__(self,*streams): self.streams=streams
+            def write(self,text):
+                for stream in self.streams: stream.write(text)
+                return len(text)
+            def flush(self):
+                for stream in self.streams: stream.flush()
+        logdir=args.logs_dir/'neural'; logdir.mkdir(parents=True,exist_ok=True)
+        with (logdir/f'{phase}.log').open('a',encoding='utf-8') as logfile:
+            with contextlib.redirect_stdout(Tee(sys.stdout,logfile)), contextlib.redirect_stderr(Tee(sys.stderr,logfile)):
+                from datetime import datetime,timezone
+                print(f'Run started: {datetime.now(timezone.utc).isoformat()} | phase={phase}',flush=True)
+                run(args)
+        return
+
+    # Load the legacy classical-preparation path only when explicitly requested.
+    from src.phase0_audit.audit_runner import run_corpus_audit
+    from src.phase1_extraction.extraction_runner import run_structured_extraction
+    from src.utils.visualizer import generate_interactive_dashboard_html
+
     # Execute Phase 0
-    if phase in ["0", "all"]:
+    if phase == "0":
         phase0_out = args.output_dir / "phase0"
         phase0_log = args.logs_dir / "phase0" / "audit.log"
         logger0 = setup_logger("phase0_audit", phase0_log)
@@ -122,7 +167,7 @@ def main() -> None:
         )
 
     # Execute Phase 1
-    if phase in ["1", "all"]:
+    if phase == "1":
         phase1_out = args.output_dir / "phase1"
         phase1_log = args.logs_dir / "phase1" / "extraction.log"
         logger1 = setup_logger("phase1_extraction", phase1_log)

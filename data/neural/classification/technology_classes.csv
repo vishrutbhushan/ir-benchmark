@@ -1,0 +1,77 @@
+technology,original_category,class_id,label_rule
+AWS,cloud,C01,explicit_technology_mapping
+Angular,framework,C09,explicit_technology_mapping
+Apache Beam,distributed-data,C08,explicit_technology_mapping
+Apache HTTP Server,os-networking-web,C12,explicit_technology_mapping
+Apache Iceberg,distributed-data,C08,explicit_technology_mapping
+Azure,cloud,C01,explicit_technology_mapping
+CUDA,ml-infrastructure,C02,explicit_technology_mapping
+Cassandra,distributed-data,C05,explicit_technology_mapping
+ClickHouse,database-search,C05,explicit_technology_mapping
+Cloudflare,cloud,C01,explicit_technology_mapping
+DigitalOcean,cloud,C01,explicit_technology_mapping
+Django,framework,C09,explicit_technology_mapping
+Docker,containers-orchestration,C10,explicit_technology_mapping
+Elasticsearch,database-search,C06,explicit_technology_mapping
+Envoy,os-networking-web,C12,explicit_technology_mapping
+FastAPI,framework,C09,explicit_technology_mapping
+Git,devops-infrastructure,C11,explicit_technology_mapping
+GitHub,devops-infrastructure,C11,explicit_technology_mapping
+GitLab,devops-infrastructure,C11,explicit_technology_mapping
+Go,programming-language,C04,explicit_technology_mapping
+Google Cloud,cloud,C01,explicit_technology_mapping
+Gradle,devops-infrastructure,C11,explicit_technology_mapping
+Grafana,observability,C14,explicit_technology_mapping
+HAProxy,os-networking-web,C12,explicit_technology_mapping
+HBase,distributed-data,C05,explicit_technology_mapping
+Hadoop,distributed-data,C08,explicit_technology_mapping
+Helm,containers-orchestration,C10,explicit_technology_mapping
+Hive,distributed-data,C08,explicit_technology_mapping
+Hugging Face,ml-infrastructure,C02,explicit_technology_mapping
+Istio,containers-orchestration,C10,explicit_technology_mapping
+Jaeger,observability,C14,explicit_technology_mapping
+Java,programming-language,C04,explicit_technology_mapping
+JavaScript,programming-language,C04,explicit_technology_mapping
+Jenkins,devops-infrastructure,C11,explicit_technology_mapping
+Kafka,distributed-data,C07,explicit_technology_mapping
+Kotlin,programming-language,C04,explicit_technology_mapping
+Kubeflow,ml-infrastructure,C03,explicit_technology_mapping
+Kubernetes,containers-orchestration,C10,explicit_technology_mapping
+Linkerd,containers-orchestration,C10,explicit_technology_mapping
+Linux Kernel,os-networking-web,C12,explicit_technology_mapping
+MLflow,ml-infrastructure,C03,explicit_technology_mapping
+Maven,devops-infrastructure,C11,explicit_technology_mapping
+MongoDB,database-search,C05,explicit_technology_mapping
+MySQL,database-search,C05,explicit_technology_mapping
+NIST,security,C13,explicit_technology_mapping
+Neo4j,database-search,C05,explicit_technology_mapping
+Nginx,os-networking-web,C12,explicit_technology_mapping
+Node.js,framework,C09,explicit_technology_mapping
+OWASP,security,C13,explicit_technology_mapping
+OpenID Connect,security,C13,explicit_technology_mapping
+OpenSSL,os-networking-web,C13,explicit_technology_mapping
+OpenSearch,database-search,C06,explicit_technology_mapping
+OpenShift,containers-orchestration,C10,explicit_technology_mapping
+OpenTelemetry,observability,C14,explicit_technology_mapping
+Oracle Cloud,cloud,C01,explicit_technology_mapping
+Podman,containers-orchestration,C10,explicit_technology_mapping
+PostgreSQL,database-search,C05,explicit_technology_mapping
+Prometheus,observability,C14,explicit_technology_mapping
+Pulsar,distributed-data,C07,explicit_technology_mapping
+PyTorch,ml-infrastructure,C02,explicit_technology_mapping
+Python,programming-language,C04,explicit_technology_mapping
+RFCs,os-networking-web,C12,explicit_technology_mapping
+RabbitMQ,distributed-data,C07,explicit_technology_mapping
+Ray,ml-infrastructure,C03,explicit_technology_mapping
+React,framework,C09,explicit_technology_mapping
+Redis,database-search,C05,explicit_technology_mapping
+Rust,programming-language,C04,explicit_technology_mapping
+Spark,distributed-data,C08,explicit_technology_mapping
+Spring,framework,C09,explicit_technology_mapping
+Spring Boot,framework,C09,explicit_technology_mapping
+TensorFlow,ml-infrastructure,C02,explicit_technology_mapping
+Terraform,devops-infrastructure,C11,explicit_technology_mapping
+TypeScript,programming-language,C04,explicit_technology_mapping
+Vault,devops-infrastructure,C13,explicit_technology_mapping
+ZooKeeper,distributed-data,C08,explicit_technology_mapping
+gRPC,distributed-data,C07,explicit_technology_mapping

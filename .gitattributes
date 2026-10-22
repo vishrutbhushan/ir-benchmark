@@ -1,0 +1,2 @@
+# Training CSVs contain source text/code; preserve its whitespace verbatim.
+*.csv -whitespace
