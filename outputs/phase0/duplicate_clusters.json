@@ -1,0 +1,143 @@
+{
+  "total_documents_analyzed": 652,
+  "total_clusters": 9,
+  "total_duplicate_documents": 23,
+  "clusters": [
+    {
+      "cluster_id": 1,
+      "representative_doc_id": "document_047117",
+      "representative_title": "Get script content | Cloudflare API",
+      "cluster_size": 3,
+      "member_doc_ids": [
+        "document_047117",
+        "document_046227",
+        "document_046559"
+      ],
+      "member_urls": [
+        "https://developers.cloudflare.com/api/typescript/resources/workers/subresources/scripts/subresources/content/methods/get/",
+        "https://developers.cloudflare.com/api/typescript/resources/zero_trust/subresources/gateway/subresources/lists/methods/update/",
+        "https://developers.cloudflare.com/api/resources/accounts/subresources/speed_settings/subresources/transformations/methods/get/"
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "representative_doc_id": "document_036999",
+      "representative_title": "Structured Streaming - Apache Iceberg™",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_036999",
+        "document_037147"
+      ],
+      "member_urls": [
+        "https://iceberg.apache.org/docs/1.5.2/spark-structured-streaming/",
+        "https://iceberg.apache.org/docs/1.8.1/daft/"
+      ]
+    },
+    {
+      "cluster_id": 3,
+      "representative_doc_id": "document_004357",
+      "representative_title": "Uses of Class org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext (Spring Boot 2.7.9 API)",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_004357",
+        "document_004570"
+      ],
+      "member_urls": [
+        "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html",
+        "https://docs.spring.io/spring-boot/docs/2.4.13/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html"
+      ]
+    },
+    {
+      "cluster_id": 4,
+      "representative_doc_id": "document_077270",
+      "representative_title": "nvmath.bindings.cusolverDn.create_params — nvmath-python",
+      "cluster_size": 5,
+      "member_doc_ids": [
+        "document_077270",
+        "document_078038",
+        "document_077249",
+        "document_078932",
+        "document_078738"
+      ],
+      "member_urls": [
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverDn.create_params.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverSp.dcsreigvsi_host.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverSp.destroy.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusolverDn.ssyevdx.html",
+        "https://docs.nvidia.com/cuda/nvmath-python/1.0.0/bindings/generated/nvmath.bindings.cusparse.zbsrilu02_buffer_size.html"
+      ]
+    },
+    {
+      "cluster_id": 5,
+      "representative_doc_id": "document_012847",
+      "representative_title": "Streams Redirect | Apache Kafka",
+      "cluster_size": 3,
+      "member_doc_ids": [
+        "document_012847",
+        "document_012849",
+        "document_012848"
+      ],
+      "member_urls": [
+        "https://kafka.apache.org/documentation/streams/upgrade-guide/",
+        "https://kafka.apache.org/documentation/",
+        "https://kafka.apache.org/documentation/streams/?utm_source=madewithtea&utm_medium=blog&utm_campaign=monitoring-kafka-metrics-using-jmx"
+      ]
+    },
+    {
+      "cluster_id": 6,
+      "representative_doc_id": "document_076562",
+      "representative_title": "VALID_NP_HPARAMS — Ray 2.58.0",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_076562",
+        "document_076102"
+      ],
+      "member_urls": [
+        "https://docs.ray.io/en/latest/tune/api/doc/ray.tune.logger.aim.AimLoggerCallback.VALID_NP_HPARAMS.html",
+        "https://docs.ray.io/en/master/train/api/doc/ray.train.RunConfig.storage_path.html"
+      ]
+    },
+    {
+      "cluster_id": 7,
+      "representative_doc_id": "document_071518",
+      "representative_title": "Terminology | Jaeger",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_071518",
+        "document_071486"
+      ],
+      "member_urls": [
+        "https://www.jaegertracing.io/docs/2.4/architecture/terminology/",
+        "https://www.jaegertracing.io/docs/2.2/architecture/terminology/"
+      ]
+    },
+    {
+      "cluster_id": 8,
+      "representative_doc_id": "document_071584",
+      "representative_title": "Search | CSRC",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_071584",
+        "document_071591"
+      ],
+      "member_urls": [
+        "https://csrc.nist.gov/publications/draft-pubs",
+        "https://csrc.nist.gov/publications/draft-pubs?utm_source=chatgpt.com"
+      ]
+    },
+    {
+      "cluster_id": 9,
+      "representative_doc_id": "document_069757",
+      "representative_title": "RSAHashedKeyGenParams | Grafana k6 documentation",
+      "cluster_size": 2,
+      "member_doc_ids": [
+        "document_069757",
+        "document_068913"
+      ],
+      "member_urls": [
+        "https://grafana.com/docs/k6/next/javascript-api/crypto/rsahashedkeygenparams/",
+        "https://grafana.com/docs/k6/next/testing-guides/injecting-faults-with-xk6-disruptor/examples/"
+      ]
+    }
+  ]
+}
