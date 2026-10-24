@@ -6,10 +6,29 @@ import time
 from pathlib import Path
 from typing import Any, Iterable
 
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import os
+
 from src.phase0_audit.sampler import sample_manifest_documents
 from src.phase1_extraction.corpus_statistics import generate_and_save_statistics
 from src.phase1_extraction.html_parser import parse_html_to_structured_record
 from src.utils.file_utils import stream_jsonl
+
+
+def _parse_manifest_worker(item: tuple[str, dict[str, Any], int]) -> str | None:
+    """Worker function for parallel HTML extraction."""
+    full_path_str, manifest_record, min_char_length = item
+    try:
+        p = Path(full_path_str)
+        if not p.exists():
+            return None
+        html_content = p.read_text(encoding="utf-8", errors="replace")
+        record = parse_html_to_structured_record(html_content, manifest_record)
+        if len(record.get("body_text", "")) < min_char_length:
+            return None
+        return json.dumps(record, ensure_ascii=False)
+    except Exception:
+        return None
 
 
 def run_structured_extraction(
@@ -22,12 +41,13 @@ def run_structured_extraction(
     excluded_doc_ids: set[str] | None = None,
     stratified: bool = False,
     sample_per_tech: int | None = None,
+    num_workers: int = 8,
 ) -> dict[str, Any]:
     """
     Executes Phase 1 structured extraction: parses HTML pages into structured records
-    and produces corpus statistics.
+    using parallel worker processes and produces corpus statistics.
     """
-    logger.info("Starting Phase 1 Structured Extraction...")
+    logger.info(f"Starting Phase 1 Structured Extraction (workers={num_workers})...")
     output_dir.mkdir(parents=True, exist_ok=True)
     records_output_path = output_dir / "structured_records.jsonl"
 
@@ -35,8 +55,7 @@ def run_structured_extraction(
     start_time = time.time()
     processed_count = 0
     extracted_count = 0
-    skipped_short_count = 0
-    skipped_excluded_count = 0
+    skipped_short_or_invalid = 0
     missing_file_count = 0
 
     manifest_stream: Iterable[dict[str, Any]]
@@ -50,52 +69,57 @@ def run_structured_extraction(
     else:
         manifest_stream = stream_jsonl(manifest_path)
 
+    batch_tasks: list[tuple[str, dict[str, Any], int]] = []
+    batch_size = 500
+
     with records_output_path.open("w", encoding="utf-8") as out_f:
-        for manifest_record in manifest_stream:
-            doc_id = manifest_record.get("doc_id", "")
-            if max_documents is not None and not stratified and extracted_count >= max_documents:
-                break
+        with ProcessPoolExecutor(max_workers=max(1, num_workers)) as executor:
+            for manifest_record in manifest_stream:
+                doc_id = manifest_record.get("doc_id", "")
+                if max_documents is not None and not stratified and extracted_count >= max_documents:
+                    break
 
-            processed_count += 1
+                processed_count += 1
+                if doc_id in excluded_ids:
+                    continue
 
-            if doc_id in excluded_ids:
-                skipped_excluded_count += 1
-                continue
+                rel_html_path = manifest_record.get("html_path", "")
+                normalized_rel_path = Path(str(rel_html_path).replace("\\", "/"))
+                full_html_path = corpus_root / normalized_rel_path
 
-            rel_html_path = manifest_record.get("html_path", "")
-            normalized_rel_path = Path(str(rel_html_path).replace("\\", "/"))
-            full_html_path = corpus_root / normalized_rel_path
+                if not full_html_path.exists():
+                    missing_file_count += 1
+                    continue
 
-            if not full_html_path.exists():
-                missing_file_count += 1
-                continue
+                batch_tasks.append((str(full_html_path), manifest_record, min_char_length))
 
-            try:
-                html_content = full_html_path.read_text(encoding="utf-8", errors="replace")
-            except Exception as e:
-                logger.error(f"Error reading {full_html_path}: {e}")
-                continue
+                if len(batch_tasks) >= batch_size:
+                    for line_json in executor.map(_parse_manifest_worker, batch_tasks, chunksize=25):
+                        if line_json:
+                            out_f.write(line_json + "\n")
+                            extracted_count += 1
+                        else:
+                            skipped_short_or_invalid += 1
 
-            # Parse to structured record
-            record = parse_html_to_structured_record(html_content, manifest_record)
+                    batch_tasks = []
+                    elapsed = time.time() - start_time
+                    rate = extracted_count / elapsed if elapsed > 0 else 0
+                    logger.info(
+                        f"Extracted {extracted_count:,} records (processed {processed_count:,}, {elapsed:.1f}s, {rate:.1f} docs/s)..."
+                    )
 
-            # Filter short/empty bodies
-            if len(record["body_text"]) < min_char_length:
-                skipped_short_count += 1
-                continue
-
-            out_f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            extracted_count += 1
-
-            if extracted_count % 500 == 0:
-                elapsed = time.time() - start_time
-                logger.info(
-                    f"Extracted {extracted_count:,} records (processed {processed_count:,}, {elapsed:.1f}s, {extracted_count / elapsed:.1f} docs/s)..."
-                )
+            # Process remaining tasks
+            if batch_tasks:
+                for line_json in executor.map(_parse_manifest_worker, batch_tasks, chunksize=25):
+                    if line_json:
+                        out_f.write(line_json + "\n")
+                        extracted_count += 1
+                    else:
+                        skipped_short_or_invalid += 1
 
     total_time = time.time() - start_time
     logger.info(
-        f"Extraction pass finished in {total_time:.1f}s. Total saved records: {extracted_count:,} (skipped short: {skipped_short_count:,}, skipped excluded: {skipped_excluded_count:,})."
+        f"Extraction pass finished in {total_time:.1f}s. Total saved records: {extracted_count:,} (skipped short/invalid: {skipped_short_or_invalid:,}, missing files: {missing_file_count:,})."
     )
 
     # Compute and save corpus statistics
@@ -106,8 +130,7 @@ def run_structured_extraction(
     return {
         "processed_manifest_records": processed_count,
         "extracted_valid_records": extracted_count,
-        "skipped_short_or_empty": skipped_short_count,
-        "skipped_pre_excluded": skipped_excluded_count,
+        "skipped_short_or_invalid": skipped_short_or_invalid,
         "missing_files": missing_file_count,
         "elapsed_seconds": round(total_time, 2),
         "statistics": stats,

@@ -144,6 +144,12 @@ def parse_args() -> argparse.Namespace:
         default=0.25,
         help="Taxonomy matching boost factor for BM25F (default: 0.25).",
     )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=8,
+        help="Number of parallel worker processes for Phase 1 extraction (default: 8).",
+    )
     return parser.parse_args()
 
 
@@ -199,6 +205,7 @@ def main() -> None:
             excluded_doc_ids=excluded_ids,
             stratified=args.stratified,
             sample_per_tech=args.sample_per_tech,
+            num_workers=args.workers,
         )
 
     # Execute Phase 2
