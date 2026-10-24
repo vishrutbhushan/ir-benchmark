@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 
 from src.phase3_classic_ir.inverted_index import InvertedIndex
 from src.phase3_classic_ir.bm25_scorer import BM25Scorer
+from src.phase3_classic_ir.bm25f_scorer import BM25FScorer, DEFAULT_ZONE_WEIGHTS
+from src.phase3_classic_ir.inverted_index import InvertedIndex
 from src.phase3_classic_ir.query_processor import QueryProcessor
 from src.utils.file_utils import write_json, write_text
 
@@ -35,9 +37,13 @@ def run_classic_ir(
     k1: float = 1.2,
     b: float = 0.75,
     top_k: int = 20,
+    scorer_type: str = "both",
+    zone_weights: dict[str, float] | None = None,
+    hierarchical_boost: float = 0.25,
 ) -> dict[str, Any]:
     """
-    Execute the full Phase 3 Classic IR pipeline.
+    Execute the full Phase 3 Classic IR pipeline supporting both Flat BM25
+    and Hierarchical Zone-Weighted BM25F.
 
     Args:
         tokenized_path: Path to outputs/phase2/tokenized_corpus.jsonl
@@ -48,11 +54,14 @@ def run_classic_ir(
         k1: BM25 term frequency saturation parameter.
         b: BM25 document length normalization parameter.
         top_k: Number of results per query.
+        scorer_type: "bm25", "bm25f", or "both".
+        zone_weights: Custom zone weights for BM25F.
+        hierarchical_boost: Taxonomy matching bonus factor for BM25F.
 
     Returns:
         Summary statistics dict.
     """
-    logger.info("Starting Phase 3 Classic IR Engine (BM25)...")
+    logger.info(f"Starting Phase 3 Classic IR Engine [Scorer: {scorer_type}]...")
     output_dir.mkdir(parents=True, exist_ok=True)
     charts_dir = output_dir / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -70,103 +79,145 @@ def run_classic_ir(
 
     # Save index statistics
     index_stats = index.get_index_stats()
+    index_stats["hierarchical_categories"] = len(index.category_postings)
+    index_stats["hierarchical_technologies"] = len(index.technology_postings)
+    index_stats["hierarchical_domains"] = len(index.domain_postings)
     write_json(index_stats, output_dir / "index_stats.json")
     logger.info(f"Index stats: {json.dumps(index_stats, indent=2)}")
 
-    # ── Step 2: Initialize BM25 scorer ────────────────────────────────────
-    scorer = BM25Scorer(index, k1=k1, b=b)
-    logger.info(f"BM25 scorer initialized with k1={k1}, b={b}")
+    # ── Step 2: Run Scorers ───────────────────────────────────────────────
+    bm25_results: list[dict[str, Any]] = []
+    bm25f_results: list[dict[str, Any]] = []
 
-    # ── Step 3: Run query suite ───────────────────────────────────────────
-    qp = QueryProcessor(index, scorer, logger)
-
-    query_results: list[dict[str, Any]] = []
     if queries_path.exists():
-        query_results = qp.run_query_suite(queries_path, top_k=top_k)
+        # 1. Flat BM25
+        if scorer_type in ["bm25", "both"]:
+            logger.info(f"Executing Flat BM25 retrieval (k1={k1}, b={b})...")
+            bm25_scorer = BM25Scorer(index, k1=k1, b=b)
+            qp_bm25 = QueryProcessor(index, bm25_scorer, logger)
+            bm25_results = qp_bm25.run_query_suite(queries_path, top_k=top_k)
+            write_json(bm25_results, output_dir / "bm25_results.json")
+            logger.info("Saved Flat BM25 results to bm25_results.json")
 
-        # Save full search results
-        results_path = output_dir / "bm25_results.json"
-        write_json(query_results, results_path)
-        logger.info(f"BM25 search results saved to {results_path}")
+        # 2. Hierarchical BM25F
+        if scorer_type in ["bm25f", "both"]:
+            active_weights = zone_weights or DEFAULT_ZONE_WEIGHTS
+            logger.info(
+                f"Executing Hierarchical Zone-Weighted BM25F retrieval (weights={active_weights}, boost={hierarchical_boost})..."
+            )
+            bm25f_scorer = BM25FScorer(
+                index,
+                k1=k1,
+                zone_weights=active_weights,
+                hierarchical_boost=hierarchical_boost,
+            )
+            qp_bm25f = QueryProcessor(index, bm25f_scorer, logger)
+            bm25f_results = qp_bm25f.run_query_suite(queries_path, top_k=top_k)
+            write_json(bm25f_results, output_dir / "bm25f_results.json")
+            logger.info("Saved Hierarchical BM25F results to bm25f_results.json")
     else:
         logger.warning(f"Queries file not found at {queries_path}, skipping search.")
 
-    # ── Step 4: Generate summary statistics ───────────────────────────────
+    # ── Step 3: Comparative Analysis ─────────────────────────────────────
     total_time = time.time() - start_time
+    primary_results = bm25f_results if scorer_type == "bm25f" else bm25_results
+    if not primary_results and bm25f_results:
+        primary_results = bm25f_results
 
-    # Per-query stats
-    query_summary: list[dict[str, Any]] = []
-    for qr in query_results:
-        top_result = qr["results"][0] if qr["results"] else None
-        query_summary.append({
-            "query_id": qr.get("query_id", ""),
-            "query_category": qr.get("query_category", ""),
-            "query_text": qr.get("query_text", ""),
-            "num_tokens": len(qr.get("query_tokens", [])),
-            "num_results": qr["num_results"],
-            "top_score": top_result["score"] if top_result else 0,
-            "top_doc_title": top_result["title"] if top_result else "",
-            "top_doc_technology": top_result["technology"] if top_result else "",
+    comparison_summary: list[dict[str, Any]] = []
+    for i, qr in enumerate(primary_results):
+        qid = qr.get("query_id", f"Q{i+1}")
+        qcat = qr.get("query_category", "")
+        qtext = qr.get("query_text", "")
+
+        bm25_top = bm25_results[i]["results"][0] if i < len(bm25_results) and bm25_results[i]["results"] else None
+        bm25f_top = bm25f_results[i]["results"][0] if i < len(bm25f_results) and bm25f_results[i]["results"] else None
+
+        comparison_summary.append({
+            "query_id": qid,
+            "query_category": qcat,
+            "query_text": qtext,
+            "bm25_top_score": bm25_top["score"] if bm25_top else 0.0,
+            "bm25_top_doc": bm25_top["title"] if bm25_top else "",
+            "bm25_top_tech": bm25_top["technology"] if bm25_top else "",
+            "bm25f_top_score": bm25f_top["score"] if bm25f_top else 0.0,
+            "bm25f_top_doc": bm25f_top["title"] if bm25f_top else "",
+            "bm25f_top_tech": bm25f_top["technology"] if bm25f_top else "",
+            "bm25f_top_category": bm25f_top.get("category", "") if bm25f_top else "",
         })
 
     summary = {
-        "phase": "Phase 3 - Classic IR (BM25)",
-        "parameters": {"k1": k1, "b": b, "top_k": top_k},
+        "phase": "Phase 3 - Classic IR (BM25 & Hierarchical BM25F)",
+        "scorer_type": scorer_type,
+        "parameters": {
+            "k1": k1,
+            "b": b,
+            "top_k": top_k,
+            "hierarchical_boost": hierarchical_boost,
+            "zone_weights": zone_weights or DEFAULT_ZONE_WEIGHTS,
+        },
         "index_statistics": index_stats,
         "index_size_mb": round(index_size_mb, 2),
-        "queries_executed": len(query_results),
-        "query_summary": query_summary,
+        "queries_executed": len(primary_results),
+        "comparison_summary": comparison_summary,
         "elapsed_seconds": round(total_time, 2),
     }
 
     write_json(summary, output_dir / "phase3_summary.json")
 
-    # ── Step 5: Generate markdown report ──────────────────────────────────
-    md_report = _generate_markdown_report(summary)
+    # ── Step 4: Generate Markdown Report & Charts ─────────────────────────
+    md_report = _generate_markdown_report(summary, bm25_results, bm25f_results)
     write_text(md_report, output_dir / "phase3_summary.md")
 
-    # ── Step 6: Generate charts ───────────────────────────────────────────
-    _generate_charts(summary, query_results, index, charts_dir, logger)
+    _generate_charts(summary, bm25_results, bm25f_results, index, charts_dir, logger)
 
     logger.info(f"Phase 3 Classic IR complete in {total_time:.1f}s. Outputs in {output_dir}")
     return summary
 
 
-def _generate_markdown_report(summary: dict[str, Any]) -> str:
-    """Generate markdown report of Phase 3 results."""
+def _generate_markdown_report(
+    summary: dict[str, Any],
+    bm25_results: list[dict[str, Any]],
+    bm25f_results: list[dict[str, Any]],
+) -> str:
+    """Generate markdown report comparing BM25 and Hierarchical BM25F results."""
+    params = summary["parameters"]
     lines = [
-        "# Phase 3 - Classic IR Engine (BM25) Results\n",
-        f"**BM25 Parameters:** k1={summary['parameters']['k1']}, b={summary['parameters']['b']}",
-        f"**Top-K:** {summary['parameters']['top_k']}",
+        "# Phase 3 — Classic IR Engine: BM25 vs. Hierarchical BM25F Results\n",
+        f"**Engine Configuration:** Scorer Mode: `{summary.get('scorer_type', 'both')}`",
+        f"**BM25 Parameters:** k1={params['k1']}, b={params['b']}, top_k={params['top_k']}",
+        f"**BM25F Zone Weights:** {params.get('zone_weights', {})}",
+        f"**Hierarchical Taxonomy Boost:** {params.get('hierarchical_boost', 0.25) * 100:.0f}%",
         f"**Index Size:** {summary['index_size_mb']} MB",
         f"**Elapsed Time:** {summary['elapsed_seconds']}s\n",
-        "## Index Statistics\n",
-        f"| Metric | Value |",
-        f"|--------|-------|",
+        "## 1. Index Statistics & Hierarchical Postings\n",
+        "| Metric | Value |",
+        "| :--- | :--- |",
     ]
     for key, val in summary["index_statistics"].items():
         if key != "avg_zone_lengths":
-            lines.append(f"| {key} | {val:,} |" if isinstance(val, int) else f"| {key} | {val} |")
+            lines.append(f"| {key.replace('_', ' ').title()} | {val:,} |" if isinstance(val, int) else f"| {key} | {val} |")
 
     avg_zl = summary["index_statistics"].get("avg_zone_lengths", {})
     if avg_zl:
         lines.append("")
-        lines.append("## Average Zone Lengths\n")
-        lines.append("| Zone | Avg Tokens |")
-        lines.append("|------|-----------|")
+        lines.append("## 2. Average Zone Lengths across Corpus\n")
+        lines.append("| Zone | Average Tokens |")
+        lines.append("| :--- | :--- |")
         for zone, val in avg_zl.items():
-            lines.append(f"| {zone.capitalize()} | {val} |")
+            lines.append(f"| **{zone.capitalize()}** | {val:.1f} tokens |")
 
     lines.append("")
-    lines.append(f"## Query Results ({summary['queries_executed']} queries)\n")
-    lines.append("| Query ID | Category | Top Score | Top Result | # Results |")
-    lines.append("|----------|----------|-----------|------------|-----------|")
+    lines.append("## 3. Query Suite Comparative Results (BM25 vs. Hierarchical BM25F)\n")
+    lines.append("| Query ID | Category | Query Text | BM25 Top Score | BM25F Top Score | BM25F Top Tech / Domain |")
+    lines.append("| :--- | :--- | :--- | :--- | :--- | :--- |")
 
-    for qs in summary.get("query_summary", []):
-        title_short = qs["top_doc_title"][:50] + "..." if len(qs["top_doc_title"]) > 50 else qs["top_doc_title"]
+    for item in summary.get("comparison_summary", []):
+        qtext_short = item["query_text"][:45] + "..." if len(item["query_text"]) > 45 else item["query_text"]
+        tech_cat = f"{item['bm25f_top_tech']} ({item['bm25f_top_category']})" if item['bm25f_top_tech'] else "—"
         lines.append(
-            f"| {qs['query_id']} | {qs['query_category']} | "
-            f"{qs['top_score']:.4f} | {title_short} | {qs['num_results']} |"
+            f"| **{item['query_id']}** | {item['query_category']} | {qtext_short} | "
+            f"`{item['bm25_top_score']:.4f}` | **`{item['bm25f_top_score']:.4f}`** | {tech_cat} |"
         )
 
     return "\n".join(lines) + "\n"
@@ -174,63 +225,59 @@ def _generate_markdown_report(summary: dict[str, Any]) -> str:
 
 def _generate_charts(
     summary: dict[str, Any],
-    query_results: list[dict[str, Any]],
+    bm25_results: list[dict[str, Any]],
+    bm25f_results: list[dict[str, Any]],
     index: InvertedIndex,
     charts_dir: Path,
     logger: logging.Logger,
 ) -> None:
-    """Generate Phase 3 visualizations."""
+    """Generate Phase 3 comparative and diagnostic visualizations."""
     try:
-        # Chart 1: Top BM25 scores per query
-        if query_results:
-            query_ids = [qr.get("query_id", f"Q{i}") for i, qr in enumerate(query_results)]
-            top_scores = [
-                qr["results"][0]["score"] if qr["results"] else 0
-                for qr in query_results
-            ]
-            categories = [qr.get("query_category", "") for qr in query_results]
+        import numpy as np
 
-            # Color by query category
-            cat_colors = {}
-            color_palette = ["#2196F3", "#4CAF50", "#FF9800", "#9C27B0", "#F44336",
-                            "#00BCD4", "#8BC34A", "#FFC107", "#E91E63", "#673AB7"]
-            unique_cats = list(set(categories))
-            for i, cat in enumerate(unique_cats):
-                cat_colors[cat] = color_palette[i % len(color_palette)]
-            bar_colors = [cat_colors.get(c, "#999") for c in categories]
+        # Chart 1: Side-by-side Top-1 Score Comparison: BM25 vs Hierarchical BM25F
+        comparison = summary.get("comparison_summary", [])
+        if comparison:
+            query_ids = [c["query_id"] for c in comparison]
+            bm25_scores = [c["bm25_top_score"] for c in comparison]
+            bm25f_scores = [c["bm25f_top_score"] for c in comparison]
 
-            fig, ax = plt.subplots(figsize=(14, 6))
-            bars = ax.bar(query_ids, top_scores, color=bar_colors)
-            ax.set_title("BM25 Top-1 Score per Query", fontsize=14, fontweight="bold")
-            ax.set_xlabel("Query ID")
-            ax.set_ylabel("BM25 Score")
-            ax.tick_params(axis="x", rotation=45)
+            x = np.arange(len(query_ids))
+            width = 0.38
 
-            # Legend
-            legend_handles = [
-                plt.Rectangle((0, 0), 1, 1, color=cat_colors[c]) for c in unique_cats
-            ]
-            ax.legend(legend_handles, unique_cats, loc="upper right", fontsize=8)
+            fig, ax = plt.subplots(figsize=(15, 6))
+            ax.bar(x - width/2, bm25_scores, width, label="Flat BM25", color="#2196F3", alpha=0.85)
+            ax.bar(x + width/2, bm25f_scores, width, label="Hierarchical BM25F", color="#4CAF50", alpha=0.95)
+
+            ax.set_title("BM25 vs. Hierarchical BM25F Top-1 Scores Across Queries", fontsize=14, fontweight="bold")
+            ax.set_xlabel("Query ID", fontweight="bold")
+            ax.set_ylabel("Top Retrieval Score", fontweight="bold")
+            ax.set_xticks(x)
+            ax.set_xticklabels(query_ids, rotation=45, ha="right")
+            ax.legend(fontsize=10)
+            ax.grid(axis="y", linestyle="--", alpha=0.4)
 
             plt.tight_layout()
-            plt.savefig(charts_dir / "phase3_bm25_scores_per_query.png", dpi=150)
+            plt.savefig(charts_dir / "phase3_bm25_vs_bm25f_scores.png", dpi=150)
             plt.close()
-            logger.info("Chart saved: phase3_bm25_scores_per_query.png")
+            logger.info("Chart saved: phase3_bm25_vs_bm25f_scores.png")
 
-        # Chart 2: Results count per query
-        if query_results:
-            result_counts = [qr["num_results"] for qr in query_results]
+        # Chart 2: Document count per Category in Hierarchical Index
+        if index.category_postings:
+            cat_names = sorted(list(index.category_postings.keys()))
+            cat_counts = [len(index.category_postings[c]) for c in cat_names]
 
-            fig, ax = plt.subplots(figsize=(14, 6))
-            ax.bar(query_ids, result_counts, color="#3F51B5")
-            ax.set_title("Number of BM25 Results per Query", fontsize=14, fontweight="bold")
-            ax.set_xlabel("Query ID")
-            ax.set_ylabel("Documents Retrieved")
-            ax.tick_params(axis="x", rotation=45)
+            fig, ax = plt.subplots(figsize=(13, 6))
+            ax.barh(cat_names[::-1], cat_counts[::-1], color="#FF9800", alpha=0.85)
+            ax.set_title("Documents Indexed per Category (Hierarchical Index)", fontsize=14, fontweight="bold")
+            ax.set_xlabel("Indexed Documents", fontweight="bold")
+            for i, v in enumerate(cat_counts[::-1]):
+                ax.text(v + max(1, max(cat_counts) * 0.01), i, f"{v:,}", va="center", fontsize=9)
+
             plt.tight_layout()
-            plt.savefig(charts_dir / "phase3_results_count_per_query.png", dpi=150)
+            plt.savefig(charts_dir / "phase3_hierarchical_category_distribution.png", dpi=150)
             plt.close()
-            logger.info("Chart saved: phase3_results_count_per_query.png")
+            logger.info("Chart saved: phase3_hierarchical_category_distribution.png")
 
         # Chart 3: Document frequency distribution (top 30 terms)
         term_dfs = [(term, len(plist)) for term, plist in index.postings.items()]
@@ -241,7 +288,7 @@ def _generate_charts(
             terms_dfs = [t[1] for t in top_terms]
 
             fig, ax = plt.subplots(figsize=(14, 6))
-            ax.barh(terms_labels[::-1], terms_dfs[::-1], color="#FF5722")
+            ax.barh(terms_labels[::-1], terms_dfs[::-1], color="#E91E63", alpha=0.85)
             ax.set_title("Top 30 Terms by Document Frequency", fontsize=14, fontweight="bold")
             ax.set_xlabel("Document Frequency (# docs containing term)")
             plt.tight_layout()
@@ -265,7 +312,7 @@ def _generate_charts(
             [z.capitalize() for z in zones], vocab_sizes,
             color=["#2196F3", "#4CAF50", "#FF9800", "#9C27B0"],
         )
-        ax.set_title("Unique Terms per Zone in Index", fontsize=14, fontweight="bold")
+        ax.set_title("Unique Terms per Zone in Inverted Index", fontsize=14, fontweight="bold")
         ax.set_ylabel("Vocabulary Size")
         for bar, val in zip(bars, vocab_sizes):
             ax.text(

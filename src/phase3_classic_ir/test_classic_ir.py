@@ -140,9 +140,86 @@ def test_serialization(idx: InvertedIndex, tmp_path: Path):
     print("  [OK] Index serialization and deserialization verified")
 
 
+from src.phase3_classic_ir.bm25f_scorer import BM25FScorer
+
+
+def test_bm25f_hand_calculation(idx: InvertedIndex):
+    """Verify BM25F zone pseudo-frequency and scoring against exact hand calculation."""
+    zone_weights = {"title": 4.0, "heading": 2.5, "code": 2.0, "body": 1.0}
+    zone_b = {"title": 0.3, "heading": 0.5, "code": 0.6, "body": 0.75}
+    k1 = 1.2
+
+    scorer = BM25FScorer(
+        idx,
+        k1=k1,
+        zone_weights=zone_weights,
+        zone_b=zone_b,
+        hierarchical_boost=0.0,  # disable boost for pure formula test
+    )
+
+    # For doc1 and term 'swarm':
+    # zone_tfs = {"title": 1, "heading": 1, "body": 1, "code": 0}
+    # doc lengths = title: 2, heading: 2, body: 4, code: 2
+    # avg lengths = title: 5/3, heading: 4/3, body: 19/3, code: 2/3
+    b_title = 1.0 - 0.3 + 0.3 * (2 / (5 / 3))  # 1.06
+    b_heading = 1.0 - 0.5 + 0.5 * (2 / (4 / 3))  # 1.25
+    b_body = 1.0 - 0.75 + 0.75 * (4 / (19 / 3))  # 0.25 + 3/19 ≈ 0.7236842
+
+    expected_pseudo_tf = (
+        4.0 * (1.0 / b_title) + 2.5 * (1.0 / b_heading) + 1.0 * (1.0 / b_body)
+    )
+
+    actual_pseudo_tf = scorer.compute_pseudo_tf("doc1", {"title": 1, "heading": 1, "body": 1, "code": 0})
+    assert abs(actual_pseudo_tf - expected_pseudo_tf) < 1e-5, (
+        f"Pseudo TF mismatch: {actual_pseudo_tf} vs {expected_pseudo_tf}"
+    )
+
+    # BM25F Term Score
+    expected_score = idx.idf("swarm") * (expected_pseudo_tf / (k1 + expected_pseudo_tf))
+    results = scorer.score_query(["swarm"], top_k=5)
+    assert len(results) == 1
+    assert results[0]["doc_id"] == "doc1"
+    assert abs(results[0]["score"] - expected_score) < 1e-5, (
+        f"BM25F score mismatch: {results[0]['score']} vs {expected_score}"
+    )
+
+    # Verify Hierarchical Conditioning
+    boosted_scorer = BM25FScorer(
+        idx,
+        k1=k1,
+        zone_weights=zone_weights,
+        zone_b=zone_b,
+        hierarchical_boost=0.25,
+    )
+    # Query mentions "Docker", which is the technology of doc1 and doc2
+    boosted_results = boosted_scorer.score_query(["swarm"], query_raw_text="Docker swarm", top_k=5)
+    expected_boosted_score = expected_score * 1.25
+    assert abs(boosted_results[0]["score"] - expected_boosted_score) < 1e-4, (
+        f"Hierarchical boost mismatch: {boosted_results[0]['score']} vs {expected_boosted_score}"
+    )
+
+    print("  [OK] BM25F zone pseudo-frequency, scoring, and hierarchical boost verified against hand calculation")
+
+
+def test_hierarchical_postings(idx: InvertedIndex):
+    """Verify hierarchical category, technology, and domain postings."""
+    idx.category_postings["Containers & Orchestration"] = ["doc1", "doc2", "doc3"]
+    idx.technology_postings["Docker"] = ["doc1", "doc2"]
+    idx.technology_postings["Kubernetes"] = ["doc3"]
+    idx.domain_postings["Infrastructure"] = ["doc1", "doc2", "doc3"]
+
+    assert idx.get_docs_in_category("Containers & Orchestration") == ["doc1", "doc2", "doc3"]
+    assert idx.get_docs_in_technology("Docker") == ["doc1", "doc2"]
+    assert idx.get_docs_in_technology("Kubernetes") == ["doc3"]
+    assert idx.get_docs_in_domain("Infrastructure") == ["doc1", "doc2", "doc3"]
+    assert idx.get_docs_in_category("NonExistent") == []
+
+    print("  [OK] Hierarchical category/technology/domain index queries verified")
+
+
 def main():
     print("=" * 60)
-    print("Phase 3 Classic IR Engine (BM25) Validation Tests")
+    print("Phase 3 Classic IR Engine (BM25 & Hierarchical BM25F) Validation Tests")
     print("=" * 60)
 
     tmp_dir = Path("outputs/test_phase3")
@@ -150,6 +227,8 @@ def main():
 
     idx = test_inverted_index_manual()
     test_bm25_hand_calculation(idx)
+    test_bm25f_hand_calculation(idx)
+    test_hierarchical_postings(idx)
     test_serialization(idx, tmp_dir)
 
     # Clean up test output

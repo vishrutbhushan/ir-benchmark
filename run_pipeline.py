@@ -132,6 +132,18 @@ def parse_args() -> argparse.Namespace:
         default=20,
         help="Number of top retrieved results per query (default: 20).",
     )
+    parser.add_argument(
+        "--scorer",
+        choices=["bm25", "bm25f", "both"],
+        default="both",
+        help="Retrieval engine to execute: bm25 (flat), bm25f (zone-weighted hierarchical), or both (default: both).",
+    )
+    parser.add_argument(
+        "--hierarchical-boost",
+        type=float,
+        default=0.25,
+        help="Taxonomy matching boost factor for BM25F (default: 0.25).",
+    )
     return parser.parse_args()
 
 
@@ -242,6 +254,8 @@ def main() -> None:
             k1=args.k1,
             b=args.b,
             top_k=args.top_k,
+            scorer_type=args.scorer,
+            hierarchical_boost=args.hierarchical_boost,
         )
 
     # Compile / update visual interactive dashboard

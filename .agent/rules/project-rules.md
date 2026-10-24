@@ -71,4 +71,9 @@ This document is the single source of truth for hard project constraints, archit
 * **STRICT RULE — NEVER PUSH CODE**: Never run `git push` or push code to any remote repository under any circumstances.
 * **Visualized Outputs**: All phase analytical outputs must be visualized with charts and graphs (e.g., category distributions, document length distributions, exclusion breakdowns, code block/date prevalence) saved hierarchically in `outputs/<phase>/charts/`, along with visual markdown figures and interactive dashboards.
 * **Phase 0 Deep Analytics & Equal Representation**: Phase 0 audit must employ balanced, stratified sampling ensuring equal representation across all 11 technical categories and 76 technologies. Analytical insights must comprehensively cover: language breakdown (multilingual distributions & source tech hosts), code vs no-code prevalence across categories, DOM complexity (headings, tables, lists), HTML boilerplate overhead ratio, and duplicate clustering dynamics. Every analytical dimension must be visualized with dedicated charts and integrated into the interactive dashboard.
+* **Hierarchical Indexing & Taxonomy**:
+  - The corpus is indexed with a 2-tier hierarchical taxonomy (`src/utils/taxonomy.py`) mapping all 76 technologies to specific Categories (aligned with `Category_Labels.txt`) and top-level Domains.
+  - Phase 3 Inverted Index maintains both macro-level hierarchical postings (`category_postings`, `technology_postings`, `domain_postings`) and micro-level zone postings (`title`, `heading`, `body`, `code`).
+  - Supports hand-coded BM25F zone pseudo-frequency ranking with configurable zone weights (`title=4.0`, `heading=2.5`, `code=2.0`, `body=1.0`) and hierarchical taxonomy query conditioning.
+
 

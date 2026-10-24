@@ -58,17 +58,20 @@ python run_pipeline.py --phase 2
 - **Outputs**: `outputs/phase2/tokenized_corpus.jsonl`, `outputs/phase2/tokenization_stats.json`, `outputs/phase2/tokenization_stats.md`, `outputs/phase2/charts/` (4 visual plots)
 - **Logs**: `logs/phase2/tokenization.log`
 
-### 4. Phase 3 — Classic IR Engine (Inverted Index & BM25 Scoring)
-Builds a hand-coded multi-zone positional inverted index and evaluates BM25 retrieval on the query suite:
+### 4. Phase 3 — Classic IR Engine (Hierarchical Indexing, BM25 & BM25F)
+Builds a hand-coded multi-zone inverted index with hierarchical taxonomy postings (Domain → Category → Technology) and evaluates Flat BM25 and Zone-Weighted Hierarchical BM25F on the query suite:
 
 ```bash
-# Run Phase 3 index construction and retrieval with default parameters (k1=1.2, b=0.75, top-k=20)
-python run_pipeline.py --phase 3
+# Run both Flat BM25 and Hierarchical BM25F side-by-side (default)
+python run_pipeline.py --phase 3 --scorer both
+
+# Run only Hierarchical BM25F with 25% taxonomy boost
+python run_pipeline.py --phase 3 --scorer bm25f --hierarchical-boost 0.25
 
 # Run with custom BM25 hyperparameters
 python run_pipeline.py --phase 3 --k1 1.5 --b 0.8 --top-k 30
 ```
-- **Outputs**: `outputs/phase3/inverted_index.json` (44.6 MB), `outputs/phase3/index_stats.json`, `outputs/phase3/bm25_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/` (4 visual plots)
+- **Outputs**: `outputs/phase3/inverted_index.json`, `outputs/phase3/document_catalog.json` (with hierarchical postings), `outputs/phase3/bm25_results.json`, `outputs/phase3/bm25f_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/` (4 visual plots including side-by-side comparison)
 - **Logs**: `logs/phase3/classic_ir.log`
 
 ### 5. Run All Phases & Interactive Dashboard

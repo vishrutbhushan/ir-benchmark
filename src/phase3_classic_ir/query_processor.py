@@ -59,7 +59,12 @@ class QueryProcessor:
         query_tokens = self.process_query(query_text)
         self.logger.info(f"Query: \"{query_text}\" -> tokens: {query_tokens}")
 
-        results = self.scorer.score_query(query_tokens, top_k=top_k)
+        import inspect
+        sig = inspect.signature(self.scorer.score_query)
+        if "query_raw_text" in sig.parameters:
+            results = self.scorer.score_query(query_tokens, query_raw_text=query_text, top_k=top_k)
+        else:
+            results = self.scorer.score_query(query_tokens, top_k=top_k)
 
         return {
             "query_text": query_text,

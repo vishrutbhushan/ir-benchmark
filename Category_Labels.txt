@@ -1,6 +1,13 @@
-Cloud
-AI/ML
-Prog Lang
-DB
-ML Ops
-Communication/msg passing
+1: Cloud
+2: AI/ML
+3: Prog Lang
+4: DB
+5: ML Ops
+6: Communication/msg passing
+7: Containers & Orchestration
+8: DevOps & CI/CD
+9: Web & Backend Frameworks
+10: Observability & Monitoring
+11: Distributed Big Data
+12: OS, Networking & Web Servers
+13: Security & Identity

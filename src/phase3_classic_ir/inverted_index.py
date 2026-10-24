@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 
+from src.utils.taxonomy import get_taxonomy_for_tech
+
 # Zone names used throughout the index
 ZONES = ("title", "heading", "body", "code")
 
@@ -37,8 +39,8 @@ class Posting(NamedTuple):
 
 class InvertedIndex:
     """
-    Hand-coded inverted index with per-zone term frequencies and positional
-    information.
+    Hand-coded inverted index with per-zone term frequencies, positional
+    information, and hierarchical category/technology postings.
 
     Attributes:
         postings: Mapping from term → list of Posting entries.
@@ -47,6 +49,9 @@ class InvertedIndex:
         total_docs: Total number of documents indexed.
         doc_metadata: Mapping from doc_id → metadata dict (category, technology, url, etc.).
         vocabulary: Set of all unique terms in the index.
+        category_postings: Mapping from category name → list of doc_ids.
+        technology_postings: Mapping from technology name → list of doc_ids.
+        domain_postings: Mapping from domain name → list of doc_ids.
     """
 
     def __init__(self) -> None:
@@ -62,6 +67,10 @@ class InvertedIndex:
         self.doc_metadata: dict[str, dict[str, Any]] = {}
         # Complete vocabulary
         self.vocabulary: set[str] = set()
+        # Hierarchical postings
+        self.category_postings: dict[str, list[str]] = defaultdict(list)
+        self.technology_postings: dict[str, list[str]] = defaultdict(list)
+        self.domain_postings: dict[str, list[str]] = defaultdict(list)
 
     def build_from_tokenized_corpus(
         self,
@@ -170,18 +179,32 @@ class InvertedIndex:
         )
 
     def _load_metadata(self, structured_path: Path) -> None:
-        """Load document metadata from structured records."""
+        """Load document metadata from structured records and populate hierarchical postings."""
         with structured_path.open("r", encoding="utf-8") as f:
             for line in f:
                 record = json.loads(line)
                 doc_id = record["doc_id"]
+                raw_tech = record.get("metadata", {}).get("technology", "")
+                raw_cat = record.get("metadata", {}).get("category", "")
+
+                # Resolve against 2-tier hierarchical taxonomy
+                tax = get_taxonomy_for_tech(raw_tech)
+                category = tax["category"] if tax["category"] != "Other" else (raw_cat or "Other")
+                domain = tax["domain"]
+
                 self.doc_metadata[doc_id] = {
                     "url": record.get("url", ""),
                     "title": record.get("title", ""),
-                    "technology": record.get("metadata", {}).get("technology", ""),
-                    "category": record.get("metadata", {}).get("category", ""),
+                    "technology": raw_tech,
+                    "category": category,
+                    "domain": domain,
                     "dates": record.get("dates", []),
                 }
+
+                # Build hierarchical postings
+                self.category_postings[category].append(doc_id)
+                self.technology_postings[raw_tech].append(doc_id)
+                self.domain_postings[domain].append(doc_id)
 
     def get_postings(self, term: str) -> list[Posting]:
         """Retrieve the postings list for a given term."""
@@ -216,6 +239,18 @@ class InvertedIndex:
     def get_avg_total_doc_length(self) -> float:
         """Get the average total document length across all zones."""
         return sum(self.avg_zone_lengths.values())
+
+    def get_docs_in_category(self, category: str) -> list[str]:
+        """Return list of doc_ids belonging to a specific category."""
+        return self.category_postings.get(category, [])
+
+    def get_docs_in_technology(self, technology: str) -> list[str]:
+        """Return list of doc_ids belonging to a specific technology."""
+        return self.technology_postings.get(technology, [])
+
+    def get_docs_in_domain(self, domain: str) -> list[str]:
+        """Return list of doc_ids belonging to a specific top-level domain."""
+        return self.domain_postings.get(domain, [])
 
     # ── Serialization ─────────────────────────────────────────────────────
 
@@ -255,6 +290,9 @@ class InvertedIndex:
             "avg_zone_lengths": self.avg_zone_lengths,
             "doc_zone_lengths": self.doc_zone_lengths,
             "doc_metadata": self.doc_metadata,
+            "category_postings": dict(self.category_postings),
+            "technology_postings": dict(self.technology_postings),
+            "domain_postings": dict(self.domain_postings),
         }
         with catalog_path.open("w", encoding="utf-8") as f:
             json.dump(catalog_data, f, ensure_ascii=False, indent=2)
@@ -285,7 +323,23 @@ class InvertedIndex:
                 idx.avg_zone_lengths = cat["avg_zone_lengths"]
                 idx.doc_zone_lengths = cat["doc_zone_lengths"]
                 idx.doc_metadata = cat["doc_metadata"]
+                if "category_postings" in cat:
+                    idx.category_postings = defaultdict(list, cat["category_postings"])
+                if "technology_postings" in cat:
+                    idx.technology_postings = defaultdict(list, cat["technology_postings"])
+                if "domain_postings" in cat:
+                    idx.domain_postings = defaultdict(list, cat["domain_postings"])
             postings_dict = raw_data
+
+        # Fallback rebuild of hierarchical postings if missing
+        if not idx.category_postings and idx.doc_metadata:
+            for did, m in idx.doc_metadata.items():
+                cat = m.get("category", "")
+                tech = m.get("technology", "")
+                dom = m.get("domain", "")
+                if cat: idx.category_postings[cat].append(did)
+                if tech: idx.technology_postings[tech].append(did)
+                if dom: idx.domain_postings[dom].append(did)
 
         idx.vocabulary = set()
         for term, val in postings_dict.items():
