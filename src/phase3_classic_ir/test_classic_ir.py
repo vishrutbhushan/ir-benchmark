@@ -270,6 +270,27 @@ def test_tiered_champion_indexing(idx: InvertedIndex):
     print("  [OK] Tiered champion lists, hierarchical-first routing, and multi-level retrieval verified")
 
 
+from src.phase3_classic_ir.multilevel_index import MultiLevelIndex
+
+
+def test_multilevel_index_class(idx: InvertedIndex):
+    """Verify dedicated MultiLevelIndex module methods."""
+    ml_index = MultiLevelIndex(idx)
+    assert len(ml_index.category_postings) > 0
+
+    # Test two-tier search (Document + Best Section)
+    res = ml_index.search_multilevel(["swarm"], query_raw_text="docker swarm", top_k_docs=2)
+    assert len(res) > 0
+    assert "best_section" in res[0]
+    assert res[0]["best_section"]["heading"] == "Swarm Setup"
+
+    # Test tiered search
+    tiered_res = ml_index.search_tiered(["docker"], top_k=2)
+    assert len(tiered_res["results"]) > 0
+
+    print("  [OK] Dedicated MultiLevelIndex class and two-tier search methods verified")
+
+
 def main():
     print("=" * 60)
     print("Phase 3 Classic IR Engine (BM25 & Hierarchical BM25F) Validation Tests")
@@ -284,6 +305,7 @@ def main():
     test_hierarchical_postings(idx)
     test_multilevel_section_retrieval(idx)
     test_tiered_champion_indexing(idx)
+    test_multilevel_index_class(idx)
     test_serialization(idx, tmp_dir)
 
     # Clean up test output
