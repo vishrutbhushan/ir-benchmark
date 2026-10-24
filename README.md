@@ -9,12 +9,15 @@ An Information Retrieval benchmark comparing a hand-coded **Classic IR engine** 
 Activate your virtual environment and install dependencies:
 
 ```bash
-# Using the existing virtual environment
+# Activate virtual environment (macOS / Linux)
+source .venv/bin/activate
+
+# Or on Windows
 .venv\Scripts\activate
 
 # Install required packages
 pip install -r requirements-technical-web-corpus.txt
-pip install trafilatura langdetect matplotlib pillow
+pip install trafilatura langdetect matplotlib pillow python-dateutil
 ```
 
 ---

@@ -63,7 +63,8 @@ def run_structured_extraction(
                 continue
 
             rel_html_path = manifest_record.get("html_path", "")
-            full_html_path = corpus_root / rel_html_path
+            normalized_rel_path = Path(str(rel_html_path).replace("\\", "/"))
+            full_html_path = corpus_root / normalized_rel_path
 
             if not full_html_path.exists():
                 missing_file_count += 1

@@ -81,7 +81,8 @@ def run_corpus_audit(
         rel_html_path = record["html_path"]
         tech = record.get("technology", "Unknown")
         cat = record.get("category", "Unknown")
-        full_html_path = corpus_root / rel_html_path
+        normalized_rel_path = Path(str(rel_html_path).replace("\\", "/"))
+        full_html_path = corpus_root / normalized_rel_path
 
         tech_stats[tech]["total"] += 1
         cat_code_stats[cat]["total"] += 1
