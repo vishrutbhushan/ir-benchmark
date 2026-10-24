@@ -145,10 +145,16 @@ def parse_args() -> argparse.Namespace:
         help="Taxonomy matching boost factor for BM25F (default: 0.25).",
     )
     parser.add_argument(
+        "--routing-mode",
+        choices=["hybrid", "hierarchical_first", "tiered"],
+        default="hybrid",
+        help="Hierarchical query routing mode: 'hybrid' (soft boost), 'hierarchical_first' (category sub-index routing), or 'tiered' (champion list candidate pruning).",
+    )
+    parser.add_argument(
         "--workers",
         type=int,
         default=8,
-        help="Number of parallel worker processes for Phase 1 extraction (default: 8).",
+        help="Number of parallel worker processes for Phase 1 extraction and Phase 2 tokenization (default: 8).",
     )
     return parser.parse_args()
 
@@ -264,6 +270,7 @@ def main() -> None:
             top_k=args.top_k,
             scorer_type=args.scorer,
             hierarchical_boost=args.hierarchical_boost,
+            routing_mode=args.routing_mode,
         )
 
     # Compile / update visual interactive dashboard

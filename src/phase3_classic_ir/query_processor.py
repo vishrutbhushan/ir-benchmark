@@ -26,12 +26,14 @@ class QueryProcessor:
     def __init__(
         self,
         index: InvertedIndex,
-        scorer: BM25Scorer,
+        scorer: Any,
         logger: logging.Logger | None = None,
+        routing_mode: str = "hybrid",
     ) -> None:
         self.index = index
         self.scorer = scorer
         self.logger = logger or logging.getLogger(__name__)
+        self.routing_mode = routing_mode
 
     def process_query(self, query_text: str) -> list[str]:
         """
@@ -61,10 +63,13 @@ class QueryProcessor:
 
         import inspect
         sig = inspect.signature(self.scorer.score_query)
+        kwargs: dict[str, Any] = {"top_k": top_k}
         if "query_raw_text" in sig.parameters:
-            results = self.scorer.score_query(query_tokens, query_raw_text=query_text, top_k=top_k)
-        else:
-            results = self.scorer.score_query(query_tokens, top_k=top_k)
+            kwargs["query_raw_text"] = query_text
+        if "routing_mode" in sig.parameters:
+            kwargs["routing_mode"] = self.routing_mode
+
+        results = self.scorer.score_query(query_tokens, **kwargs)
 
         return {
             "query_text": query_text,

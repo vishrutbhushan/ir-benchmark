@@ -40,10 +40,11 @@ def run_classic_ir(
     scorer_type: str = "both",
     zone_weights: dict[str, float] | None = None,
     hierarchical_boost: float = 0.25,
+    routing_mode: str = "hybrid",
 ) -> dict[str, Any]:
     """
-    Execute the full Phase 3 Classic IR pipeline supporting both Flat BM25
-    and Hierarchical Zone-Weighted BM25F.
+    Execute the full Phase 3 Classic IR pipeline supporting Flat BM25,
+    Hierarchical Zone-Weighted BM25F, and Multi-Level Section/Passage Retrieval.
 
     Args:
         tokenized_path: Path to outputs/phase2/tokenized_corpus.jsonl
@@ -57,11 +58,13 @@ def run_classic_ir(
         scorer_type: "bm25", "bm25f", or "both".
         zone_weights: Custom zone weights for BM25F.
         hierarchical_boost: Taxonomy matching bonus factor for BM25F.
+        routing_mode: "hybrid" (soft boost), "hierarchical_first" (category sub-index routing),
+                      or "tiered" (champion list candidate pruning).
 
     Returns:
         Summary statistics dict.
     """
-    logger.info(f"Starting Phase 3 Classic IR Engine [Scorer: {scorer_type}]...")
+    logger.info(f"Starting Phase 3 Classic IR Engine [Scorer: {scorer_type}, Routing: {routing_mode}]...")
     output_dir.mkdir(parents=True, exist_ok=True)
     charts_dir = output_dir / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -82,12 +85,16 @@ def run_classic_ir(
     index_stats["hierarchical_categories"] = len(index.category_postings)
     index_stats["hierarchical_technologies"] = len(index.technology_postings)
     index_stats["hierarchical_domains"] = len(index.domain_postings)
+    index_stats["total_sections_indexed"] = len(index.section_lengths)
+    index_stats["avg_section_length"] = round(index.avg_section_length, 1)
+    index_stats["champion_lists_count"] = len(index.champion_postings)
     write_json(index_stats, output_dir / "index_stats.json")
     logger.info(f"Index stats: {json.dumps(index_stats, indent=2)}")
 
     # ── Step 2: Run Scorers ───────────────────────────────────────────────
     bm25_results: list[dict[str, Any]] = []
     bm25f_results: list[dict[str, Any]] = []
+    multi_level_results: list[dict[str, Any]] = []
 
     if queries_path.exists():
         # 1. Flat BM25
@@ -103,7 +110,7 @@ def run_classic_ir(
         if scorer_type in ["bm25f", "both"]:
             active_weights = zone_weights or DEFAULT_ZONE_WEIGHTS
             logger.info(
-                f"Executing Hierarchical Zone-Weighted BM25F retrieval (weights={active_weights}, boost={hierarchical_boost})..."
+                f"Executing Hierarchical Zone-Weighted BM25F retrieval (weights={active_weights}, boost={hierarchical_boost}, routing={routing_mode})..."
             )
             bm25f_scorer = BM25FScorer(
                 index,
@@ -111,10 +118,35 @@ def run_classic_ir(
                 zone_weights=active_weights,
                 hierarchical_boost=hierarchical_boost,
             )
-            qp_bm25f = QueryProcessor(index, bm25f_scorer, logger)
+            qp_bm25f = QueryProcessor(index, bm25f_scorer, logger, routing_mode=routing_mode)
             bm25f_results = qp_bm25f.run_query_suite(queries_path, top_k=top_k)
             write_json(bm25f_results, output_dir / "bm25f_results.json")
             logger.info("Saved Hierarchical BM25F results to bm25f_results.json")
+
+            # 3. Multi-Level Document -> Section / Passage Retrieval Suite
+            logger.info("Executing Multi-Level Document & Section/Passage retrieval suite...")
+            with queries_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    qrec = json.loads(line)
+                    qid = qrec["query_id"]
+                    qtext = qrec["query_text"]
+                    qtokens = qp_bm25f.process_query(qtext)
+                    ml_res = bm25f_scorer.score_query_multi_level(
+                        query_terms=qtokens,
+                        query_raw_text=qtext,
+                        top_k_docs=top_k,
+                        top_k_sections=5,
+                        routing_mode=routing_mode,
+                    )
+                    multi_level_results.append({
+                        "query_id": qid,
+                        "query_text": qtext,
+                        "query_category": qrec.get("category", ""),
+                        "documents": ml_res["documents"],
+                        "sections": ml_res["sections"],
+                    })
+            write_json(multi_level_results, output_dir / "multi_level_results.json")
+            logger.info("Saved Multi-Level retrieval results to multi_level_results.json")
     else:
         logger.warning(f"Queries file not found at {queries_path}, skipping search.")
 

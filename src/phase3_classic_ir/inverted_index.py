@@ -72,6 +72,16 @@ class InvertedIndex:
         self.technology_postings: dict[str, list[str]] = defaultdict(list)
         self.domain_postings: dict[str, list[str]] = defaultdict(list)
 
+        # Multi-level Tiered / Champion lists (Tier 1 = high importance, Tier 2 = remaining)
+        self.champion_postings: dict[str, list[Posting]] = defaultdict(list)
+        self.tier2_postings: dict[str, list[Posting]] = defaultdict(list)
+
+        # Multi-level document -> section / passage hierarchy
+        self.doc_sections: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        self.section_postings: dict[str, list[tuple[str, int]]] = defaultdict(list)
+        self.section_lengths: dict[str, int] = {}
+        self.avg_section_length: float = 0.0
+
     def build_from_tokenized_corpus(
         self,
         tokenized_path: Path,
@@ -136,6 +146,21 @@ class InvertedIndex:
 
                 self.doc_zone_lengths[doc_id] = zone_lengths
 
+                # Step 2b: Multi-level section postings
+                for sec in record.get("sections", []):
+                    sec_id = sec.get("sec_id", "")
+                    sec_toks = sec.get("tokens", [])
+                    if not sec_id or not sec_toks:
+                        continue
+                    self.section_lengths[sec_id] = len(sec_toks)
+                    sec_tf: dict[str, int] = defaultdict(int)
+                    for st in sec_toks:
+                        st = st.replace("\ufffd", "").strip()
+                        if st and len(st) <= 64:
+                            sec_tf[st] += 1
+                    for st, scnt in sec_tf.items():
+                        self.section_postings[st].append((sec_id, scnt))
+
                 if doc_count % 100 == 0:
                     elapsed = time.time() - start_time
                     logger.info(
@@ -149,6 +174,9 @@ class InvertedIndex:
         for zone in ZONES:
             lengths = zone_length_accum[zone]
             self.avg_zone_lengths[zone] = sum(lengths) / len(lengths) if lengths else 0.0
+
+        if self.section_lengths:
+            self.avg_section_length = sum(self.section_lengths.values()) / len(self.section_lengths)
 
         # Step 4: Convert temp_postings to final Posting objects
         logger.info("Finalizing postings lists...")
@@ -166,12 +194,17 @@ class InvertedIndex:
             posting_list.sort(key=lambda p: p.doc_id)
             self.postings[term] = posting_list
 
+        # Step 5: Build Tiered Champion Lists
+        logger.info("Building Tier-1 Champion lists for multi-level candidate pruning...")
+        self.build_champion_lists(top_r=50)
+
         total_time = time.time() - start_time
         logger.info(
             f"Inverted index built in {total_time:.1f}s. "
             f"Documents: {self.total_docs}, "
             f"Vocabulary: {len(self.vocabulary):,} terms, "
-            f"Total postings entries: {sum(len(pl) for pl in self.postings.values()):,}"
+            f"Total postings entries: {sum(len(pl) for pl in self.postings.values()):,}, "
+            f"Sections indexed: {len(self.section_lengths):,}"
         )
         logger.info(
             f"Avg zone lengths: "
@@ -200,6 +233,20 @@ class InvertedIndex:
                     "domain": domain,
                     "dates": record.get("dates", []),
                 }
+
+                # Populate section catalog for multi-level snippet & passage retrieval
+                sections = record.get("sections", [])
+                if sections:
+                    self.doc_sections[doc_id] = [
+                        {
+                            "sec_id": f"{doc_id}#sec_{idx}",
+                            "heading": s.get("heading", ""),
+                            "level": s.get("level", 2),
+                            "snippet": (s.get("content", "") or "")[:240],
+                        }
+                        for idx, s in enumerate(sections)
+                        if isinstance(s, dict)
+                    ]
 
                 # Build hierarchical postings
                 self.category_postings[category].append(doc_id)
@@ -252,12 +299,121 @@ class InvertedIndex:
         """Return list of doc_ids belonging to a specific top-level domain."""
         return self.domain_postings.get(domain, [])
 
+    # ── Multi-Level Tiered & Section Retrieval Methods ──────────────────────
+
+    def build_champion_lists(self, top_r: int = 50) -> None:
+        """
+        Constructs Tier-1 (Champion Lists) and Tier-2 postings for every term.
+        Tier-1 contains postings where the term appears in high-value zones (title/heading)
+        or has the highest total term frequency (top r).
+        Tier-2 contains remaining postings.
+        """
+        self.champion_postings.clear()
+        self.tier2_postings.clear()
+
+        for term, plist in self.postings.items():
+            high_value: list[Posting] = []
+            standard: list[Posting] = []
+
+            for p in plist:
+                has_prominent_zone = (p.zone_tfs.get("title", 0) > 0) or (p.zone_tfs.get("heading", 0) > 0)
+                if has_prominent_zone:
+                    high_value.append(p)
+                else:
+                    standard.append(p)
+
+            # Sort standard by total frequency descending
+            standard.sort(key=lambda p: -sum(p.zone_tfs.values()))
+
+            # Combine high_value + top standard up to top_r
+            champ = high_value + standard[:max(0, top_r - len(high_value))]
+            champ_set = {p.doc_id for p in champ}
+            tier2 = [p for p in plist if p.doc_id not in champ_set]
+
+            self.champion_postings[term] = champ
+            self.tier2_postings[term] = tier2
+
+    def get_champion_postings(self, term: str) -> list[Posting]:
+        """Return Tier-1 Champion postings for a term."""
+        if not self.champion_postings and self.postings:
+            self.build_champion_lists()
+        return self.champion_postings.get(term, [])
+
+    def get_tier2_postings(self, term: str) -> list[Posting]:
+        """Return Tier-2 postings for a term."""
+        if not self.tier2_postings and self.postings:
+            self.build_champion_lists()
+        return self.tier2_postings.get(term, [])
+
+    def score_sections(
+        self,
+        query_terms: list[str],
+        top_k: int = 10,
+        doc_id_filter: set[str] | list[str] | None = None,
+        k1: float = 1.2,
+        b: float = 0.75,
+    ) -> list[dict[str, Any]]:
+        """
+        Multi-level section/passage retrieval: scores individual sections
+        using BM25, optionally constrained to specific top retrieved documents.
+        """
+        if isinstance(doc_id_filter, list):
+            doc_id_filter = set(doc_id_filter)
+
+        sec_scores: dict[str, float] = defaultdict(float)
+        avg_len = self.avg_section_length if self.avg_section_length > 0 else 50.0
+
+        for term in query_terms:
+            idf = self.idf(term)
+            if idf <= 0.0:
+                continue
+
+            for sec_id, tf in self.section_postings.get(term, []):
+                doc_id = sec_id.split("#")[0]
+                if doc_id_filter is not None and doc_id not in doc_id_filter:
+                    continue
+
+                sec_len = self.section_lengths.get(sec_id, int(avg_len))
+                len_norm = 1.0 - b + b * (sec_len / avg_len) if avg_len > 0 else 1.0
+                term_score = idf * (tf * (k1 + 1.0)) / (tf + k1 * len_norm)
+                sec_scores[sec_id] += term_score
+
+        if not sec_scores:
+            return []
+
+        ranked = sorted(sec_scores.items(), key=lambda x: -x[1])[:top_k]
+
+        results = []
+        for rank, (sec_id, score) in enumerate(ranked, start=1):
+            doc_id = sec_id.split("#")[0]
+            doc_meta = self.doc_metadata.get(doc_id, {})
+            sec_meta = {}
+            for s in self.doc_sections.get(doc_id, []):
+                if s.get("sec_id") == sec_id:
+                    sec_meta = s
+                    break
+
+            results.append({
+                "rank": rank,
+                "section_id": sec_id,
+                "doc_id": doc_id,
+                "score": round(score, 6),
+                "heading": sec_meta.get("heading", ""),
+                "snippet": sec_meta.get("snippet", ""),
+                "document_title": doc_meta.get("title", ""),
+                "url": doc_meta.get("url", ""),
+                "technology": doc_meta.get("technology", ""),
+                "category": doc_meta.get("category", ""),
+            })
+
+        return results
+
     # ── Serialization ─────────────────────────────────────────────────────
 
     def save(self, path: Path) -> None:
         """
         Serialize the inverted index to disk as a pure inverted index.
-        Also saves document catalog (lengths, averages, metadata) to document_catalog.json.
+        Also saves document catalog (lengths, averages, metadata, sections) to document_catalog.json.
         """
         path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -282,7 +438,7 @@ class InvertedIndex:
         with path.open("w", encoding="utf-8") as f:
             json.dump(index_data, f, ensure_ascii=False)
 
-        # 2. Document Catalog (lengths, averages, metadata)
+        # 2. Document Catalog (lengths, averages, metadata, multi-level hierarchy)
         catalog_path = path.parent / "document_catalog.json"
         catalog_data = {
             "total_docs": self.total_docs,
@@ -293,6 +449,8 @@ class InvertedIndex:
             "category_postings": dict(self.category_postings),
             "technology_postings": dict(self.technology_postings),
             "domain_postings": dict(self.domain_postings),
+            "doc_sections": dict(self.doc_sections),
+            "avg_section_length": self.avg_section_length,
         }
         with catalog_path.open("w", encoding="utf-8") as f:
             json.dump(catalog_data, f, ensure_ascii=False, indent=2)
@@ -329,6 +487,10 @@ class InvertedIndex:
                     idx.technology_postings = defaultdict(list, cat["technology_postings"])
                 if "domain_postings" in cat:
                     idx.domain_postings = defaultdict(list, cat["domain_postings"])
+                if "doc_sections" in cat:
+                    idx.doc_sections = defaultdict(list, cat["doc_sections"])
+                if "avg_section_length" in cat:
+                    idx.avg_section_length = cat["avg_section_length"]
             postings_dict = raw_data
 
         # Fallback rebuild of hierarchical postings if missing

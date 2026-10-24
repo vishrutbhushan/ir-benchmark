@@ -217,6 +217,59 @@ def test_hierarchical_postings(idx: InvertedIndex):
     print("  [OK] Hierarchical category/technology/domain index queries verified")
 
 
+def test_multilevel_section_retrieval(idx: InvertedIndex):
+    """Verify document -> section multi-level passage retrieval."""
+    idx.doc_sections["doc1"] = [
+        {"sec_id": "doc1#sec_0", "heading": "Swarm Setup", "level": 2, "snippet": "Run docker swarm init to create a cluster manager."},
+        {"sec_id": "doc1#sec_1", "heading": "Networking in Swarm", "level": 2, "snippet": "Overlay networks connect containers across nodes."},
+    ]
+    idx.section_postings["swarm"] = [("doc1#sec_0", 2), ("doc1#sec_1", 1)]
+    idx.section_postings["network"] = [("doc1#sec_1", 2)]
+    idx.section_lengths["doc1#sec_0"] = 10
+    idx.section_lengths["doc1#sec_1"] = 10
+    idx.avg_section_length = 10.0
+
+    # Query for 'swarm' section retrieval
+    sec_results = idx.score_sections(["swarm"], top_k=5)
+    assert len(sec_results) == 2
+    assert sec_results[0]["section_id"] == "doc1#sec_0"
+    assert sec_results[0]["heading"] == "Swarm Setup"
+    assert sec_results[0]["score"] > sec_results[1]["score"]
+
+    # Filter to specific document
+    filtered_results = idx.score_sections(["network"], top_k=5, doc_id_filter={"doc1"})
+    assert len(filtered_results) == 1
+    assert filtered_results[0]["section_id"] == "doc1#sec_1"
+
+    print("  [OK] Multi-level document -> section/passage retrieval verified")
+
+
+def test_tiered_champion_indexing(idx: InvertedIndex):
+    """Verify Tier-1 champion lists and tiered query candidate pruning."""
+    idx.build_champion_lists(top_r=1)
+    champ = idx.get_champion_postings("docker")
+    tier2 = idx.get_tier2_postings("docker")
+
+    assert len(champ) > 0
+    assert len(champ) + len(tier2) == len(idx.get_postings("docker"))
+
+    scorer = BM25FScorer(idx, k1=1.2)
+    # Test tiered pruning mode
+    results_tiered = scorer.score_query(["docker"], routing_mode="tiered", tier1_threshold=1)
+    assert len(results_tiered) > 0
+
+    # Test hierarchical-first routing mode
+    results_hier = scorer.score_query(["docker"], query_raw_text="docker swarm", routing_mode="hierarchical_first")
+    assert len(results_hier) > 0
+
+    # Test simultaneous multi-level retrieval
+    multi_res = scorer.score_query_multi_level(["docker", "swarm"], query_raw_text="docker swarm")
+    assert "documents" in multi_res
+    assert "sections" in multi_res
+
+    print("  [OK] Tiered champion lists, hierarchical-first routing, and multi-level retrieval verified")
+
+
 def main():
     print("=" * 60)
     print("Phase 3 Classic IR Engine (BM25 & Hierarchical BM25F) Validation Tests")
@@ -229,6 +282,8 @@ def main():
     test_bm25_hand_calculation(idx)
     test_bm25f_hand_calculation(idx)
     test_hierarchical_postings(idx)
+    test_multilevel_section_retrieval(idx)
+    test_tiered_champion_indexing(idx)
     test_serialization(idx, tmp_dir)
 
     # Clean up test output

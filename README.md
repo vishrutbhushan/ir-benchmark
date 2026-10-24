@@ -58,20 +58,23 @@ python run_pipeline.py --phase 2
 - **Outputs**: `outputs/phase2/tokenized_corpus.jsonl`, `outputs/phase2/tokenization_stats.json`, `outputs/phase2/tokenization_stats.md`, `outputs/phase2/charts/` (4 visual plots)
 - **Logs**: `logs/phase2/tokenization.log`
 
-### 4. Phase 3 — Classic IR Engine (Hierarchical Indexing, BM25 & BM25F)
-Builds a hand-coded multi-zone inverted index with hierarchical taxonomy postings (Domain → Category → Technology) and evaluates Flat BM25 and Zone-Weighted Hierarchical BM25F on the query suite:
+### 4. Phase 3 — Classic IR Engine (Multi-Level Indexing, BM25 & BM25F)
+Builds a hand-coded multi-zone inverted index with hierarchical taxonomy postings (Domain → Category → Technology), fine-grained structural sections/passages (`doc_id#sec_i`), and Tier-1 Champion lists for fast candidate pruning:
 
 ```bash
 # Run both Flat BM25 and Hierarchical BM25F side-by-side (default)
 python run_pipeline.py --phase 3 --scorer both
 
-# Run only Hierarchical BM25F with 25% taxonomy boost
-python run_pipeline.py --phase 3 --scorer bm25f --hierarchical-boost 0.25
+# Run with Category-First Hierarchical Routing
+python run_pipeline.py --phase 3 --scorer bm25f --routing-mode hierarchical_first
+
+# Run with Tier-1 Champion List candidate pruning
+python run_pipeline.py --phase 3 --scorer bm25f --routing-mode tiered
 
 # Run with custom BM25 hyperparameters
 python run_pipeline.py --phase 3 --k1 1.5 --b 0.8 --top-k 30
 ```
-- **Outputs**: `outputs/phase3/inverted_index.json`, `outputs/phase3/document_catalog.json` (with hierarchical postings), `outputs/phase3/bm25_results.json`, `outputs/phase3/bm25f_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/` (4 visual plots including side-by-side comparison)
+- **Outputs**: `outputs/phase3/inverted_index.json`, `outputs/phase3/document_catalog.json` (with multi-level sections and postings), `outputs/phase3/multi_level_results.json` (document + section-level rankings), `outputs/phase3/bm25_results.json`, `outputs/phase3/bm25f_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/`
 - **Logs**: `logs/phase3/classic_ir.log`
 
 ### 5. Run All Phases & Interactive Dashboard

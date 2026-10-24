@@ -115,27 +115,48 @@ class BM25FScorer:
         query_raw_text: str = "",
         top_k: int = 20,
         category_filter: str | None = None,
+        routing_mode: str = "hybrid",
+        use_tiered: bool = False,
+        tier1_threshold: int = 20,
     ) -> list[dict[str, Any]]:
         """
-        Scores all candidate documents against query terms using the BM25F ranking formula
-        and hierarchical taxonomy boosting.
+        Scores candidate documents against query terms using the BM25F ranking formula,
+        supporting multi-level category routing, tiered champion list pruning, and zone weights.
 
         Args:
             query_terms: Tokenized and stemmed query terms.
             query_raw_text: Original raw query string (used for hierarchical taxonomy inference).
             top_k: Number of top results to return.
             category_filter: Optional hard restriction to a specific category.
+            routing_mode: "hybrid" (soft boost), "hierarchical_first" (category-first sub-index search),
+                          or "tiered" (champion list pruning).
+            use_tiered: If True, uses Tier-1 champion lists first to prune candidate space.
+            tier1_threshold: Minimum candidates needed to avoid evaluating Tier-2 postings.
 
         Returns:
             Ranked list of top-k retrieved documents with scores and metadata.
         """
-        # Map of doc_id -> accumulated BM25F score
-        scores: dict[str, float] = defaultdict(float)
-
         # Pre-infer taxonomy if query text is provided
         query_tax = infer_query_taxonomy(query_raw_text) if query_raw_text else {}
         target_techs = set(query_tax.get("matched_technologies", []))
         target_cats = set(query_tax.get("matched_categories", []))
+
+        # Hierarchical-First Routing: if enabled, attempt category sub-index search first
+        if routing_mode == "hierarchical_first" and not category_filter and target_cats:
+            primary_cat = list(target_cats)[0]
+            cat_results = self.score_query(
+                query_terms=query_terms,
+                query_raw_text=query_raw_text,
+                top_k=top_k,
+                category_filter=primary_cat,
+                routing_mode="hybrid",
+            )
+            # If category search found enough candidates, return them immediately
+            if len(cat_results) >= min(top_k, 5):
+                return cat_results
+            # Otherwise fall through to global search for recall safety
+
+        scores: dict[str, float] = defaultdict(float)
 
         # Restrict candidate pool if category_filter is specified
         allowed_docs: set[str] | None = None
@@ -144,23 +165,38 @@ class BM25FScorer:
             if not allowed_docs:
                 return []
 
-        for term in query_terms:
-            idf = self.index.idf(term)
-            if idf <= 0.0:
-                continue
+        # Determine if tiered champion pruning is active
+        run_tiered = use_tiered or (routing_mode == "tiered")
 
-            for posting in self.index.get_postings(term):
-                doc_id = posting.doc_id
-                if allowed_docs is not None and doc_id not in allowed_docs:
+        def _evaluate_postings(posting_getter) -> int:
+            matched_candidates: set[str] = set()
+            for term in query_terms:
+                idf = self.index.idf(term)
+                if idf <= 0.0:
                     continue
 
-                pseudo_tf = self.compute_pseudo_tf(doc_id, posting.zone_tfs)
-                if pseudo_tf <= 0.0:
-                    continue
+                for posting in posting_getter(term):
+                    doc_id = posting.doc_id
+                    if allowed_docs is not None and doc_id not in allowed_docs:
+                        continue
 
-                # BM25F term score contribution
-                term_score = idf * (pseudo_tf / (self.k1 + pseudo_tf))
-                scores[doc_id] += term_score
+                    pseudo_tf = self.compute_pseudo_tf(doc_id, posting.zone_tfs)
+                    if pseudo_tf <= 0.0:
+                        continue
+
+                    term_score = idf * (pseudo_tf / (self.k1 + pseudo_tf))
+                    scores[doc_id] += term_score
+                    matched_candidates.add(doc_id)
+            return len(matched_candidates)
+
+        if run_tiered:
+            # Pass 1: Evaluate Tier-1 Champion lists
+            num_tier1 = _evaluate_postings(self.index.get_champion_postings)
+            # Pass 2: If Tier-1 produced fewer than tier1_threshold candidates, include Tier-2
+            if num_tier1 < tier1_threshold:
+                _evaluate_postings(self.index.get_tier2_postings)
+        else:
+            _evaluate_postings(self.index.get_postings)
 
         if not scores:
             return []
@@ -202,3 +238,33 @@ class BM25FScorer:
             })
 
         return results
+
+    def score_query_multi_level(
+        self,
+        query_terms: list[str],
+        query_raw_text: str = "",
+        top_k_docs: int = 10,
+        top_k_sections: int = 5,
+        routing_mode: str = "hybrid",
+    ) -> dict[str, Any]:
+        """
+        Simultaneously performs multi-level document and passage/section retrieval.
+        Returns both top-ranked documents and their most relevant matching sections.
+        """
+        docs = self.score_query(
+            query_terms=query_terms,
+            query_raw_text=query_raw_text,
+            top_k=top_k_docs,
+            routing_mode=routing_mode,
+        )
+        top_doc_ids = {d["doc_id"] for d in docs}
+        sections = self.index.score_sections(
+            query_terms=query_terms,
+            top_k=top_k_sections,
+            doc_id_filter=top_doc_ids,
+        )
+        return {
+            "documents": docs,
+            "sections": sections,
+        }
+
