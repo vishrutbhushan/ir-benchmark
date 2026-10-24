@@ -1,0 +1,276 @@
+{
+  "phase": "Phase 3 - Classic IR (BM25)",
+  "parameters": {
+    "k1": 1.2,
+    "b": 0.75,
+    "top_k": 20
+  },
+  "index_statistics": {
+    "total_documents": 484,
+    "vocabulary_size": 60310,
+    "total_postings_entries": 182887,
+    "total_position_entries": 1577586,
+    "avg_postings_per_term": 3.03,
+    "avg_zone_lengths": {
+      "title": 6.2,
+      "heading": 50.0,
+      "body": 1802.8,
+      "code": 1400.4
+    }
+  },
+  "index_size_mb": 44.61,
+  "queries_executed": 25,
+  "query_summary": [
+    {
+      "query_id": "Q01",
+      "query_category": "Negation",
+      "query_text": "Asynchronous Python web frameworks that do NOT use asyncio or standard event loops",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 26.308527,
+      "top_doc_title": "asgiref.sync | Django documentation | Django",
+      "top_doc_technology": "Django"
+    },
+    {
+      "query_id": "Q02",
+      "query_category": "Negation",
+      "query_text": "Kubernetes ingress controllers that support SSL passthrough without requiring NGINX",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 18.883036,
+      "top_doc_title": "Configuring HTTPS servers",
+      "top_doc_technology": "Nginx"
+    },
+    {
+      "query_id": "Q03",
+      "query_category": "Negation",
+      "query_text": "Java database connection pooling libraries that do NOT rely on HikariCP",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 16.71812,
+      "top_doc_title": "Managing connections - The Go Programming Language",
+      "top_doc_technology": "Go"
+    },
+    {
+      "query_id": "Q04",
+      "query_category": "Homonyms",
+      "query_text": "Python memory management reference counting vs garbage collection internals",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 25.877922,
+      "top_doc_title": "RegionServer",
+      "top_doc_technology": "HBase"
+    },
+    {
+      "query_id": "Q05",
+      "query_category": "Homonyms",
+      "query_text": "Java thread synchronization primitives and monitors",
+      "num_tokens": 5,
+      "num_results": 20,
+      "top_score": 13.127987,
+      "top_doc_title": "TimelineEntity (Apache Hadoop Main 2.10.2 API)",
+      "top_doc_technology": "Hadoop"
+    },
+    {
+      "query_id": "Q06",
+      "query_category": "Homonyms",
+      "query_text": "Docker container networking bridge mode configuration",
+      "num_tokens": 6,
+      "num_results": 20,
+      "top_score": 16.140826,
+      "top_doc_title": "Running Kubernetes Node Components as a Non-root User | Kubernetes",
+      "top_doc_technology": "Kubernetes"
+    },
+    {
+      "query_id": "Q07",
+      "query_category": "Homonyms",
+      "query_text": "PostgreSQL connection pooling versus session pooling behavior",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 23.538057,
+      "top_doc_title": "PostgreSQL: Documentation: 9.4: dblink_get_result",
+      "top_doc_technology": "PostgreSQL"
+    },
+    {
+      "query_id": "Q08",
+      "query_category": "Temporal",
+      "query_text": "React state management patterns introduced strictly after the release of React 18",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 21.73512,
+      "top_doc_title": "set-state-in-effect – React",
+      "top_doc_technology": "React"
+    },
+    {
+      "query_id": "Q09",
+      "query_category": "Temporal",
+      "query_text": "Kubernetes security feature deprecations between version 1.20 and version 1.25",
+      "num_tokens": 8,
+      "num_results": 20,
+      "top_score": 18.866606,
+      "top_doc_title": "Kubelet Device Manager API Versions | Kubernetes",
+      "top_doc_technology": "Kubernetes"
+    },
+    {
+      "query_id": "Q10",
+      "query_category": "Temporal",
+      "query_text": "Java module system additions and breaking changes in JDK 21",
+      "num_tokens": 8,
+      "num_results": 20,
+      "top_score": 20.201743,
+      "top_doc_title": "What's new in Kotlin 1.8.0 | Kotlin Documentation",
+      "top_doc_technology": "Kotlin"
+    },
+    {
+      "query_id": "Q11",
+      "query_category": "Temporal",
+      "query_text": "FastAPI dependency injection updates in version 0.100 and newer",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 20.292475,
+      "top_doc_title": "OAuth2-Scopes - FastAPI",
+      "top_doc_technology": "FastAPI"
+    },
+    {
+      "query_id": "Q12",
+      "query_category": "Exact_Terminology",
+      "query_text": "Handling ERR_CONNECTION_RESET exceptions in Node.js HTTP/2 streams",
+      "num_tokens": 12,
+      "num_results": 20,
+      "top_score": 37.221882,
+      "top_doc_title": "Command-line API | Node.js v26.8.1 Documentation",
+      "top_doc_technology": "Node.js"
+    },
+    {
+      "query_id": "Q13",
+      "query_category": "Exact_Terminology",
+      "query_text": "PostgreSQL JSONB containment operator @> performance tuning",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 22.501963,
+      "top_doc_title": "PostgreSQL: Documentation: 9.6: Database Page Layout",
+      "top_doc_technology": "PostgreSQL"
+    },
+    {
+      "query_id": "Q14",
+      "query_category": "Exact_Terminology",
+      "query_text": "Docker multi-stage build caching syntax using --mount=type=cache",
+      "num_tokens": 12,
+      "num_results": 20,
+      "top_score": 39.437854,
+      "top_doc_title": "Use Compose Watch | Docker Docs",
+      "top_doc_technology": "Docker"
+    },
+    {
+      "query_id": "Q15",
+      "query_category": "Exact_Terminology",
+      "query_text": "Configuring PyTorch distributed data parallel find_unused_parameters=True",
+      "num_tokens": 12,
+      "num_results": 20,
+      "top_score": 35.47403,
+      "top_doc_title": "Getting Started | Kubeflow",
+      "top_doc_technology": "Kubeflow"
+    },
+    {
+      "query_id": "Q16",
+      "query_category": "Multi_Constraint",
+      "query_text": "How to configure zero-downtime rolling updates in AWS ECS using custom health check grace periods for Docker containers",
+      "num_tokens": 16,
+      "num_results": 20,
+      "top_score": 34.791768,
+      "top_doc_title": "RegionServer",
+      "top_doc_technology": "HBase"
+    },
+    {
+      "query_id": "Q17",
+      "query_category": "Multi_Constraint",
+      "query_text": "FastAPI background tasks integration with Redis cache invalidation inside Kubernetes pods",
+      "num_tokens": 12,
+      "num_results": 20,
+      "top_score": 25.480026,
+      "top_doc_title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+      "top_doc_technology": "Redis"
+    },
+    {
+      "query_id": "Q18",
+      "query_category": "Multi_Constraint",
+      "query_text": "Spring Boot actuator endpoint security configuration using Spring Security custom filters",
+      "num_tokens": 11,
+      "num_results": 20,
+      "top_score": 28.931473,
+      "top_doc_title": "Testing AWS service integrations using LocalStack | Docker Docs",
+      "top_doc_technology": "Docker"
+    },
+    {
+      "query_id": "Q19",
+      "query_category": "Multi_Constraint",
+      "query_text": "Terraform AWS provider state locking configuration using DynamoDB and S3 backend",
+      "num_tokens": 12,
+      "num_results": 20,
+      "top_score": 49.153602,
+      "top_doc_title": "AWS - Apache Iceberg™",
+      "top_doc_technology": "Apache Iceberg"
+    },
+    {
+      "query_id": "Q20",
+      "query_category": "Multi_Constraint",
+      "query_text": "Prometheus scraping metrics from secure gRPC endpoints using TLS client certificates in Kubernetes",
+      "num_tokens": 13,
+      "num_results": 20,
+      "top_score": 51.410994,
+      "top_doc_title": "Proxy Metrics | Linkerd",
+      "top_doc_technology": "Linkerd"
+    },
+    {
+      "query_id": "Q21",
+      "query_category": "Error_Troubleshooting",
+      "query_text": "Resolving org.apache.kafka.common.errors.RetriableException during consumer rebalance",
+      "num_tokens": 10,
+      "num_results": 20,
+      "top_score": 21.681936,
+      "top_doc_title": "Managed I/O Connectors",
+      "top_doc_technology": "Apache Beam"
+    },
+    {
+      "query_id": "Q22",
+      "query_category": "Error_Troubleshooting",
+      "query_text": "Fixing Docker buildkit out of memory error during npm install layer caching",
+      "num_tokens": 9,
+      "num_results": 20,
+      "top_score": 31.102017,
+      "top_doc_title": "Use Compose Watch | Docker Docs",
+      "top_doc_technology": "Docker"
+    },
+    {
+      "query_id": "Q23",
+      "query_category": "Configuration_Schema",
+      "query_text": "Kubernetes deployment resource limits CPU and memory specification syntax",
+      "num_tokens": 8,
+      "num_results": 20,
+      "top_score": 19.216664,
+      "top_doc_title": "Command-line API | Node.js v26.8.1 Documentation",
+      "top_doc_technology": "Node.js"
+    },
+    {
+      "query_id": "Q24",
+      "query_category": "Configuration_Schema",
+      "query_text": "Terraform AWS security group ingress block CIDR block rules configuration",
+      "num_tokens": 10,
+      "num_results": 20,
+      "top_score": 34.465772,
+      "top_doc_title": "Deploy a Pulsar cluster on AWS using Terraform and Ansible | Apache Pulsar",
+      "top_doc_technology": "Pulsar"
+    },
+    {
+      "query_id": "Q25",
+      "query_category": "Conceptual_Procedural",
+      "query_text": "Architecture difference between Apache Kafka pub-sub topics and Apache Pulsar message streaming storage",
+      "num_tokens": 13,
+      "num_results": 20,
+      "top_score": 37.521017,
+      "top_doc_title": "Semantic conventions for AWS SQS | OpenTelemetry",
+      "top_doc_technology": "OpenTelemetry"
+    }
+  ],
+  "elapsed_seconds": 8.5
+}

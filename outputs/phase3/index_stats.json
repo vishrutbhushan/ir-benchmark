@@ -1,0 +1,13 @@
+{
+  "total_documents": 484,
+  "vocabulary_size": 60310,
+  "total_postings_entries": 182887,
+  "total_position_entries": 1577586,
+  "avg_postings_per_term": 3.03,
+  "avg_zone_lengths": {
+    "title": 6.2,
+    "heading": 50.0,
+    "body": 1802.8,
+    "code": 1400.4
+  }
+}

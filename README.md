@@ -55,13 +55,26 @@ python run_pipeline.py --phase 2
 - **Outputs**: `outputs/phase2/tokenized_corpus.jsonl`, `outputs/phase2/tokenization_stats.json`, `outputs/phase2/tokenization_stats.md`, `outputs/phase2/charts/` (4 visual plots)
 - **Logs**: `logs/phase2/tokenization.log`
 
-### 4. Run All Phases & Interactive Dashboard
+### 4. Phase 3 — Classic IR Engine (Inverted Index & BM25 Scoring)
+Builds a hand-coded multi-zone positional inverted index and evaluates BM25 retrieval on the query suite:
+
+```bash
+# Run Phase 3 index construction and retrieval with default parameters (k1=1.2, b=0.75, top-k=20)
+python run_pipeline.py --phase 3
+
+# Run with custom BM25 hyperparameters
+python run_pipeline.py --phase 3 --k1 1.5 --b 0.8 --top-k 30
+```
+- **Outputs**: `outputs/phase3/inverted_index.json` (44.6 MB), `outputs/phase3/index_stats.json`, `outputs/phase3/bm25_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/` (4 visual plots)
+- **Logs**: `logs/phase3/classic_ir.log`
+
+### 5. Run All Phases & Interactive Dashboard
 Execute the end-to-end pipeline in sequence:
 
 ```bash
 python run_pipeline.py --phase all
 ```
-- **Visual Dashboard**: Open `outputs/dashboard.html` in any browser for an interactive, graphical overview of corpus health, extraction, and tokenization metrics.
+- **Visual Dashboard**: Open `outputs/dashboard.html` in any browser for an interactive, graphical overview of corpus health, extraction, tokenization, and BM25 retrieval metrics.
 
 ---
 
@@ -74,12 +87,14 @@ ir-benchmark/
 │   ├── phase0_audit/          # Corpus sampling, validation, and near-duplicate detection
 │   ├── phase1_extraction/     # HTML parsing, boilerplate removal, and statistics
 │   ├── phase2_tokenization/   # Tokenizer, Porter stemmer, normalizer, and tests
+│   ├── phase3_classic_ir/     # Inverted index, BM25 scorer, query processor, and tests
 │   └── utils/                 # Logging, file I/O, SimHash, and chart visualizer
 ├── outputs/                   # Hierarchical phase outputs, charts, and dashboard.html
 │   ├── dashboard.html         # Interactive visual analytics dashboard
 │   ├── phase0/charts/         # Phase 0 exclusion & length charts (.png)
 │   ├── phase1/charts/         # Phase 1 category & code prevalence charts (.png)
-│   └── phase2/charts/         # Phase 2 token distribution & vocabulary charts (.png)
+│   ├── phase2/charts/         # Phase 2 token distribution & vocabulary charts (.png)
+│   └── phase3/charts/         # Phase 3 BM25 scores, postings & vocabulary charts (.png)
 ├── logs/                      # Hierarchical execution logs
 ├── queries.jsonl              # 25 technical queries across 7 categories
 └── technical_web_corpus/      # Raw HTML documents and crawl metadata

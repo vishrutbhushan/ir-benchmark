@@ -1,24 +1,24 @@
 {
-  "sample_size": 660,
+  "sample_size": 648,
   "min_char_length_threshold": 200,
   "exclusion_category_counts": {
     "empty_or_short_body": 8,
     "js_stub_detected": 2,
     "non_html": 0,
     "error_page": 0,
-    "non_english": 37,
-    "normal_valid": 613
+    "non_english": 36,
+    "normal_valid": 602
   },
   "exclusion_percentages": {
-    "empty_or_short_body": 1.21,
-    "js_stub_detected": 0.3,
+    "empty_or_short_body": 1.23,
+    "js_stub_detected": 0.31,
     "non_html": 0.0,
     "error_page": 0.0,
-    "non_english": 5.61,
-    "normal_valid": 92.88
+    "non_english": 5.56,
+    "normal_valid": 92.9
   },
   "language_distribution": {
-    "English": 623,
+    "English": 612,
     "Japanese": 10,
     "VI": 1,
     "NO": 2,
@@ -27,7 +27,6 @@
     "Italian": 2,
     "UK": 3,
     "RO": 2,
-    "ET": 1,
     "Korean": 1,
     "French": 1,
     "Portuguese": 2,
@@ -139,14 +138,6 @@
       "language": "RO",
       "confidence": 0.571,
       "title": "libdevice User's Guide :: CUDA Toolkit Documentation"
-    },
-    {
-      "doc_id": "document_042682",
-      "technology": "Google Cloud",
-      "category": "cloud",
-      "language": "ET",
-      "confidence": 0.714,
-      "title": "Google Cloud SDK, 언어, 프레임워크, 도구 | {{gcp_name_short}} SDK, languages, frameworks, and tools | Google Cloud Documentation"
     },
     {
       "doc_id": "document_074100",
@@ -357,10 +348,10 @@
     },
     "framework": {
       "total": 60,
-      "with_code": 51,
-      "pct_with_code": 85.0,
-      "total_code_blocks": 1504,
-      "avg_code_chars": 6369.7
+      "with_code": 47,
+      "pct_with_code": 78.3,
+      "total_code_blocks": 1487,
+      "avg_code_chars": 6892.7
     },
     "ml-infrastructure": {
       "total": 60,
@@ -378,10 +369,10 @@
     },
     "devops-infrastructure": {
       "total": 60,
-      "with_code": 37,
-      "pct_with_code": 61.7,
-      "total_code_blocks": 744,
-      "avg_code_chars": 2101.2
+      "with_code": 36,
+      "pct_with_code": 60.0,
+      "total_code_blocks": 740,
+      "avg_code_chars": 2154.9
     },
     "security": {
       "total": 60,
@@ -392,17 +383,17 @@
     },
     "database-search": {
       "total": 60,
-      "with_code": 48,
-      "pct_with_code": 80.0,
-      "total_code_blocks": 403,
-      "avg_code_chars": 1434.4
+      "with_code": 47,
+      "pct_with_code": 78.3,
+      "total_code_blocks": 392,
+      "avg_code_chars": 1413.0
     },
     "cloud": {
       "total": 60,
-      "with_code": 40,
-      "pct_with_code": 66.7,
-      "total_code_blocks": 365,
-      "avg_code_chars": 1367.0
+      "with_code": 36,
+      "pct_with_code": 60.0,
+      "total_code_blocks": 338,
+      "avg_code_chars": 1395.8
     },
     "containers-orchestration": {
       "total": 60,
@@ -429,9 +420,9 @@
       "avg_text_bytes": 15696.0
     },
     "framework": {
-      "avg_ratio": 0.8749,
-      "avg_raw_bytes": 184818.0,
-      "avg_text_bytes": 20648.0
+      "avg_ratio": 0.8746,
+      "avg_raw_bytes": 197134.0,
+      "avg_text_bytes": 22015.0
     },
     "ml-infrastructure": {
       "avg_ratio": 0.8718,
@@ -444,9 +435,9 @@
       "avg_text_bytes": 129874.0
     },
     "devops-infrastructure": {
-      "avg_ratio": 0.8704,
-      "avg_raw_bytes": 147873.0,
-      "avg_text_bytes": 12418.0
+      "avg_ratio": 0.8708,
+      "avg_raw_bytes": 150191.0,
+      "avg_text_bytes": 12601.0
     },
     "security": {
       "avg_ratio": 0.6909,
@@ -454,14 +445,14 @@
       "avg_text_bytes": 50994.0
     },
     "database-search": {
-      "avg_ratio": 0.9021,
-      "avg_raw_bytes": 515015.0,
-      "avg_text_bytes": 19743.0
+      "avg_ratio": 0.9013,
+      "avg_raw_bytes": 511713.0,
+      "avg_text_bytes": 19514.0
     },
     "cloud": {
-      "avg_ratio": 0.8753,
-      "avg_raw_bytes": 275384.0,
-      "avg_text_bytes": 18551.0
+      "avg_ratio": 0.8718,
+      "avg_raw_bytes": 290527.0,
+      "avg_text_bytes": 19552.0
     },
     "containers-orchestration": {
       "avg_ratio": 0.874,
@@ -471,14 +462,14 @@
   },
   "dom_structure_stats": {
     "pct_with_headings": 98.0,
-    "pct_with_code": 71.1,
-    "pct_with_tables": 43.2,
-    "pct_with_lists": 95.3
+    "pct_with_code": 70.8,
+    "pct_with_tables": 42.7,
+    "pct_with_lists": 95.4
   },
   "near_duplicate_stats": {
-    "analyzed_docs": 652,
-    "clusters_count": 9,
-    "duplicate_docs_count": 23
+    "analyzed_docs": 640,
+    "clusters_count": 8,
+    "duplicate_docs_count": 21
   },
   "technology_breakdown": {
     "RabbitMQ": {
@@ -606,16 +597,16 @@
       "short_count": 0,
       "non_english_count": 0,
       "error_count": 0,
-      "code_blocks": 26,
-      "avg_char_length": 3230.4
+      "code_blocks": 22,
+      "avg_char_length": 3494.0
     },
     "Oracle Cloud": {
       "sample_count": 10,
       "short_count": 0,
       "non_english_count": 1,
       "error_count": 0,
-      "code_blocks": 170,
-      "avg_char_length": 6331.0
+      "code_blocks": 157,
+      "avg_char_length": 6850.2
     },
     "Kubernetes": {
       "sample_count": 12,
@@ -630,8 +621,8 @@
       "short_count": 0,
       "non_english_count": 0,
       "error_count": 0,
-      "code_blocks": 35,
-      "avg_char_length": 64061.5
+      "code_blocks": 30,
+      "avg_char_length": 70173.6
     },
     "Elasticsearch": {
       "sample_count": 8,
@@ -702,8 +693,8 @@
       "short_count": 0,
       "non_english_count": 0,
       "error_count": 0,
-      "code_blocks": 35,
-      "avg_char_length": 1425.0
+      "code_blocks": 18,
+      "avg_char_length": 1370.7
     },
     "Hive": {
       "sample_count": 5,
@@ -724,10 +715,10 @@
     "Google Cloud": {
       "sample_count": 10,
       "short_count": 0,
-      "non_english_count": 5,
+      "non_english_count": 4,
       "error_count": 0,
       "code_blocks": 7,
-      "avg_char_length": 15027.2
+      "avg_char_length": 15898.9
     },
     "TensorFlow": {
       "sample_count": 8,
@@ -774,8 +765,8 @@
       "short_count": 0,
       "non_english_count": 4,
       "error_count": 0,
-      "code_blocks": 42,
-      "avg_char_length": 4424.6
+      "code_blocks": 36,
+      "avg_char_length": 4236.2
     },
     "Istio": {
       "sample_count": 9,
@@ -934,8 +925,8 @@
       "short_count": 0,
       "non_english_count": 0,
       "error_count": 0,
-      "code_blocks": 65,
-      "avg_char_length": 20680.3
+      "code_blocks": 54,
+      "avg_char_length": 18582.0
     },
     "Spark": {
       "sample_count": 6,
@@ -950,8 +941,8 @@
       "short_count": 0,
       "non_english_count": 0,
       "error_count": 0,
-      "code_blocks": 55,
-      "avg_char_length": 11545.9
+      "code_blocks": 52,
+      "avg_char_length": 11727.6
     },
     "Pulsar": {
       "sample_count": 5,

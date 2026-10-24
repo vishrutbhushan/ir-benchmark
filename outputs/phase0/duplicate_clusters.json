@@ -1,7 +1,7 @@
 {
-  "total_documents_analyzed": 652,
-  "total_clusters": 9,
-  "total_duplicate_documents": 23,
+  "total_documents_analyzed": 640,
+  "total_clusters": 8,
+  "total_duplicate_documents": 21,
   "clusters": [
     {
       "cluster_id": 1,
@@ -35,20 +35,6 @@
     },
     {
       "cluster_id": 3,
-      "representative_doc_id": "document_004357",
-      "representative_title": "Uses of Class org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext (Spring Boot 2.7.9 API)",
-      "cluster_size": 2,
-      "member_doc_ids": [
-        "document_004357",
-        "document_004570"
-      ],
-      "member_urls": [
-        "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html",
-        "https://docs.spring.io/spring-boot/docs/2.4.13/api/org/springframework/boot/web/servlet/context/class-use/ServletWebServerApplicationContext.html"
-      ]
-    },
-    {
-      "cluster_id": 4,
       "representative_doc_id": "document_077270",
       "representative_title": "nvmath.bindings.cusolverDn.create_params — nvmath-python",
       "cluster_size": 5,
@@ -68,7 +54,7 @@
       ]
     },
     {
-      "cluster_id": 5,
+      "cluster_id": 4,
       "representative_doc_id": "document_012847",
       "representative_title": "Streams Redirect | Apache Kafka",
       "cluster_size": 3,
@@ -84,7 +70,7 @@
       ]
     },
     {
-      "cluster_id": 6,
+      "cluster_id": 5,
       "representative_doc_id": "document_076562",
       "representative_title": "VALID_NP_HPARAMS — Ray 2.58.0",
       "cluster_size": 2,
@@ -98,7 +84,7 @@
       ]
     },
     {
-      "cluster_id": 7,
+      "cluster_id": 6,
       "representative_doc_id": "document_071518",
       "representative_title": "Terminology | Jaeger",
       "cluster_size": 2,
@@ -112,7 +98,7 @@
       ]
     },
     {
-      "cluster_id": 8,
+      "cluster_id": 7,
       "representative_doc_id": "document_071584",
       "representative_title": "Search | CSRC",
       "cluster_size": 2,
@@ -126,7 +112,7 @@
       ]
     },
     {
-      "cluster_id": 9,
+      "cluster_id": 8,
       "representative_doc_id": "document_069757",
       "representative_title": "RSAHashedKeyGenParams | Grafana k6 documentation",
       "cluster_size": 2,

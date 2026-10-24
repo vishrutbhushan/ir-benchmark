@@ -1,0 +1,97 @@
+{
+  "total_documents": 484,
+  "total_tokens": 2173774,
+  "average_tokens_per_doc": 4491.3,
+  "median_tokens_per_doc": 1205,
+  "total_vocabulary_size": 64148,
+  "zone_statistics": {
+    "title": {
+      "total_tokens": 3015,
+      "docs_with_tokens": 484,
+      "avg_tokens_per_doc": 6.2,
+      "vocabulary_size": 1127
+    },
+    "heading": {
+      "total_tokens": 24193,
+      "docs_with_tokens": 474,
+      "avg_tokens_per_doc": 51.0,
+      "vocabulary_size": 4989
+    },
+    "body": {
+      "total_tokens": 872566,
+      "docs_with_tokens": 484,
+      "avg_tokens_per_doc": 1802.8,
+      "vocabulary_size": 42291
+    },
+    "code": {
+      "total_tokens": 677812,
+      "docs_with_tokens": 344,
+      "avg_tokens_per_doc": 1970.4,
+      "vocabulary_size": 33063
+    },
+    "section": {
+      "total_tokens": 596188,
+      "docs_with_tokens": 481,
+      "avg_tokens_per_doc": 1239.5,
+      "vocabulary_size": 30556
+    }
+  },
+  "category_statistics": {
+    "cloud": {
+      "doc_count": 30,
+      "total_tokens": 48842,
+      "avg_tokens_per_doc": 1628.1
+    },
+    "containers-orchestration": {
+      "doc_count": 47,
+      "total_tokens": 104172,
+      "avg_tokens_per_doc": 2216.4
+    },
+    "database-search": {
+      "doc_count": 61,
+      "total_tokens": 83317,
+      "avg_tokens_per_doc": 1365.9
+    },
+    "devops-infrastructure": {
+      "doc_count": 43,
+      "total_tokens": 98569,
+      "avg_tokens_per_doc": 2292.3
+    },
+    "distributed-data": {
+      "doc_count": 74,
+      "total_tokens": 182872,
+      "avg_tokens_per_doc": 2471.2
+    },
+    "framework": {
+      "doc_count": 49,
+      "total_tokens": 321196,
+      "avg_tokens_per_doc": 6555.0
+    },
+    "ml-infrastructure": {
+      "doc_count": 43,
+      "total_tokens": 122765,
+      "avg_tokens_per_doc": 2855.0
+    },
+    "observability": {
+      "doc_count": 28,
+      "total_tokens": 51755,
+      "avg_tokens_per_doc": 1848.4
+    },
+    "os-networking-web": {
+      "doc_count": 46,
+      "total_tokens": 870990,
+      "avg_tokens_per_doc": 18934.6
+    },
+    "programming-language": {
+      "doc_count": 48,
+      "total_tokens": 223305,
+      "avg_tokens_per_doc": 4652.2
+    },
+    "security": {
+      "doc_count": 15,
+      "total_tokens": 65991,
+      "avg_tokens_per_doc": 4399.4
+    }
+  },
+  "elapsed_seconds": 10.34
+}

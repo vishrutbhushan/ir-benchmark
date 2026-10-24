@@ -21,6 +21,7 @@ from pathlib import Path
 from src.phase0_audit.audit_runner import run_corpus_audit
 from src.phase1_extraction.extraction_runner import run_structured_extraction
 from src.phase2_tokenization.tokenization_runner import run_tokenization
+from src.phase3_classic_ir.classic_ir_runner import run_classic_ir
 from src.utils.logging_utils import setup_logger
 from src.utils.visualizer import generate_interactive_dashboard_html
 
@@ -31,9 +32,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--phase",
-        choices=["0", "1", "2", "phase0", "phase1", "phase2", "all"],
+        choices=["0", "1", "2", "3", "phase0", "phase1", "phase2", "phase3", "all"],
         default="0",
-        help="Pipeline phase to execute (0=Corpus Audit, 1=Structured Extraction, 2=Tokenization, all=all phases).",
+        help="Pipeline phase to execute (0=Corpus Audit, 1=Structured Extraction, 2=Tokenization, 3=Classic IR BM25, all=all phases).",
     )
     # Auto-resolve corpus_root and manifest_path if nested inside technical_web_corpus/technical_web_corpus
     default_root = Path("technical_web_corpus")
@@ -106,6 +107,30 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=None,
         help="Optional path to a JSON file containing doc_ids to exclude from Phase 1 extraction.",
+    )
+    parser.add_argument(
+        "--queries-path",
+        type=Path,
+        default=Path("queries.jsonl"),
+        help="Path to queries.jsonl file for retrieval benchmarking.",
+    )
+    parser.add_argument(
+        "--k1",
+        type=float,
+        default=1.2,
+        help="BM25 term frequency saturation parameter k1 (default: 1.2).",
+    )
+    parser.add_argument(
+        "--b",
+        type=float,
+        default=0.75,
+        help="BM25 document length normalization parameter b (default: 0.75).",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=20,
+        help="Number of top retrieved results per query (default: 20).",
     )
     return parser.parse_args()
 
@@ -184,6 +209,39 @@ def main() -> None:
             output_dir=phase2_out,
             logger=logger2,
             max_documents=args.max_docs,
+        )
+
+    # Execute Phase 3
+    if phase in ["3", "all"]:
+        phase3_out = args.output_dir / "phase3"
+        phase3_log = args.logs_dir / "phase3" / "classic_ir.log"
+        logger3 = setup_logger("phase3_classic_ir", phase3_log)
+
+        tokenized_path = args.output_dir / "phase2" / "tokenized_corpus.jsonl"
+        structured_path = args.output_dir / "phase1" / "structured_records.jsonl"
+
+        if not tokenized_path.exists():
+            print(
+                f"ERROR: Phase 2 output not found at {tokenized_path}. "
+                "Run Phase 2 first: python run_pipeline.py --phase 2"
+            )
+            sys.exit(1)
+        if not structured_path.exists():
+            print(
+                f"ERROR: Phase 1 output not found at {structured_path}. "
+                "Run Phase 1 first: python run_pipeline.py --phase 1"
+            )
+            sys.exit(1)
+
+        run_classic_ir(
+            tokenized_path=tokenized_path,
+            structured_path=structured_path,
+            queries_path=args.queries_path,
+            output_dir=phase3_out,
+            logger=logger3,
+            k1=args.k1,
+            b=args.b,
+            top_k=args.top_k,
         )
 
     # Compile / update visual interactive dashboard

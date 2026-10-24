@@ -1,6 +1,6 @@
 # Phase 0 — Comprehensive Corpus Audit Report
 
-**Sample Size Analyzed:** 660 documents across all 11 technical categories and 76 technologies.
+**Sample Size Analyzed:** 648 documents across all 11 technical categories and 76 technologies.
 **Balanced Stratification:** Equal representation across technical categories and document types.
 **Text-Length Threshold:** < 200 characters.
 
@@ -30,12 +30,12 @@
 
 | Exclusion Category | Flagged Count | Sample Share | Example Doc IDs |
 | :--- | :--- | :--- | :--- |
-| **Empty / Short Body (<200 chars)** | 8 | 1.21% | document_067893, document_068246, document_068276, document_067930, document_068040 |
-| **Client-Side JS Render Stubs** | 2 | 0.3% | document_005235, document_007015 |
+| **Empty / Short Body (<200 chars)** | 8 | 1.23% | document_067893, document_068246, document_068276, document_067930, document_068040 |
+| **Client-Side JS Render Stubs** | 2 | 0.31% | document_005235, document_007015 |
 | **Non-HTML Content Mislabeled** | 0 | 0.0% | None |
 | **HTTP 200 Error / 404 Pages** | 0 | 0.0% | None |
-| **Non-English Documents** | 37 | 5.61% | document_055009, document_042449, document_039559, document_042675, document_009982 |
-| **Clean / Valid Documents** | 613 | 92.88% | — |
+| **Non-English Documents** | 36 | 5.56% | document_055009, document_042449, document_039559, document_042675, document_009982 |
+| **Clean / Valid Documents** | 602 | 92.9% | — |
 
 ---
 
@@ -43,7 +43,7 @@
 
 | Language | Document Count | Share (%) |
 | :--- | :--- | :--- |
-| **English** | 623 | 94.4% |
+| **English** | 612 | 94.4% |
 | **Japanese** | 10 | 1.5% |
 | **German** | 6 | 0.9% |
 | **TR** | 3 | 0.5% |
@@ -53,7 +53,6 @@
 | **RO** | 2 | 0.3% |
 | **Portuguese** | 2 | 0.3% |
 | **VI** | 1 | 0.2% |
-| **ET** | 1 | 0.2% |
 | **Korean** | 1 | 0.2% |
 | **French** | 1 | 0.2% |
 | **Russian** | 1 | 0.2% |
@@ -81,13 +80,13 @@
 | **distributed-data** | 60 | 70.0% | 590 | 1785.9 |
 | **programming-language** | 60 | 83.3% | 867 | 2887.5 |
 | **observability** | 60 | 61.7% | 849 | 4553.9 |
-| **framework** | 60 | 85.0% | 1504 | 6369.7 |
+| **framework** | 60 | 78.3% | 1487 | 6892.7 |
 | **ml-infrastructure** | 60 | 63.3% | 1034 | 6049.2 |
 | **os-networking-web** | 60 | 83.3% | 10336 | 129060.2 |
-| **devops-infrastructure** | 60 | 61.7% | 744 | 2101.2 |
+| **devops-infrastructure** | 60 | 60.0% | 740 | 2154.9 |
 | **security** | 60 | 43.3% | 500 | 8396.5 |
-| **database-search** | 60 | 80.0% | 403 | 1434.4 |
-| **cloud** | 60 | 66.7% | 365 | 1367.0 |
+| **database-search** | 60 | 78.3% | 392 | 1413.0 |
+| **cloud** | 60 | 60.0% | 338 | 1395.8 |
 | **containers-orchestration** | 60 | 83.3% | 502 | 1799.0 |
 
 ---
@@ -95,17 +94,17 @@
 ## 4. DOM Complexity & Structural Richness
 
 - **Documents with Heading Hierarchy (H1-H3):** 98.0%
-- **Documents with Isolated Code Blocks:** 71.1%
-- **Documents with Structured Lists (UL/OL):** 95.3%
-- **Documents with Tables:** 43.2%
+- **Documents with Isolated Code Blocks:** 70.8%
+- **Documents with Structured Lists (UL/OL):** 95.4%
+- **Documents with Tables:** 42.7%
 
 ---
 
 ## 5. Near-Duplicate Analysis (SimHash Clustering)
 
-- **Documents Analyzed for Near-Duplicates:** 652
-- **Near-Duplicate Clusters Found:** 9
-- **Total Documents in Duplicate Clusters:** 23
+- **Documents Analyzed for Near-Duplicates:** 640
+- **Near-Duplicate Clusters Found:** 8
+- **Total Documents in Duplicate Clusters:** 21
 
 ### Top Near-Duplicate Cluster Samples
 
@@ -113,12 +112,12 @@
   - Members: document_047117, document_046227, document_046559
 * **Cluster 2** (2 docs) — Representative: `document_036999` (`Structured Streaming - Apache Iceberg™`)
   - Members: document_036999, document_037147
-* **Cluster 3** (2 docs) — Representative: `document_004357` (`Uses of Class org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext (Spring Boot 2.7.9 API)`)
-  - Members: document_004357, document_004570
-* **Cluster 4** (5 docs) — Representative: `document_077270` (`nvmath.bindings.cusolverDn.create_params — nvmath-python`)
+* **Cluster 3** (5 docs) — Representative: `document_077270` (`nvmath.bindings.cusolverDn.create_params — nvmath-python`)
   - Members: document_077270, document_078038, document_077249, document_078932, document_078738
-* **Cluster 5** (3 docs) — Representative: `document_012847` (`Streams Redirect | Apache Kafka`)
+* **Cluster 4** (3 docs) — Representative: `document_012847` (`Streams Redirect | Apache Kafka`)
   - Members: document_012847, document_012849, document_012848
+* **Cluster 5** (2 docs) — Representative: `document_076562` (`VALID_NP_HPARAMS — Ray 2.58.0`)
+  - Members: document_076562, document_076102
 
 ---
 
