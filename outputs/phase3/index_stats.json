@@ -1,13 +1,16 @@
 {
-  "total_documents": 484,
-  "vocabulary_size": 60163,
-  "total_postings_entries": 182739,
-  "total_position_entries": 1577372,
-  "avg_postings_per_term": 3.04,
+  "total_documents": 10,
+  "vocabulary_size": 3374,
+  "total_postings_entries": 4096,
+  "total_position_entries": 23745,
+  "avg_postings_per_term": 1.21,
   "avg_zone_lengths": {
-    "title": 6.2,
-    "heading": 50.0,
-    "body": 1802.8,
-    "code": 1400.4
-  }
+    "title": 5.5,
+    "heading": 145.1,
+    "body": 2052.6,
+    "code": 171.6
+  },
+  "hierarchical_categories": 6,
+  "hierarchical_technologies": 9,
+  "hierarchical_domains": 5
 }

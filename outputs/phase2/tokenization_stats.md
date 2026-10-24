@@ -1,33 +1,28 @@
 # Phase 2 — Tokenization Statistics
 
-**Documents tokenized:** 484
-**Total tokens:** 2,173,774
-**Average tokens/doc:** 4,491.3
-**Median tokens/doc:** 1,205
-**Total vocabulary size:** 64,148
+**Documents tokenized:** 10
+**Total tokens:** 40,390
+**Average tokens/doc:** 4,039.0
+**Median tokens/doc:** 1,047
+**Total vocabulary size:** 3,737
 
 ## Per-Zone Statistics
 
 | Zone | Total Tokens | Docs w/ Tokens | Avg/Doc | Vocab Size |
 |------|-------------|----------------|---------|------------|
-| Title | 3,015 | 484 | 6.2 | 1,127 |
-| Heading | 24,193 | 474 | 51.0 | 4,989 |
-| Body | 872,566 | 484 | 1,802.8 | 42,291 |
-| Code | 677,812 | 344 | 1,970.4 | 33,063 |
-| Section | 596,188 | 481 | 1,239.5 | 30,556 |
+| Title | 55 | 10 | 5.5 | 51 |
+| Heading | 1,451 | 10 | 145.1 | 485 |
+| Body | 20,526 | 10 | 2,052.6 | 3,032 |
+| Code | 1,716 | 8 | 214.5 | 847 |
+| Section | 16,642 | 10 | 1,664.2 | 2,598 |
 
 ## Per-Category Statistics
 
 | Category | Docs | Total Tokens | Avg Tokens/Doc |
 |----------|------|-------------|----------------|
-| cloud | 30 | 48,842 | 1,628.1 |
-| containers-orchestration | 47 | 104,172 | 2,216.4 |
-| database-search | 61 | 83,317 | 1,365.9 |
-| devops-infrastructure | 43 | 98,569 | 2,292.3 |
-| distributed-data | 74 | 182,872 | 2,471.2 |
-| framework | 49 | 321,196 | 6,555.0 |
-| ml-infrastructure | 43 | 122,765 | 2,855.0 |
-| observability | 28 | 51,755 | 1,848.4 |
-| os-networking-web | 46 | 870,990 | 18,934.6 |
-| programming-language | 48 | 223,305 | 4,652.2 |
-| security | 15 | 65,991 | 4,399.4 |
+| database-search | 2 | 3,298 | 1,649.0 |
+| framework | 2 | 1,271 | 635.5 |
+| ml-infrastructure | 1 | 1,812 | 1,812.0 |
+| os-networking-web | 1 | 30,208 | 30,208.0 |
+| programming-language | 3 | 2,754 | 918.0 |
+| security | 1 | 1,047 | 1,047.0 |

@@ -1,6 +1,6 @@
 # Phase 0 — Comprehensive Corpus Audit Report
 
-**Sample Size Analyzed:** 648 documents across all 11 technical categories and 76 technologies.
+**Sample Size Analyzed:** 20 documents across all 11 technical categories and 76 technologies.
 **Balanced Stratification:** Equal representation across technical categories and document types.
 **Text-Length Threshold:** < 200 characters.
 
@@ -30,12 +30,12 @@
 
 | Exclusion Category | Flagged Count | Sample Share | Example Doc IDs |
 | :--- | :--- | :--- | :--- |
-| **Empty / Short Body (<200 chars)** | 8 | 1.23% | document_067893, document_068246, document_068276, document_067930, document_068040 |
-| **Client-Side JS Render Stubs** | 2 | 0.31% | document_005235, document_007015 |
+| **Empty / Short Body (<200 chars)** | 2 | 10.0% | document_067893, document_068246 |
+| **Client-Side JS Render Stubs** | 0 | 0.0% | None |
 | **Non-HTML Content Mislabeled** | 0 | 0.0% | None |
 | **HTTP 200 Error / 404 Pages** | 0 | 0.0% | None |
-| **Non-English Documents** | 36 | 5.56% | document_055009, document_042449, document_039559, document_042675, document_009982 |
-| **Clean / Valid Documents** | 602 | 92.9% | — |
+| **Non-English Documents** | 0 | 0.0% | None |
+| **Clean / Valid Documents** | 18 | 90.0% | — |
 
 ---
 
@@ -43,33 +43,11 @@
 
 | Language | Document Count | Share (%) |
 | :--- | :--- | :--- |
-| **English** | 612 | 94.4% |
-| **Japanese** | 10 | 1.5% |
-| **German** | 6 | 0.9% |
-| **TR** | 3 | 0.5% |
-| **UK** | 3 | 0.5% |
-| **NO** | 2 | 0.3% |
-| **Italian** | 2 | 0.3% |
-| **RO** | 2 | 0.3% |
-| **Portuguese** | 2 | 0.3% |
-| **VI** | 1 | 0.2% |
-| **Korean** | 1 | 0.2% |
-| **French** | 1 | 0.2% |
-| **Russian** | 1 | 0.2% |
-| **AR** | 1 | 0.2% |
-| **BN** | 1 | 0.2% |
+| **English** | 20 | 100.0% |
 
 ### Key Non-English Sources Detected
 | Doc ID | Technology | Category | Detected Language | Title |
 | :--- | :--- | :--- | :--- | :--- |
-| `document_055009` | GitLab | devops-infrastructure | Japanese | インテグレーション | GitLab Docs |
-| `document_042449` | Google Cloud | cloud | VI | 使用服务账号模拟 | Authentication | Google Cloud |
-| `document_039559` | AWS | cloud | NO | api-gw-stage-tagged - AWS Config |
-| `document_042675` | Google Cloud | cloud | German | Datenlöschung auf Google Cloud | Securit |
-| `document_009982` | FastAPI | framework | TR | Query Parameter Modelleri - FastAPI |
-| `document_074179` | TensorFlow | ml-infrastructure | Italian | Utilizzo del formato SavedModel | Tensor |
-| `document_001128` | Java | programming-language | Japanese | クラスjavax.swing.plaf.synth.SynthTreeUIの使用 |
-| `document_009805` | FastAPI | framework | UK | Reference - FastAPI |
 
 ---
 
@@ -77,47 +55,35 @@
 
 | Technical Category | Sample Docs | With Code (%) | Total Code Blocks | Avg Code Chars |
 | :--- | :--- | :--- | :--- | :--- |
-| **distributed-data** | 60 | 70.0% | 590 | 1785.9 |
-| **programming-language** | 60 | 83.3% | 867 | 2887.5 |
-| **observability** | 60 | 61.7% | 849 | 4553.9 |
-| **framework** | 60 | 78.3% | 1487 | 6892.7 |
-| **ml-infrastructure** | 60 | 63.3% | 1034 | 6049.2 |
-| **os-networking-web** | 60 | 83.3% | 10336 | 129060.2 |
-| **devops-infrastructure** | 60 | 60.0% | 740 | 2154.9 |
-| **security** | 60 | 43.3% | 500 | 8396.5 |
-| **database-search** | 60 | 78.3% | 392 | 1413.0 |
-| **cloud** | 60 | 60.0% | 338 | 1395.8 |
-| **containers-orchestration** | 60 | 83.3% | 502 | 1799.0 |
+| **os-networking-web** | 4 | 100.0% | 1551 | 232607.5 |
+| **framework** | 3 | 100.0% | 49 | 2452.3 |
+| **security** | 3 | 0.0% | 0 | 0 |
+| **distributed-data** | 2 | 100.0% | 147 | 4875.0 |
+| **programming-language** | 2 | 100.0% | 17 | 1466.5 |
+| **ml-infrastructure** | 2 | 100.0% | 28 | 6968.0 |
+| **devops-infrastructure** | 2 | 0.0% | 0 | 0 |
+| **observability** | 1 | 0.0% | 0 | 0 |
+| **database-search** | 1 | 100.0% | 3 | 112.0 |
 
 ---
 
 ## 4. DOM Complexity & Structural Richness
 
-- **Documents with Heading Hierarchy (H1-H3):** 98.0%
-- **Documents with Isolated Code Blocks:** 70.8%
-- **Documents with Structured Lists (UL/OL):** 95.4%
-- **Documents with Tables:** 42.7%
+- **Documents with Heading Hierarchy (H1-H3):** 90.0%
+- **Documents with Isolated Code Blocks:** 70.0%
+- **Documents with Structured Lists (UL/OL):** 85.0%
+- **Documents with Tables:** 50.0%
 
 ---
 
 ## 5. Near-Duplicate Analysis (SimHash Clustering)
 
-- **Documents Analyzed for Near-Duplicates:** 640
-- **Near-Duplicate Clusters Found:** 8
-- **Total Documents in Duplicate Clusters:** 21
+- **Documents Analyzed for Near-Duplicates:** 18
+- **Near-Duplicate Clusters Found:** 0
+- **Total Documents in Duplicate Clusters:** 0
 
 ### Top Near-Duplicate Cluster Samples
 
-* **Cluster 1** (3 docs) — Representative: `document_047117` (`Get script content | Cloudflare API`)
-  - Members: document_047117, document_046227, document_046559
-* **Cluster 2** (2 docs) — Representative: `document_036999` (`Structured Streaming - Apache Iceberg™`)
-  - Members: document_036999, document_037147
-* **Cluster 3** (5 docs) — Representative: `document_077270` (`nvmath.bindings.cusolverDn.create_params — nvmath-python`)
-  - Members: document_077270, document_078038, document_077249, document_078932, document_078738
-* **Cluster 4** (3 docs) — Representative: `document_012847` (`Streams Redirect | Apache Kafka`)
-  - Members: document_012847, document_012849, document_012848
-* **Cluster 5** (2 docs) — Representative: `document_076562` (`VALID_NP_HPARAMS — Ray 2.58.0`)
-  - Members: document_076562, document_076102
 
 ---
 

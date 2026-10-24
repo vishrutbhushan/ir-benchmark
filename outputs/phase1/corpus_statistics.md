@@ -1,8 +1,8 @@
 # Phase 1 — Structured Corpus Statistics Report
 
-**Total Structured Documents Processed:** 484
-**Average Document Length:** 2,319.5 words (16,288.4 characters)
-**Total Vocabulary / Body Words:** 1,122,628
+**Total Structured Documents Processed:** 50
+**Average Document Length:** 1,469.5 words (10,204.5 characters)
+**Total Vocabulary / Body Words:** 73,477
 
 ## Visual Charts & Graphs
 
@@ -14,66 +14,66 @@
 
 ## 1. Code Block & Technical Token Extraction
 
-- **Documents with Code Blocks:** 344 (71.07%)
-- **Total Isolated Code Blocks:** 7,835
-- **Average Code Blocks per Document:** 16.19
-- **Total Code Snippet Characters:** 4,096,364
+- **Documents with Code Blocks:** 34 (68.0%)
+- **Total Isolated Code Blocks:** 354
+- **Average Code Blocks per Document:** 7.08
+- **Total Code Snippet Characters:** 86,893
 
 ## 2. Date Detection & Normalization
 
-- **Documents with Dates Detected:** 51 (10.54%)
-- **Total Normalized Dates Extracted:** 129
+- **Documents with Dates Detected:** 4 (8.0%)
+- **Total Normalized Dates Extracted:** 13
 
 ### Top Normalized Dates Detected
 
 | Date (ISO) | Document Frequency |
 | :--- | :--- |
-| `2026-08-13` | 9 |
-| `2025-11-17` | 7 |
-| `2024-04-29` | 4 |
-| `2025-01-10` | 4 |
-| `2025-03-14` | 4 |
-| `2026-04-20` | 4 |
-| `2024-10-06` | 3 |
-| `2025-08-18` | 3 |
+| `2024-04-29` | 1 |
+| `2024-07-29` | 1 |
+| `2024-10-06` | 1 |
+| `2024-11-26` | 1 |
+| `2025-01-10` | 1 |
+| `2025-08-18` | 1 |
+| `2025-11-17` | 1 |
+| `2026-02-02` | 1 |
 
 ## 3. Category Breakdown
 
 | Category | Documents | Share |
 | :--- | :--- | :--- |
-| **programming-language** | 48 | 9.9% |
-| **framework** | 49 | 10.1% |
-| **os-networking-web** | 46 | 9.5% |
-| **security** | 15 | 3.1% |
-| **ml-infrastructure** | 43 | 8.9% |
-| **database-search** | 61 | 12.6% |
-| **containers-orchestration** | 47 | 9.7% |
-| **observability** | 28 | 5.8% |
-| **cloud** | 30 | 6.2% |
-| **distributed-data** | 74 | 15.3% |
-| **devops-infrastructure** | 43 | 8.9% |
+| **observability** | 3 | 6.0% |
+| **programming-language** | 6 | 12.0% |
+| **devops-infrastructure** | 6 | 12.0% |
+| **framework** | 4 | 8.0% |
+| **security** | 1 | 2.0% |
+| **database-search** | 6 | 12.0% |
+| **containers-orchestration** | 5 | 10.0% |
+| **distributed-data** | 7 | 14.0% |
+| **ml-infrastructure** | 5 | 10.0% |
+| **cloud** | 4 | 8.0% |
+| **os-networking-web** | 3 | 6.0% |
 
 ## 4. Technology Breakdown (Top 20 by Volume)
 
 | Technology | Docs | Avg Words | Avg Chars | Code Blocks | Dates |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Pulsar | 12 | 675.3 | 4978.5 | 112 | 0 |
-| Django | 11 | 586.7 | 4782.7 | 18 | 4 |
-| Helm | 11 | 496.8 | 3572.6 | 48 | 0 |
-| Java | 10 | 272.1 | 2898.4 | 58 | 0 |
-| Kubeflow | 10 | 755.1 | 5339.1 | 72 | 1 |
-| Linux Kernel | 10 | 237.0 | 1929.1 | 19 | 0 |
-| Neo4j | 9 | 1089.9 | 7962.4 | 68 | 1 |
-| FastAPI | 9 | 3388.4 | 33307.6 | 239 | 0 |
-| Elasticsearch | 9 | 122.7 | 1060.8 | 20 | 0 |
-| MySQL | 9 | 528.0 | 4158.4 | 21 | 0 |
-| Podman | 9 | 762.8 | 5566.8 | 40 | 0 |
-| Node.js | 9 | 9346.4 | 67555.8 | 343 | 0 |
-| NIST | 8 | 1303.1 | 13999.4 | 0 | 0 |
-| Linkerd | 8 | 661.8 | 4401.5 | 12 | 3 |
-| Grafana | 8 | 646.9 | 4588.9 | 31 | 2 |
-| Apache Beam | 8 | 986.6 | 6768.2 | 53 | 6 |
-| Go | 8 | 7281.2 | 50387.9 | 147 | 12 |
-| AWS | 8 | 317.2 | 4476.6 | 36 | 0 |
-| PostgreSQL | 8 | 1012.5 | 6446.2 | 16 | 10 |
-| RFCs | 7 | 13690.6 | 89907.7 | 186 | 1 |
+| Jaeger | 1 | 351.0 | 2383.0 | 3 | 0 |
+| Kotlin | 1 | 1098.0 | 7149.0 | 0 | 0 |
+| Git | 1 | 6420.0 | 38746.0 | 22 | 10 |
+| Node.js | 1 | 18260.0 | 128065.0 | 99 | 0 |
+| OpenID Connect | 1 | 30.0 | 283.0 | 0 | 0 |
+| OpenSearch | 1 | 1517.0 | 11740.0 | 14 | 0 |
+| OpenShift | 1 | 208.0 | 1325.0 | 0 | 0 |
+| gRPC | 1 | 207.0 | 1204.0 | 0 | 1 |
+| Cassandra | 1 | 3439.0 | 25483.0 | 16 | 0 |
+| TensorFlow | 1 | 5149.0 | 41440.0 | 16 | 0 |
+| PyTorch | 1 | 238.0 | 1489.0 | 1 | 0 |
+| Angular | 1 | 161.0 | 1075.0 | 2 | 0 |
+| Java | 1 | 700.0 | 5825.0 | 15 | 0 |
+| Spark | 1 | 76.0 | 648.0 | 3 | 0 |
+| Oracle Cloud | 1 | 276.0 | 2901.0 | 9 | 0 |
+| Azure | 1 | 2881.0 | 18284.0 | 0 | 0 |
+| GitLab | 1 | 482.0 | 4281.0 | 11 | 0 |
+| Google Cloud | 1 | 217.0 | 1561.0 | 0 | 0 |
+| Nginx | 1 | 1151.0 | 7264.0 | 8 | 0 |
+| Django | 1 | 580.0 | 4059.0 | 5 | 0 |

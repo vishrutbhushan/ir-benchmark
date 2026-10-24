@@ -1,0 +1,2031 @@
+[
+  {
+    "query_text": "Asynchronous Python web frameworks that do NOT use asyncio or standard event loops",
+    "query_tokens": [
+      "asynchron",
+      "python",
+      "web",
+      "framework",
+      "us",
+      "asyncio",
+      "standard",
+      "event",
+      "loop"
+    ],
+    "num_results": 8,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 2.367588,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_076997",
+        "score": 1.908233,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_027769",
+        "score": 1.707436,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_000102",
+        "score": 1.418221,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_003108",
+        "score": 0.264092,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_002913",
+        "score": 0.255738,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005710",
+        "score": 0.249709,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_034286",
+        "score": 0.216841,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      }
+    ],
+    "query_id": "Q01",
+    "query_category": "Negation"
+  },
+  {
+    "query_text": "Kubernetes ingress controllers that support SSL passthrough without requiring NGINX",
+    "query_tokens": [
+      "kubernet",
+      "ingress",
+      "control",
+      "support",
+      "ssl",
+      "passthrough",
+      "without",
+      "requir",
+      "nginx"
+    ],
+    "num_results": 6,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 4.016881,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 3.287268,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_003108",
+        "score": 1.411349,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_076997",
+        "score": 1.150209,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_005710",
+        "score": 0.788611,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_000102",
+        "score": 0.647787,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q02",
+    "query_category": "Negation"
+  },
+  {
+    "query_text": "Java database connection pooling libraries that do NOT rely on HikariCP",
+    "query_tokens": [
+      "java",
+      "databas",
+      "connect",
+      "pool",
+      "librari",
+      "reli",
+      "hikaricp",
+      "hikari",
+      "cp"
+    ],
+    "num_results": 5,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_000102",
+        "score": 2.219805,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 1.443759,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_034286",
+        "score": 1.403969,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 1.117453,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_068088",
+        "score": 0.632833,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      }
+    ],
+    "query_id": "Q03",
+    "query_category": "Negation"
+  },
+  {
+    "query_text": "Python memory management reference counting vs garbage collection internals",
+    "query_tokens": [
+      "python",
+      "memori",
+      "manag",
+      "refer",
+      "count",
+      "vs",
+      "garbag",
+      "collect",
+      "intern"
+    ],
+    "num_results": 7,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 3.598944,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_034286",
+        "score": 1.72376,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_076997",
+        "score": 1.671392,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 1.623324,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_000102",
+        "score": 1.330005,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_027769",
+        "score": 1.092035,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005710",
+        "score": 0.760287,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q04",
+    "query_category": "Homonyms"
+  },
+  {
+    "query_text": "Java thread synchronization primitives and monitors",
+    "query_tokens": [
+      "java",
+      "thread",
+      "synchron",
+      "primit",
+      "monitor"
+    ],
+    "num_results": 3,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_000102",
+        "score": 2.219805,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 1.746755,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 0.224345,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      }
+    ],
+    "query_id": "Q05",
+    "query_category": "Homonyms"
+  },
+  {
+    "query_text": "Docker container networking bridge mode configuration",
+    "query_tokens": [
+      "docker",
+      "contain",
+      "network",
+      "bridg",
+      "mode",
+      "configur"
+    ],
+    "num_results": 5,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_076997",
+        "score": 3.326452,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 1.760344,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 1.672851,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_034286",
+        "score": 1.177564,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_003108",
+        "score": 0.91919,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q06",
+    "query_category": "Homonyms"
+  },
+  {
+    "query_text": "PostgreSQL connection pooling versus session pooling behavior",
+    "query_tokens": [
+      "postgresql",
+      "postgr",
+      "sql",
+      "connect",
+      "pool",
+      "versu",
+      "session",
+      "pool",
+      "behavior"
+    ],
+    "num_results": 3,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_005710",
+        "score": 1.046571,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_003108",
+        "score": 0.91919,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 0.576852,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      }
+    ],
+    "query_id": "Q07",
+    "query_category": "Homonyms"
+  },
+  {
+    "query_text": "React state management patterns introduced strictly after the release of React 18",
+    "query_tokens": [
+      "react",
+      "state",
+      "manag",
+      "pattern",
+      "introduc",
+      "strictli",
+      "releas",
+      "react",
+      "18"
+    ],
+    "num_results": 5,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_005710",
+        "score": 4.84856,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 3.498482,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_027769",
+        "score": 3.344413,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_071579",
+        "score": 1.37909,
+        "title": "Search | CSRC",
+        "url": "https://csrc.nist.gov/publications/Search?page=4",
+        "technology": "NIST",
+        "category": "Security & Identity",
+        "domain": "Operations & Reliability"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_000102",
+        "score": 1.182227,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q08",
+    "query_category": "Temporal"
+  },
+  {
+    "query_text": "Kubernetes security feature deprecations between version 1.20 and version 1.25",
+    "query_tokens": [
+      "kubernet",
+      "secur",
+      "featur",
+      "deprec",
+      "version",
+      "1.20",
+      "version",
+      "1.25"
+    ],
+    "num_results": 5,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 4.88157,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 3.170922,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_003108",
+        "score": 2.528722,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_002913",
+        "score": 1.420525,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_076997",
+        "score": 1.150209,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      }
+    ],
+    "query_id": "Q09",
+    "query_category": "Temporal"
+  },
+  {
+    "query_text": "Java module system additions and breaking changes in JDK 21",
+    "query_tokens": [
+      "java",
+      "modul",
+      "system",
+      "addit",
+      "break",
+      "chang",
+      "jdk",
+      "21"
+    ],
+    "num_results": 5,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 3.877785,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 3.097485,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_000102",
+        "score": 2.219805,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 1.897769,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_076997",
+        "score": 0.726498,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      }
+    ],
+    "query_id": "Q10",
+    "query_category": "Temporal"
+  },
+  {
+    "query_text": "FastAPI dependency injection updates in version 0.100 and newer",
+    "query_tokens": [
+      "fastapi",
+      "fast",
+      "api",
+      "depend",
+      "inject",
+      "updat",
+      "version",
+      "0.100",
+      "newer"
+    ],
+    "num_results": 8,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 2.440637,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_034286",
+        "score": 1.826872,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 1.598778,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 1.219736,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_000102",
+        "score": 1.089919,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_005710",
+        "score": 0.451981,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005004",
+        "score": 0.441383,
+        "title": "ConditionalOnMissingClass (Spring Boot 2.7.9 API)",
+        "url": "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html",
+        "technology": "Spring Boot",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_076997",
+        "score": 0.40842,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      }
+    ],
+    "query_id": "Q11",
+    "query_category": "Temporal"
+  },
+  {
+    "query_text": "Handling ERR_CONNECTION_RESET exceptions in Node.js HTTP/2 streams",
+    "query_tokens": [
+      "handl",
+      "err_connection_reset",
+      "err",
+      "connect",
+      "reset",
+      "except",
+      "node.j",
+      "node",
+      "js",
+      "http",
+      "2",
+      "stream"
+    ],
+    "num_results": 7,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 7.143566,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_005710",
+        "score": 3.702367,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_027769",
+        "score": 2.369691,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_000102",
+        "score": 1.943775,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_034286",
+        "score": 1.115023,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_076997",
+        "score": 0.643774,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_071579",
+        "score": 0.479352,
+        "title": "Search | CSRC",
+        "url": "https://csrc.nist.gov/publications/Search?page=4",
+        "technology": "NIST",
+        "category": "Security & Identity",
+        "domain": "Operations & Reliability"
+      }
+    ],
+    "query_id": "Q12",
+    "query_category": "Exact_Terminology"
+  },
+  {
+    "query_text": "PostgreSQL JSONB containment operator @> performance tuning",
+    "query_tokens": [
+      "postgresql",
+      "postgr",
+      "sql",
+      "jsonb",
+      "contain",
+      "oper",
+      "@>",
+      "perform",
+      "tune"
+    ],
+    "num_results": 7,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_076997",
+        "score": 2.10624,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 2.089178,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_003108",
+        "score": 1.387702,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_002913",
+        "score": 0.816434,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_027769",
+        "score": 0.580102,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_000102",
+        "score": 0.480472,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_034286",
+        "score": 0.429488,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      }
+    ],
+    "query_id": "Q13",
+    "query_category": "Exact_Terminology"
+  },
+  {
+    "query_text": "Docker multi-stage build caching syntax using --mount=type=cache",
+    "query_tokens": [
+      "docker",
+      "multi-stag",
+      "multi",
+      "stage",
+      "build",
+      "cach",
+      "syntax",
+      "us",
+      "--mount",
+      "mount",
+      "type",
+      "cach"
+    ],
+    "num_results": 9,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 3.272587,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_076997",
+        "score": 1.947799,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_027769",
+        "score": 0.799063,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_034286",
+        "score": 0.769565,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_003108",
+        "score": 0.755331,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_002913",
+        "score": 0.678992,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005004",
+        "score": 0.479231,
+        "title": "ConditionalOnMissingClass (Spring Boot 2.7.9 API)",
+        "url": "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html",
+        "technology": "Spring Boot",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_005710",
+        "score": 0.249709,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 9,
+        "doc_id": "document_000102",
+        "score": 0.18686,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q14",
+    "query_category": "Exact_Terminology"
+  },
+  {
+    "query_text": "Configuring PyTorch distributed data parallel find_unused_parameters=True",
+    "query_tokens": [
+      "configur",
+      "pytorch",
+      "py",
+      "torch",
+      "distribut",
+      "data",
+      "parallel",
+      "find_unused_paramet",
+      "find",
+      "unus",
+      "paramet",
+      "true"
+    ],
+    "num_results": 4,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_076997",
+        "score": 12.340233,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 3.801319,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 3.499616,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_034286",
+        "score": 1.847959,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      }
+    ],
+    "query_id": "Q15",
+    "query_category": "Exact_Terminology"
+  },
+  {
+    "query_text": "How to configure zero-downtime rolling updates in AWS ECS using custom health check grace periods for Docker containers",
+    "query_tokens": [
+      "configur",
+      "zero-downtim",
+      "zero",
+      "downtim",
+      "roll",
+      "updat",
+      "aw",
+      "ec",
+      "us",
+      "custom",
+      "health",
+      "check",
+      "grace",
+      "period",
+      "docker",
+      "contain"
+    ],
+    "num_results": 8,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 6.508481,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_076997",
+        "score": 4.634229,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 3.663403,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_000102",
+        "score": 2.70119,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_003108",
+        "score": 1.153939,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_034286",
+        "score": 0.968565,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005710",
+        "score": 0.249709,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_002913",
+        "score": 0.227322,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q16",
+    "query_category": "Multi_Constraint"
+  },
+  {
+    "query_text": "FastAPI background tasks integration with Redis cache invalidation inside Kubernetes pods",
+    "query_tokens": [
+      "fastapi",
+      "fast",
+      "api",
+      "background",
+      "task",
+      "integr",
+      "redi",
+      "cach",
+      "invalid",
+      "insid",
+      "kubernet",
+      "pod"
+    ],
+    "num_results": 7,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 9.188747,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_076997",
+        "score": 2.498593,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 1.081522,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 0.45202,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_005710",
+        "score": 0.451981,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_000102",
+        "score": 0.442132,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005004",
+        "score": 0.441383,
+        "title": "ConditionalOnMissingClass (Spring Boot 2.7.9 API)",
+        "url": "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html",
+        "technology": "Spring Boot",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q17",
+    "query_category": "Multi_Constraint"
+  },
+  {
+    "query_text": "Spring Boot actuator endpoint security configuration using Spring Security custom filters",
+    "query_tokens": [
+      "spring",
+      "boot",
+      "actuat",
+      "endpoint",
+      "secur",
+      "configur",
+      "us",
+      "spring",
+      "secur",
+      "custom",
+      "filter"
+    ],
+    "num_results": 9,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 6.454522,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_005004",
+        "score": 6.019215,
+        "title": "ConditionalOnMissingClass (Spring Boot 2.7.9 API)",
+        "url": "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html",
+        "technology": "Spring Boot",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 2.316853,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_076997",
+        "score": 0.96334,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_005710",
+        "score": 0.280923,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_003108",
+        "score": 0.234748,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_002913",
+        "score": 0.227322,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_034286",
+        "score": 0.216841,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 9,
+        "doc_id": "document_000102",
+        "score": 0.18686,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q18",
+    "query_category": "Multi_Constraint"
+  },
+  {
+    "query_text": "Terraform AWS provider state locking configuration using DynamoDB and S3 backend",
+    "query_tokens": [
+      "terraform",
+      "aw",
+      "provid",
+      "state",
+      "lock",
+      "configur",
+      "us",
+      "dynamodb",
+      "dynamo",
+      "db",
+      "s3",
+      "backend"
+    ],
+    "num_results": 8,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_003108",
+        "score": 2.80684,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_076997",
+        "score": 2.403511,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_027769",
+        "score": 2.294902,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_068088",
+        "score": 1.683986,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_034286",
+        "score": 1.662677,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_002913",
+        "score": 0.85518,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_005710",
+        "score": 0.249709,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_000102",
+        "score": 0.18686,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q19",
+    "query_category": "Multi_Constraint"
+  },
+  {
+    "query_text": "Prometheus scraping metrics from secure gRPC endpoints using TLS client certificates in Kubernetes",
+    "query_tokens": [
+      "prometheu",
+      "scrape",
+      "metric",
+      "secur",
+      "grpc",
+      "g",
+      "rpc",
+      "endpoint",
+      "us",
+      "tl",
+      "client",
+      "certif",
+      "kubernet"
+    ],
+    "num_results": 8,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 4.023733,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 3.529255,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_076997",
+        "score": 2.728211,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_005710",
+        "score": 0.249709,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_003108",
+        "score": 0.234748,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_002913",
+        "score": 0.227322,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 7,
+        "doc_id": "document_034286",
+        "score": 0.216841,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 8,
+        "doc_id": "document_000102",
+        "score": 0.18686,
+        "title": "PersistentMBean (Java 2 Platform SE 5.0)",
+        "url": "https://docs.oracle.com/javase/jp/1.5.0/api/javax/management/PersistentMBean.html",
+        "technology": "Java",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q20",
+    "query_category": "Multi_Constraint"
+  },
+  {
+    "query_text": "Resolving org.apache.kafka.common.errors.RetriableException during consumer rebalance",
+    "query_tokens": [
+      "resolv",
+      "org.apache.kafka.common.errors.retriableexcept",
+      "org",
+      "apach",
+      "kafka",
+      "common",
+      "error",
+      "retriableexcept",
+      "consum",
+      "rebal"
+    ],
+    "num_results": 6,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 2.832953,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_005710",
+        "score": 1.546645,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_005004",
+        "score": 1.339892,
+        "title": "ConditionalOnMissingClass (Spring Boot 2.7.9 API)",
+        "url": "https://docs.spring.io/spring-boot/docs/2.7.9/api/org/springframework/boot/autoconfigure/condition/ConditionalOnMissingClass.html",
+        "technology": "Spring Boot",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_002913",
+        "score": 0.685865,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_027769",
+        "score": 0.559972,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_003108",
+        "score": 0.464697,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q21",
+    "query_category": "Error_Troubleshooting"
+  },
+  {
+    "query_text": "Fixing Docker buildkit out of memory error during npm install layer caching",
+    "query_tokens": [
+      "fix",
+      "docker",
+      "buildkit",
+      "memori",
+      "error",
+      "npm",
+      "instal",
+      "layer",
+      "cach"
+    ],
+    "num_results": 6,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_076997",
+        "score": 3.006,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 2.748797,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_068088",
+        "score": 2.528115,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_002913",
+        "score": 0.685865,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_005710",
+        "score": 0.554573,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_003108",
+        "score": 0.464697,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q22",
+    "query_category": "Error_Troubleshooting"
+  },
+  {
+    "query_text": "Kubernetes deployment resource limits CPU and memory specification syntax",
+    "query_tokens": [
+      "kubernet",
+      "deploy",
+      "resourc",
+      "limit",
+      "cpu",
+      "memori",
+      "specif",
+      "syntax"
+    ],
+    "num_results": 6,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_027769",
+        "score": 5.117149,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_068088",
+        "score": 3.180043,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_076997",
+        "score": 1.876708,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_003108",
+        "score": 0.617282,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 5,
+        "doc_id": "document_034286",
+        "score": 0.582955,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 6,
+        "doc_id": "document_005710",
+        "score": 0.576156,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q23",
+    "query_category": "Configuration_Schema"
+  },
+  {
+    "query_text": "Terraform AWS security group ingress block CIDR block rules configuration",
+    "query_tokens": [
+      "terraform",
+      "aw",
+      "secur",
+      "group",
+      "ingress",
+      "block",
+      "cidr",
+      "block",
+      "rule",
+      "configur"
+    ],
+    "num_results": 4,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 5.640901,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_027769",
+        "score": 1.929057,
+        "title": "Upgrade Redis Enterprise with OpenShift OperatorHub | Docs",
+        "url": "https://redis.io/docs/latest/operate/kubernetes/8.0.18/upgrade/upgrade-olm/",
+        "technology": "Redis",
+        "category": "DB",
+        "domain": "Data Systems"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_076997",
+        "score": 1.797434,
+        "title": "Getting Started | Kubeflow",
+        "url": "https://v1-9-branch.kubeflow.org/docs/components/training/getting-started/",
+        "technology": "Kubeflow",
+        "category": "ML Ops",
+        "domain": "AI & Machine Learning"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_005710",
+        "score": 1.521555,
+        "title": "<title> – React",
+        "url": "https://it.react.dev/reference/react-dom/components/title",
+        "technology": "React",
+        "category": "Web & Backend Frameworks",
+        "domain": "Software Engineering"
+      }
+    ],
+    "query_id": "Q24",
+    "query_category": "Configuration_Schema"
+  },
+  {
+    "query_text": "Architecture difference between Apache Kafka pub-sub topics and Apache Pulsar message streaming storage",
+    "query_tokens": [
+      "architectur",
+      "differ",
+      "apach",
+      "kafka",
+      "pub-sub",
+      "pub",
+      "sub",
+      "topic",
+      "apach",
+      "pulsar",
+      "messag",
+      "stream",
+      "storag"
+    ],
+    "num_results": 4,
+    "results": [
+      {
+        "rank": 1,
+        "doc_id": "document_068088",
+        "score": 5.447494,
+        "title": "RFC 9639: Free Lossless Audio Codec (FLAC)",
+        "url": "https://www.rfc-editor.org/rfc/rfc9639.html?ref=soundforgepro.com",
+        "technology": "RFCs",
+        "category": "OS, Networking & Web Servers",
+        "domain": "Infrastructure"
+      },
+      {
+        "rank": 2,
+        "doc_id": "document_003108",
+        "score": 2.985715,
+        "title": "Deref in std::ops - Rust",
+        "url": "https://doc.rust-lang.org/std/ops/trait.Deref.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 3,
+        "doc_id": "document_002913",
+        "score": 1.280796,
+        "title": "ParseCharError in std::char - Rust",
+        "url": "https://doc.rust-lang.org/std/char/struct.ParseCharError.html",
+        "technology": "Rust",
+        "category": "Prog Lang",
+        "domain": "Software Engineering"
+      },
+      {
+        "rank": 4,
+        "doc_id": "document_034286",
+        "score": 0.963086,
+        "title": "Database hits - Cypher Manual",
+        "url": "https://neo4j.com/docs/cypher-manual/4.4/execution-plans/db-hits/",
+        "technology": "Neo4j",
+        "category": "DB",
+        "domain": "Data Systems"
+      }
+    ],
+    "query_id": "Q25",
+    "query_category": "Conceptual_Procedural"
+  }
+]
