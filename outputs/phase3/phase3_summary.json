@@ -7,10 +7,10 @@
   },
   "index_statistics": {
     "total_documents": 484,
-    "vocabulary_size": 60310,
-    "total_postings_entries": 182887,
-    "total_position_entries": 1577586,
-    "avg_postings_per_term": 3.03,
+    "vocabulary_size": 60163,
+    "total_postings_entries": 182739,
+    "total_position_entries": 1577372,
+    "avg_postings_per_term": 3.04,
     "avg_zone_lengths": {
       "title": 6.2,
       "heading": 50.0,
@@ -18,7 +18,7 @@
       "code": 1400.4
     }
   },
-  "index_size_mb": 44.61,
+  "index_size_mb": 27.12,
   "queries_executed": 25,
   "query_summary": [
     {
@@ -272,5 +272,5 @@
       "top_doc_technology": "OpenTelemetry"
     }
   ],
-  "elapsed_seconds": 8.5
+  "elapsed_seconds": 8.49
 }

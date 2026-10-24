@@ -21,6 +21,7 @@ No off-the-shelf retrieval libraries are used (project constraint).
 
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import Any
 
 from src.phase3_classic_ir.inverted_index import InvertedIndex, ZONES
@@ -97,8 +98,8 @@ class BM25Scorer:
         top_k: int = 20,
     ) -> list[dict[str, Any]]:
         """
-        Score all documents in the index against the query and return
-        the top-k ranked results.
+        Score all documents in the index against the query using an accumulator
+        and return the top-k ranked results.
 
         Args:
             query_terms: Tokenized and stemmed query terms.
@@ -108,24 +109,28 @@ class BM25Scorer:
             List of dicts with doc_id, score, and metadata, sorted by
             descending score.
         """
-        # Collect candidate documents: union of all docs containing any query term
-        candidate_docs: set[str] = set()
-        for term in query_terms:
-            for posting in self.index.get_postings(term):
-                candidate_docs.add(posting.doc_id)
+        scores: dict[str, float] = defaultdict(float)
 
-        if not candidate_docs:
+        for term in query_terms:
+            idf = self.index.idf(term)
+            if idf <= 0.0:
+                continue
+
+            for posting in self.index.get_postings(term):
+                tf = sum(posting.zone_tfs.values())
+                if tf <= 0:
+                    continue
+
+                doc_len = self.index.get_total_doc_length(posting.doc_id)
+                numerator = tf * (self.k1 + 1.0)
+                denominator = tf + self.k1 * (1.0 - self.b + self.b * doc_len / self.avgdl)
+                scores[posting.doc_id] += idf * (numerator / denominator)
+
+        if not scores:
             return []
 
-        # Score each candidate
-        scored: list[tuple[str, float]] = []
-        for doc_id in candidate_docs:
-            s = self.score_document(query_terms, doc_id)
-            if s > 0:
-                scored.append((doc_id, s))
-
-        # Sort by score descending
-        scored.sort(key=lambda x: -x[1])
+        # Sort candidate documents by descending score
+        scored = sorted(scores.items(), key=lambda x: -x[1])
 
         # Return top-k with metadata
         results: list[dict[str, Any]] = []

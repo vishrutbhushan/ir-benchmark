@@ -31,8 +31,8 @@ ZONES = ("title", "heading", "body", "code")
 class Posting(NamedTuple):
     """A single posting entry in the inverted index."""
     doc_id: str
-    zone_tfs: dict[str, int]       # {"title": 2, "heading": 0, "body": 5, "code": 1}
-    positions: list[tuple[str, int]]  # [("title", 0), ("body", 12), ("body", 45), ...]
+    zone_tfs: dict[str, int]          # only non-zero zones: {"body": 5, "heading": 1}
+    positions: dict[str, list[int]]  # {"heading": [11], "body": [175, 190, ...]}
 
 
 class InvertedIndex:
@@ -109,16 +109,21 @@ class InvertedIndex:
 
                     # Process each token: build zone TFs and positional info
                     for position, token in enumerate(tokens):
+                        # Filter out corrupt/replacement tokens or empty tokens
+                        token = token.replace("\ufffd", "").strip()
+                        if not token or len(token) > 64:
+                            continue
+
                         self.vocabulary.add(token)
 
                         if doc_id not in temp_postings[token]:
                             temp_postings[token][doc_id] = {
-                                "zone_tfs": {z: 0 for z in ZONES},
-                                "positions": [],
+                                "zone_tfs": defaultdict(int),
+                                "positions": defaultdict(list),
                             }
 
                         temp_postings[token][doc_id]["zone_tfs"][zone] += 1
-                        temp_postings[token][doc_id]["positions"].append((zone, position))
+                        temp_postings[token][doc_id]["positions"][zone].append(position)
 
                 self.doc_zone_lengths[doc_id] = zone_lengths
 
@@ -144,8 +149,8 @@ class InvertedIndex:
                 posting_list.append(
                     Posting(
                         doc_id=did,
-                        zone_tfs=data["zone_tfs"],
-                        positions=data["positions"],
+                        zone_tfs=dict(data["zone_tfs"]),
+                        positions=dict(data["positions"]),
                     )
                 )
             # Sort postings by doc_id for deterministic output
@@ -215,54 +220,95 @@ class InvertedIndex:
     # ── Serialization ─────────────────────────────────────────────────────
 
     def save(self, path: Path) -> None:
-        """Serialize the inverted index to disk as JSON."""
+        """
+        Serialize the inverted index to disk as a pure inverted index.
+        Also saves document catalog (lengths, averages, metadata) to document_catalog.json.
+        """
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        data = {
+        # 1. Pure Inverted Index (term -> {df, idf, postings})
+        index_data = {}
+        for term, plist in self.postings.items():
+            df = len(plist)
+            idf = self.idf(term)
+            index_data[term] = {
+                "df": df,
+                "idf": round(idf, 6),
+                "postings": [
+                    {
+                        "doc_id": p.doc_id,
+                        "tfs": p.zone_tfs,
+                        "positions": p.positions,
+                    }
+                    for p in plist
+                ],
+            }
+
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(index_data, f, ensure_ascii=False)
+
+        # 2. Document Catalog (lengths, averages, metadata)
+        catalog_path = path.parent / "document_catalog.json"
+        catalog_data = {
             "total_docs": self.total_docs,
             "vocabulary_size": len(self.vocabulary),
             "avg_zone_lengths": self.avg_zone_lengths,
             "doc_zone_lengths": self.doc_zone_lengths,
             "doc_metadata": self.doc_metadata,
-            "postings": {
-                term: [
-                    {
-                        "doc_id": p.doc_id,
-                        "zone_tfs": p.zone_tfs,
-                        "positions": p.positions,
-                    }
-                    for p in plist
-                ]
-                for term, plist in self.postings.items()
-            },
         }
-
-        with path.open("w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False)
+        with catalog_path.open("w", encoding="utf-8") as f:
+            json.dump(catalog_data, f, ensure_ascii=False, indent=2)
 
     @classmethod
-    def load(cls, path: Path) -> "InvertedIndex":
-        """Deserialize an inverted index from disk."""
+    def load(cls, path: Path, catalog_path: Path | None = None) -> "InvertedIndex":
+        """Deserialize an inverted index and its document catalog from disk."""
+        if catalog_path is None:
+            catalog_path = path.parent / "document_catalog.json"
+
         with path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
+            raw_data = json.load(f)
 
         idx = cls()
-        idx.total_docs = data["total_docs"]
-        idx.avg_zone_lengths = data["avg_zone_lengths"]
-        idx.doc_zone_lengths = data["doc_zone_lengths"]
-        idx.doc_metadata = data["doc_metadata"]
-        idx.vocabulary = set()
 
-        for term, plist in data["postings"].items():
+        # Check if legacy wrapped format or clean index format
+        if "postings" in raw_data and "total_docs" in raw_data:
+            idx.total_docs = raw_data["total_docs"]
+            idx.avg_zone_lengths = raw_data["avg_zone_lengths"]
+            idx.doc_zone_lengths = raw_data["doc_zone_lengths"]
+            idx.doc_metadata = raw_data["doc_metadata"]
+            postings_dict = raw_data["postings"]
+        else:
+            if catalog_path.exists():
+                with catalog_path.open("r", encoding="utf-8") as f:
+                    cat = json.load(f)
+                idx.total_docs = cat["total_docs"]
+                idx.avg_zone_lengths = cat["avg_zone_lengths"]
+                idx.doc_zone_lengths = cat["doc_zone_lengths"]
+                idx.doc_metadata = cat["doc_metadata"]
+            postings_dict = raw_data
+
+        idx.vocabulary = set()
+        for term, val in postings_dict.items():
             idx.vocabulary.add(term)
-            idx.postings[term] = [
-                Posting(
-                    doc_id=p["doc_id"],
-                    zone_tfs=p["zone_tfs"],
-                    positions=[tuple(pos) for pos in p["positions"]],
+            plist_raw = val["postings"] if isinstance(val, dict) and "postings" in val else val
+            idx.postings[term] = []
+            for p in plist_raw:
+                tfs = p.get("tfs", p.get("zone_tfs", {}))
+                pos = p.get("positions", {})
+                if isinstance(pos, list):
+                    # convert legacy list of pairs [("zone", offset)]
+                    pos_dict: dict[str, list[int]] = defaultdict(list)
+                    for item in pos:
+                        if isinstance(item, (list, tuple)) and len(item) == 2:
+                            pos_dict[item[0]].append(item[1])
+                    pos = dict(pos_dict)
+                idx.postings[term].append(
+                    Posting(
+                        doc_id=p["doc_id"],
+                        zone_tfs=tfs,
+                        positions=pos,
+                    )
                 )
-                for p in plist
-            ]
 
         return idx
 
@@ -270,7 +316,7 @@ class InvertedIndex:
         """Return summary statistics about the index."""
         total_postings = sum(len(pl) for pl in self.postings.values())
         total_positions = sum(
-            len(p.positions)
+            sum(len(offsets) for offsets in p.positions.values()) if isinstance(p.positions, dict) else len(p.positions)
             for pl in self.postings.values()
             for p in pl
         )

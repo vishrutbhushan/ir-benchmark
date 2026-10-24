@@ -2,18 +2,18 @@
 
 **BM25 Parameters:** k1=1.2, b=0.75
 **Top-K:** 20
-**Index Size:** 44.61 MB
-**Elapsed Time:** 8.5s
+**Index Size:** 27.12 MB
+**Elapsed Time:** 8.49s
 
 ## Index Statistics
 
 | Metric | Value |
 |--------|-------|
 | total_documents | 484 |
-| vocabulary_size | 60,310 |
-| total_postings_entries | 182,887 |
-| total_position_entries | 1,577,586 |
-| avg_postings_per_term | 3.03 |
+| vocabulary_size | 60,163 |
+| total_postings_entries | 182,739 |
+| total_position_entries | 1,577,372 |
+| avg_postings_per_term | 3.04 |
 
 ## Average Zone Lengths
 

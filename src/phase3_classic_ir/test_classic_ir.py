@@ -51,16 +51,16 @@ def test_inverted_index_manual():
 
     # Term: 'docker' appears in doc1 (df=2) and doc2
     idx.postings["docker"] = [
-        Posting(doc_id="doc1", zone_tfs={"title": 1, "heading": 1, "body": 2, "code": 1}, positions=[("title", 0)]),
-        Posting(doc_id="doc2", zone_tfs={"title": 1, "heading": 0, "body": 3, "code": 0}, positions=[("title", 0)]),
+        Posting(doc_id="doc1", zone_tfs={"title": 1, "heading": 1, "body": 2, "code": 1}, positions={"title": [0]}),
+        Posting(doc_id="doc2", zone_tfs={"title": 1, "heading": 0, "body": 3, "code": 0}, positions={"title": [0]}),
     ]
     # Term: 'swarm' appears only in doc1 (df=1)
     idx.postings["swarm"] = [
-        Posting(doc_id="doc1", zone_tfs={"title": 1, "heading": 1, "body": 1, "code": 0}, positions=[("title", 1)]),
+        Posting(doc_id="doc1", zone_tfs={"title": 1, "heading": 1, "body": 1, "code": 0}, positions={"title": [1]}),
     ]
     # Term: 'network' appears in doc2 (df=1)
     idx.postings["network"] = [
-        Posting(doc_id="doc2", zone_tfs={"title": 1, "heading": 0, "body": 2, "code": 0}, positions=[("title", 1)]),
+        Posting(doc_id="doc2", zone_tfs={"title": 1, "heading": 0, "body": 2, "code": 0}, positions={"title": [1]}),
     ]
 
     idx.vocabulary = {"docker", "swarm", "network"}
@@ -153,11 +153,9 @@ def main():
     test_serialization(idx, tmp_dir)
 
     # Clean up test output
-    test_file = tmp_dir / "test_index.json"
-    if test_file.exists():
-        test_file.unlink()
+    import shutil
     if tmp_dir.exists():
-        tmp_dir.rmdir()
+        shutil.rmtree(tmp_dir)
 
     print("=" * 60)
     print("ALL PHASE 3 VALIDATION TESTS PASSED [OK]")
