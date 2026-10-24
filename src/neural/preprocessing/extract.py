@@ -32,7 +32,7 @@ def extract_document(raw, record):
     except UnicodeDecodeError:
         encoding = None
     tree = html.document_fromstring(raw, parser=html.HTMLParser(encoding=encoding, recover=True, no_network=True))
-    title = clean(' '.join(tree.xpath('//title//text()'))) or record.get('title') or record['url']
+    title = clean(' '.join(tree.xpath('//title//text()'))) or (record.get('title') if record.get('title') != record['url'] else '') or ''
     selected = None
     method = 'trafilatura_fallback'
     for selector in SELECTORS:
@@ -81,23 +81,11 @@ def extract_document(raw, record):
             current = {'heading_path': [t for _,t in stack], 'anchor': node.get('id') or '', 'blocks': []}
             sections.append(current)
             return
-        if tag == 'pre':
+        if tag == 'pre' or (tag == 'code' and '\n' in node.text_content()):
             text = node.text_content().replace('\r\n','\n').strip('\n')
             kind = 'prose' if pre_is_prose else 'code'
         elif tag == 'table':
-            lines = []
-            rows = node.xpath('.//tr')
-            header = []
-            for row in rows:
-                cells = [clean(c.text_content()) for c in row.xpath('./th|./td')]
-                if not cells:
-                    continue
-                if not header and row.xpath('./th'):
-                    header = cells
-                    lines.append(' | '.join(cells))
-                else:
-                    lines.append(' | '.join(f'{header[i]}: {c}' if i < len(header) else c for i,c in enumerate(cells)))
-            text, kind = '\n'.join(lines), 'table'
+            text, kind = clean(' '.join(node.itertext())), 'prose'
         else:
             text, kind = clean(node.text_content()), 'list' if tag in {'li','dt','dd'} else 'prose'
         if not text.strip():
@@ -108,9 +96,9 @@ def extract_document(raw, record):
 
     def walk(node):
         tag = str(node.tag).lower()
-        if tag in {'li','dd','blockquote'} and node.xpath('.//pre|.//table|.//h1|.//h2|.//h3'):
+        if tag in {'p','li','dd','blockquote'} and (node.xpath('.//pre|.//table|.//h1|.//h2|.//h3') or any('\n' in c.text_content() for c in node.xpath('.//code'))):
             tag = 'container'
-        if tag in BLOCK_TAGS:
+        if tag in BLOCK_TAGS or (tag == 'code' and '\n' in node.text_content()):
             # Nested lists are emitted exactly once as part of their parent item.
             emit(node)
             return

@@ -33,7 +33,7 @@ class Encoder:
         from transformers import AutoModel
         self.torch = torch
         if device == 'cuda' and not torch.cuda.is_available():
-            raise RuntimeError('CUDA unavailable: use GPU-enabled WSL/terminal (agent sandbox can hide GPU), or explicitly --device cpu')
+            raise RuntimeError('CUDA is unavailable. Select --device cpu or use a compatible PyTorch/CUDA installation.')
         self.device = device
         torch.set_num_threads(8)
         self.tokenizer = tokenizer(path)

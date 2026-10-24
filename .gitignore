@@ -65,3 +65,6 @@ desktop.ini
 
 # Local submission instructions.
 /intermediate_status_report_instructions.txt
+
+# Private device/session history; shared project rules remain versioned.
+/.agent/local/

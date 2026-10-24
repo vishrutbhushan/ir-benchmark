@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler,HTTPServer
 import json
 from pathlib import Path
 from urllib.parse import parse_qs,urlsplit
+from src.neural.search import MODES
 
 
 def serve(engine,host='127.0.0.1',port=8000):
@@ -13,11 +14,14 @@ def serve(engine,host='127.0.0.1',port=8000):
         def do_GET(self):
             parsed=urlsplit(self.path)
             try:
-                if parsed.path=='/':
-                    data=Path(__file__).with_name('web').joinpath('index.html').read_bytes()
-                    content_type='text/html; charset=utf-8'
+                assets = {'/': ('index.html', 'text/html; charset=utf-8'),
+                          '/search.js': ('search.js', 'application/javascript; charset=utf-8'),
+                          '/style.css': ('style.css', 'text/css; charset=utf-8')}
+                if parsed.path in assets:
+                    filename, content_type = assets[parsed.path]
+                    data = Path(__file__).with_name('web').joinpath(filename).read_bytes()
                 elif parsed.path=='/api/options':
-                    data=json.dumps({'documents':len(engine.documents),'passages':len(engine.matrix),'technologies':engine.technology_options,'categories':engine.category_options,'index_version':engine.summary['fingerprint'],'startup_warmup_ms':engine.startup_warmup_ms}).encode()
+                    data=json.dumps({'documents':len(engine.documents),'passages':sum(len(m) for m in engine.matrices.values()),'modes':list(MODES),'default_mode':'routed-centroid','weights':dict(zip(('title','headings','body','code'),map(float,engine.weights))),'technologies':engine.technology_options,'categories':engine.category_options,'index_version':engine.summary['fingerprint'],'startup_warmup_ms':engine.startup_warmup_ms}).encode()
                     content_type='application/json'
                 elif parsed.path=='/api/search':
                     values=parse_qs(parsed.query)
@@ -25,7 +29,7 @@ def serve(engine,host='127.0.0.1',port=8000):
                     page=max(1,int(get('page','1')))
                     if page>100:
                         raise ValueError('Only the first 100 pages are available')
-                    result=engine.search(get('q'),limit=1000,technology=get('technology'),category=get('category'),offset=(page-1)*10,page_size=10)
+                    result=engine.search(get('q'),mode=get('mode','routed-centroid'),limit=1000,technology=get('technology'),category=get('category'),offset=(page-1)*10,page_size=10)
                     result={**result,'page':page,'page_size':10}
                     data=json.dumps(result,ensure_ascii=False).encode()
                     content_type='application/json; charset=utf-8'

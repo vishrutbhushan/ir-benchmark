@@ -1,95 +1,76 @@
 # Technical IR Benchmark
 
-Course project comparing classic BM25/TF-IDF with neural retrieval on technical
-HTML documents. This work implements the neural side; teammates own classic ranking.
-Development branch: `develop_vishrut`.
+Course project comparing BM25/TF-IDF with neural retrieval on technical HTML
+pages. This branch implements neural retrieval; teammates maintain classic ranking.
 
-## Run
+## Setup and run
 
-Use the single `.venv` and existing requirements file:
+Use Python 3.12+ and one environment:
 
 ```bash
+python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-technical-web-corpus.txt
-python run_pipeline.py --phase serve
 ```
 
-Open **http://127.0.0.1:8000** for search, filters and pagination. The current local
-index contains 68,418 documents / 767,679 passages, with 1,024-dimensional vectors
-stored on disk (~1.46 GiB). Search uses hand-coded cosine and max-passage document
-ranking. The summary hierarchy is removed. No database server is required; SQLite
-stores source text/metadata and NumPy files store vectors. Bounded caches speed reuse.
+On Windows, activate with `.venv\Scripts\Activate.ps1`. Install the PyTorch build
+appropriate for your platform/GPU if the default installation does not provide CUDA.
 
-Build, check or search from the CLI:
+Obtain the team's corrected `technical_web_corpus/` folder, including
+`metadata/corpus_manifest.jsonl`. Alternatively, put the original
+`technical_web_corpus.zip` in the repository root; initial preparation validates,
+repairs and extracts it. Live repairs may differ from the team's corrected snapshot,
+so both engines must use the same corrected folder for a fair comparison.
 
 ```bash
 python run_pipeline.py --phase all --workers 8 --batch-size 512
-python run_pipeline.py --phase validate --workers 8
-python run_pipeline.py --phase search --query "PostgreSQL JSONB indexing" --limit 10
-python run_pipeline.py --phase verify
-python -m unittest discover -s tests -v
+python run_pipeline.py --phase serve
 ```
 
-`all`: validate/recover sources → fix the working dataset → extract → chunk → embed
-→ verify. Completed unchanged stages are reused; interrupted embedding builds resume.
-Individual stages: `prepare` (including shared corpus fixes), `extract`, `chunk`, `embed`.
-The model is pinned Qwen3-Embedding-0.6B.
+Open **http://127.0.0.1:8000** for search, retrieval-method selection, filters and
+pagination. Build before serving. Use `--device cpu` on a system without CUDA;
+it will be slower. No database server is needed.
 
-## Shared corpus
+`all` runs corpus validation/fixes → extraction → four-zone windows → embeddings
+→ learned weights → classifiers → routing → verification. It also evaluates when
+`data/evaluation/qrels.csv` exists. A full build is required before search/serve.
 
-Both teammates use **`technical_web_corpus/` directly**, including its normal
-`metadata/corpus_manifest.jsonl`. Accepted repairs are applied to the HTML files;
-excluded captures are outside the working dataset. No separate allowlist is needed.
-The corrected dataset contains 68,418 documents, across 11 categories / 76 technologies.
-The original 79,268-document ZIP remains unchanged; local recovery copies and original
-metadata are in `outputs/corpus_backup/`. Full hash/coverage checks verify the corrected
-files; this is not a claim of perfect content extraction.
+Interrupt with Ctrl+C to pause. Run the same command to resume: unchanged stages
+and completed zones are reused, and partial embeddings resume at their checkpoint.
+Keep the corpus, downloaded model and `outputs/` intact. Changes to embedding inputs
+or the encoder can invalidate affected vectors.
 
-Neural preprocessing is separate from classic preprocessing. It preserves negation,
-case, versions, identifiers and code whitespace, using the model's tokenizer.
+## What is included
 
-## Learning data
+- Independent title, headings, body and code indexes; visible table text joins body.
+- Pinned Qwen3-Embedding-0.6B and hand-coded cosine ranking.
+- Plain dense baseline, learned weighted zones, centroid and Naive Bayes class routing.
+- Durable SQLite text/metadata, NumPy vectors and bounded search caches.
+- Learning CSVs: 44 development queries / 262 relevance pairs for zone weights;
+  420 documents / 14 source-domain classes for classification (280/70/70 split).
+- Twenty challenge queries and hand-coded NDCG@5/MAP evaluation.
 
-| Task | Self-contained CSV | Size |
-|---|---|---|
-| Zone weights | `data/neural/zone_weights/training.csv` | 44 queries, 264 pairs; 262 usable |
-| NB and centroid classification | `data/neural/classification/training.csv` | 420 documents; 14 classes |
+The full four-zone build and evaluation have **not yet completed**. Generated
+outputs, checkpoints, weights, models, raw HTML and logs are excluded from Git.
+A fresh clone therefore needs the corpus and a local build. Training refreshes
+CSV features/text against that build; committed feature values are not final results.
 
-The first table includes query/document details, relevance and four zone cosines.
-The second includes full document text, class ID/name and split. Use only its `text`
-column as classifier input. Both classifiers share its 280/70/70 train/validation/test
-split. No CSV joins or user annotation are needed. Class labels describe source domains.
+## Checks and evaluation
 
 ```bash
-python run_pipeline.py --phase development-features --batch-size 32
-python run_pipeline.py --phase classification-data
+python -m unittest discover -s tests -v
+python run_pipeline.py --phase audit
+python run_pipeline.py --phase verify
+python run_pipeline.py --phase search --query "PostgreSQL JSONB indexing" --mode dense --limit 10
+python run_pipeline.py --phase evaluation-pool
+python run_pipeline.py --phase evaluate
 ```
 
-These commands prepare learning data. Weight fitting, classifier training/routing
-and separate production zone indexes remain pending. The four development zones
-are title, headings, body and code; table text joins body. The book starts with
-Boolean zone matches; our cosine features are a neural adaptation. See
-[design and book alignment](docs/DESIGN.md).
+`audit` needs extracted data and refreshed learning tables; `verify` and the search/
+evaluation commands need a completed build. `evaluation-pool` exports candidate
+source excerpts for relevance judgments. `evaluate` requires graded
+`data/evaluation/qrels.csv`; final judgments are not included yet. To compare engines,
+add `--classic-rankings PATH` using the shared query suite and judgments.
 
-## Files and results
-
-- `src/corpus_validation/`: archive checks and fixes to the shared working dataset.
-- `src/neural/preprocessing/`: independent structured extraction and token windows.
-- `src/neural/learning/`: separate zone-feature and classification-data modules.
-- `src/neural/search.py`, `server.py`, `web/`: cosine ranking and local UI.
-- `outputs/`: corrected-corpus checks, extraction, durable model/index, charts and dashboards.
-- `logs/`: stage logs. Both output folders are Git-ignored.
-
-[Verification report](outputs/neural/verification/report.md) ·
-[Corpus-fix report](outputs/corpus_fix/report.md) ·
-[Development report](outputs/neural/development/report.md) ·
-[Classification report](outputs/neural/classification/report.md) ·
-[History](docs/PROJECT_HISTORY.md)
-
-The 25 candidate queries in `queries.jsonl` support engineering verification.
-Final 20-query selection, relevance judgments, hand-coded NDCG@5/MAP and comparative
-failure analysis remain evaluation work. No relevance improvements are claimed yet.
-
-Original crawler (only for intentionally collecting a new corpus):
-`python build_technical_web_corpus.py --crawl CC-MAIN-2026-34`.
-Do not resume it into the corrected working corpus.
+See [docs/NEURAL.md](docs/NEURAL.md) for architecture, data and course connections.
+Generated reports/charts are under `outputs/neural/`; stage logs are under `logs/neural/`.

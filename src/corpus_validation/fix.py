@@ -9,6 +9,9 @@ from src.corpus_validation.paths import safe_destination
 from src.neural.common import digest_file, records, report, write_json
 
 
+REVIEWED_EXCLUSIONS = {'document_001861':'unusable ISO-2022-JP escape sequences',
+                       'document_062145':'Spanish translation outside English corpus'}
+
 def _check_file(task):
     root, row = task
     path = safe_destination(root, row['html_path'])
@@ -130,3 +133,38 @@ def _update_extraction_metadata(extraction, corrected, state):
     write_json(summary_path, stats)
     # Eligibility decisions remain internal audit history; no companion list is needed.
     (extraction / 'eligible_manifest.jsonl').unlink()
+
+
+def apply_exclusions(corpus_root, exclusions, backup):
+    """Remove confirmed defects from the dataset itself, preserving recovery files."""
+    root, backup = Path(corpus_root), Path(backup)
+    manifest = root / 'metadata/corpus_manifest.jsonl'
+    rows = list(records(manifest))
+    removed = [r for r in rows if r['doc_id'] in exclusions]
+    if not removed:
+        return
+    backup.mkdir(parents=True, exist_ok=True)
+    saved_manifest = backup / f"manifest-{digest_file(manifest)[:12]}.jsonl"
+    if not saved_manifest.exists():
+        shutil.copy2(manifest, saved_manifest)
+    for row in removed:
+        path = safe_destination(root, row['html_path'])
+        target = safe_destination(backup, row['html_path'])
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            raise ValueError(f'Recovery destination already exists: {target}')
+        path.replace(target)
+    temporary = manifest.with_suffix('.jsonl.part')
+    with temporary.open('w', encoding='utf-8') as stream:
+        for row in rows:
+            if row['doc_id'] not in exclusions:
+                stream.write(json.dumps(row, ensure_ascii=False) + '\n')
+    temporary.replace(manifest)
+    state_path = root / 'metadata/corpus_state.json'
+    state = json.loads(state_path.read_text())
+    history = state.setdefault('quality_exclusions', {})
+    history.update({r['doc_id']: exclusions[r['doc_id']] for r in removed})
+    state.update(manifest_sha256=digest_file(manifest),documents=len(rows)-len(removed))
+    state['excluded_documents'] = state.get('excluded_documents', 0) + len(removed)
+    write_json(state_path, state)
+    print(f'Applied {len(removed)} quality exclusions to the shared dataset.', flush=True)

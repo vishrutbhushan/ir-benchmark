@@ -1,12 +1,96 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Technical Search</title>
-<style>
-:root{color-scheme:light;--ink:#17343a;--muted:#536b70;--line:#d6e0df;--accent:#096b69}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:#f7f9f7;color:var(--ink);font:16px/1.55 system-ui,sans-serif}header{border-bottom:1px solid var(--line);padding:18px max(24px,calc((100vw - 1080px)/2));display:flex;justify-content:space-between;gap:24px;background:#fff}.brand{font-weight:750;letter-spacing:-.4px}.tag{font:12px/2 monospace;color:var(--muted)}main{max-width:1080px;margin:auto;padding:48px 24px}h1{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-1.5px;margin:0 0 14px}.intro{color:var(--muted);max-width:650px;margin-bottom:30px}form{background:white;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 6px 24px #17343a08}.searchline{display:flex;gap:10px}input{min-width:0;flex:1;font-size:17px;border:1px solid var(--line);padding:13px 15px;border-radius:6px}button{border:0;background:var(--accent);color:white;font-weight:650;font-size:15px;padding:12px 22px;border-radius:6px;cursor:pointer}button:disabled{opacity:.45;cursor:default}.filters{display:flex;gap:18px;flex-wrap:wrap;margin-top:15px}label{font-size:12px;font-weight:650;color:var(--muted)}select{display:block;max-width:270px;padding:7px 28px 7px 8px;background:white;border:1px solid var(--line);border-radius:5px;color:var(--ink);margin-top:4px}.examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.examples button{font-size:12px;font-weight:450;color:var(--muted);background:#eaf0ed;padding:7px 10px}.status{min-height:55px;padding:20px 0;color:var(--muted);font-size:13px}.result{padding:24px 0;border-top:1px solid var(--line)}.result h2{overflow-wrap:anywhere;font-size:20px;line-height:1.35;font-weight:650;margin:5px 0 6px}.result a{color:#075b66;text-decoration:none}.result a:hover{text-decoration:underline}.url{font:12px monospace;color:var(--muted);overflow-wrap:anywhere}.meta{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}.snippet{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0 0;max-height:170px;overflow:auto}.heading{font-size:12px;color:var(--accent);margin-top:8px}nav{display:flex;align-items:center;justify-content:center;gap:20px;margin:25px 0}nav button{background:white;color:var(--accent);border:1px solid var(--line)}.empty{padding:35px 0;max-width:620px;color:var(--muted)}footer{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:20px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e6ad45;outline-offset:3px}@media(max-width:600px){main{padding:30px 18px}.searchline{flex-direction:column}header{padding:15px 18px}.tag{display:none}.filters{gap:12px}select{max-width:100%;width:100%}.filters label{flex:1;min-width:130px}}
-</style></head><body><header><span class="brand">Technical Search <span style="color:#0b8b7c">/</span></span><span class="tag" id="corpus">LOCAL DOCUMENT RETRIEVAL</span></header><main><h1>Find the right reference.</h1><p class="intro">Search technical documentation by meaning. Explore the matching section, then open the original source.</p><form id="form"><div class="searchline"><input id="query" type="search" aria-label="Search technical documentation" placeholder="How do I cancel an asyncio task safely?" required maxlength="4000"><button id="search" type="submit">Search</button></div><div class="filters"><label>Technology<select id="technology"><option value="">All technologies</option></select></label><label>Category<select id="category"><option value="">All categories</option></select></label></div></form><div class="examples"><button type="button">PostgreSQL JSONB indexing</button><button type="button">Python async cancellation</button><button type="button">Kafka consumer offset commits</button></div><div class="status" id="status" role="status" aria-live="polite"></div><section id="results" aria-label="Search results"><p class="empty">Ask about an API, describe a problem, or search for a technical concept. Results link to the source documents; no generated answers.</p></section><nav id="pagination" aria-label="Result pages" hidden><button id="prev" type="button">Previous</button><span id="page"></span><button id="next" type="button">Next</button></nav><footer>Neural retrieval course project · Cosine search returns original documents and their matching passages.</footer></main>
-<script>
-const $=id=>document.getElementById(id);let page=1,active=null,controller=null;
-function element(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
-fetch('/api/options').then(r=>r.json()).then(o=>{$('corpus').textContent=`${o.documents.toLocaleString()} DOCUMENTS · ${o.passages.toLocaleString()} PASSAGES`;for(const name of ['technology','category'])for(const value of o[name==='technology'?'technologies':'categories']){const e=element('option',value);e.value=value;$(name).append(e)}const initial=new URLSearchParams(location.search);if(initial.get('q')){$('query').value=initial.get('q');search(true)}}).catch(()=>{$('status').textContent='Could not connect to the local search service.'});
-async function search(newSearch){if(newSearch){page=1;active={q:$('query').value,technology:$('technology').value,category:$('category').value}}if(!active?.q.trim())return;if(controller)controller.abort();controller=new AbortController();$('search').disabled=true;$('status').textContent='Searching the corpus…';try{const r=await fetch('/api/search?'+new URLSearchParams({...active,page}),{signal:controller.signal});const data=await r.json();if(!r.ok)throw Error(data.error||'Search failed');$('results').replaceChildren();for(const item of data.results){const article=element('article','','result');article.dataset.docId=item.doc_id;article.append(element('div',`${item.technology} / ${item.category} · #${item.rank} · ${item.score.toFixed(4)}`,'meta'));const h=element('h2','');const a=element('a',item.title);const target=new URL(item.url);if(item.passage.anchor)target.hash=item.passage.anchor;if(['http:','https:'].includes(target.protocol))a.href=target.href;a.target='_blank';a.rel='noopener noreferrer';h.append(a);article.append(h,element('div',item.url,'url'));if(item.passage.heading)article.append(element('div',item.passage.heading,'heading'));article.append(element('p',item.passage.text,'snippet'));$('results').append(article)}if(!data.results.length)$('results').append(element('p','No documents match these filters.','empty'));$('status').textContent=`${data.total_documents.toLocaleString()} documents · showing up to ${data.retrieved_depth.toLocaleString()} ranked results · ${data.elapsed_ms.toFixed(0)} ms${data.cache_hit?' · cached':''}`;$('pagination').hidden=!data.results.length;$('page').textContent=`Page ${page} of ${Math.ceil(data.retrieved_depth/10)}`;$('prev').disabled=page===1;$('next').disabled=page*10>=data.retrieved_depth}catch(e){if(e.name!=='AbortError'){$('status').textContent=e.message;$('results').replaceChildren();$('pagination').hidden=true}}finally{$('search').disabled=false}}
-$('form').onsubmit=e=>{e.preventDefault();search(true)};$('prev').onclick=()=>{page--;search(false)};$('next').onclick=()=>{page++;search(false)};document.querySelectorAll('.examples button').forEach(b=>b.onclick=()=>{$('query').value=b.textContent;search(true)});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Technical Search
+  </title>
+  <link href="/style.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <header>
+   <span class="brand">
+    Technical Search
+    <span style="color:#0b8b7c">
+     /
+    </span>
+   </span>
+   <span class="tag" id="corpus">
+    LOCAL DOCUMENT RETRIEVAL
+   </span>
+  </header>
+  <main>
+   <h1>
+    Find the right reference.
+   </h1>
+   <p class="intro">
+    Search technical documentation by meaning. Explore the matching section, then open the original source.
+   </p>
+   <form id="form">
+    <div class="searchline">
+     <input aria-label="Search technical documentation" id="query" maxlength="4000" placeholder="How do I cancel an asyncio task safely?" required="" type="search"/>
+     <button id="search" type="submit">
+      Search
+     </button>
+    </div>
+    <div class="filters">
+     <label>
+      Technology
+      <select id="technology">
+       <option value="">
+        All technologies
+       </option>
+      </select>
+     </label>
+     <label>
+      Category
+      <select id="category">
+       <option value="">
+        All categories
+       </option>
+      </select>
+     </label>
+     <label>
+      Retrieval method
+      <select id="mode">
+      </select>
+     </label>
+    </div>
+   </form>
+   <div class="examples">
+    <button type="button">
+     PostgreSQL JSONB indexing
+    </button>
+    <button type="button">
+     Python async cancellation
+    </button>
+    <button type="button">
+     Kafka consumer offset commits
+    </button>
+   </div>
+   <div aria-live="polite" class="status" id="status" role="status">
+   </div>
+   <section aria-label="Search results" id="results">
+    <p class="empty">
+     Ask about an API, describe a problem, or search for a technical concept. Results link to the source documents; no generated answers.
+    </p>
+   </section>
+   <nav aria-label="Result pages" hidden="" id="pagination">
+    <button id="prev" type="button">
+     Previous
+    </button>
+    <span id="page">
+    </span>
+    <button id="next" type="button">
+     Next
+    </button>
+   </nav>
+   <footer>
+    Neural retrieval course project · Cosine search returns original documents and their matching passages.
+   </footer>
+  </main>
+  <script defer="True" src="/search.js">
+  </script>
+ </body>
+</html>

@@ -1,25 +1,20 @@
-{"query_id": "Q01", "query_text": "Asynchronous Python web frameworks that do NOT use asyncio or standard event loops", "category": "Negation"}
-{"query_id": "Q02", "query_text": "Kubernetes ingress controllers that support SSL passthrough without requiring NGINX", "category": "Negation"}
-{"query_id": "Q03", "query_text": "Java database connection pooling libraries that do NOT rely on HikariCP", "category": "Negation"}
-{"query_id": "Q04", "query_text": "Python memory management reference counting vs garbage collection internals", "category": "Homonyms"}
-{"query_id": "Q05", "query_text": "Java thread synchronization primitives and monitors", "category": "Homonyms"}
-{"query_id": "Q06", "query_text": "Docker container networking bridge mode configuration", "category": "Homonyms"}
-{"query_id": "Q07", "query_text": "PostgreSQL connection pooling versus session pooling behavior", "category": "Homonyms"}
-{"query_id": "Q08", "query_text": "React state management patterns introduced strictly after the release of React 18", "category": "Temporal"}
-{"query_id": "Q09", "query_text": "Kubernetes security feature deprecations between version 1.20 and version 1.25", "category": "Temporal"}
-{"query_id": "Q10", "query_text": "Java module system additions and breaking changes in JDK 21", "category": "Temporal"}
-{"query_id": "Q11", "query_text": "FastAPI dependency injection updates in version 0.100 and newer", "category": "Temporal"}
-{"query_id": "Q12", "query_text": "Handling ERR_CONNECTION_RESET exceptions in Node.js HTTP/2 streams", "category": "Exact_Terminology"}
-{"query_id": "Q13", "query_text": "PostgreSQL JSONB containment operator @> performance tuning", "category": "Exact_Terminology"}
-{"query_id": "Q14", "query_text": "Docker multi-stage build caching syntax using --mount=type=cache", "category": "Exact_Terminology"}
-{"query_id": "Q15", "query_text": "Configuring PyTorch distributed data parallel find_unused_parameters=True", "category": "Exact_Terminology"}
-{"query_id": "Q16", "query_text": "How to configure zero-downtime rolling updates in AWS ECS using custom health check grace periods for Docker containers", "category": "Multi_Constraint"}
-{"query_id": "Q17", "query_text": "FastAPI background tasks integration with Redis cache invalidation inside Kubernetes pods", "category": "Multi_Constraint"}
-{"query_id": "Q18", "query_text": "Spring Boot actuator endpoint security configuration using Spring Security custom filters", "category": "Multi_Constraint"}
-{"query_id": "Q19", "query_text": "Terraform AWS provider state locking configuration using DynamoDB and S3 backend", "category": "Multi_Constraint"}
-{"query_id": "Q20", "query_text": "Prometheus scraping metrics from secure gRPC endpoints using TLS client certificates in Kubernetes", "category": "Multi_Constraint"}
-{"query_id": "Q21", "query_text": "Resolving org.apache.kafka.common.errors.RetriableException during consumer rebalance", "category": "Error_Troubleshooting"}
-{"query_id": "Q22", "query_text": "Fixing Docker buildkit out of memory error during npm install layer caching", "category": "Error_Troubleshooting"}
-{"query_id": "Q23", "query_text": "Kubernetes deployment resource limits CPU and memory specification syntax", "category": "Configuration_Schema"}
-{"query_id": "Q24", "query_text": "Terraform AWS security group ingress block CIDR block rules configuration", "category": "Configuration_Schema"}
-{"query_id": "Q25", "query_text": "Architecture difference between Apache Kafka pub-sub topics and Apache Pulsar message streaming storage", "category": "Conceptual_Procedural"}
+{"query_id": "Q01", "query_text": "Cancel a Python asyncio Task without swallowing CancelledError; cancellation must NOT be suppressed.", "category": "Negation", "judgment_intent": "Require cancellation propagation or re-raising; cleanup alone is partial support."}
+{"query_id": "Q02", "query_text": "Kubernetes NetworkPolicy that does NOT allow ingress from other namespaces.", "category": "Negation", "judgment_intent": "Require namespace/pod selectors or default-deny ingress; unrelated traffic policies do not answer."}
+{"query_id": "Q03", "query_text": "PostgreSQL transaction rollback that does NOT commit any changes.", "category": "Negation", "judgment_intent": "Require ROLLBACK/discard semantics, not COMMIT or a generic transaction mention."}
+{"query_id": "Q04", "query_text": "Redis hash fields using HSET and HGET, not cryptographic hashing.", "category": "Homonyms", "judgment_intent": "The intended sense is the Redis hash data type, not digest/security functions."}
+{"query_id": "Q05", "query_text": "Publish a Docker container network port to the host, not porting source code.", "category": "Homonyms", "judgment_intent": "The intended sense is TCP/UDP port mapping, with Docker instructions or substantive supporting semantics."}
+{"query_id": "Q06", "query_text": "Redis streams consumer groups, not Java input streams.", "category": "Homonyms", "judgment_intent": "Require Redis stream group/consumer behavior, not arbitrary streaming APIs."}
+{"query_id": "Q07", "query_text": "Python object garbage collection, not collecting service monitoring metrics.", "category": "Homonyms", "judgment_intent": "Require Python cyclic garbage collection or reference management, not telemetry collection."}
+{"query_id": "Q08", "query_text": "React 19 ref as a prop compared with forwardRef in React 18.", "category": "Temporal", "judgment_intent": "Require the version distinction; general ref usage without historical/version evidence is partial at most."}
+{"query_id": "Q09", "query_text": "Kubernetes PodSecurityPolicy removal in version 1.25 and its replacement.", "category": "Temporal", "judgment_intent": "Require removal/version evidence and/or the replacement Pod Security Admission/Standards; unrelated security pages are not relevant."}
+{"query_id": "Q10", "query_text": "PostgreSQL 12 MATERIALIZED versus NOT MATERIALIZED common table expressions.", "category": "Temporal", "judgment_intent": "Prefer PostgreSQL 12 or explicit version-change evidence; other versions explaining the semantics are partial support."}
+{"query_id": "Q11", "query_text": "FastAPI regex deprecation in version 0.100.0 and the pattern replacement.", "category": "Temporal", "judgment_intent": "Require regex/pattern and the stated deprecation/version evidence; generic Pydantic validation is insufficient."}
+{"query_id": "Q12", "query_text": "Elasticsearch bool query minimum_should_match with should clauses.", "category": "Exact_Terminology", "judgment_intent": "Require the named parameter and its effect on bool should matching."}
+{"query_id": "Q13", "query_text": "PostgreSQL JSONB containment operator @> performance tuning.", "category": "Exact_Terminology", "judgment_intent": "Require containment/operator or indexing support; generic JSON serialization is not relevant."}
+{"query_id": "Q14", "query_text": "Docker build cache mounts with RUN --mount=type=cache.", "category": "Exact_Terminology", "judgment_intent": "Require cache-mount syntax/semantics, not just generic image layer caching."}
+{"query_id": "Q15", "query_text": "PyTorch DistributedDataParallel find_unused_parameters=True.", "category": "Exact_Terminology", "judgment_intent": "Require the named DDP setting and unused-gradient/parameter behavior."}
+{"query_id": "Q16", "query_text": "AWS ECS: check which tasks are protected from scale-in and when their protection expires.", "category": "Multi_Constraint", "judgment_intent": "Retrieve ECS task scale-in protection status and expiration information, preferably the GetTaskProtection API; generic ECS deployment guides are insufficient."}
+{"query_id": "Q17", "query_text": "How can work continue after a FastAPI client has already received the HTTP response?", "category": "Paraphrase", "judgment_intent": "Require background tasks or equivalent after-response execution; this intentionally avoids the API name in the query."}
+{"query_id": "Q18", "query_text": "Spring Boot Actuator endpoint security using a custom Spring Security filter chain.", "category": "Multi_Constraint", "judgment_intent": "Require Actuator management security or concrete custom filter-chain configuration."}
+{"query_id": "Q19", "query_text": "Terraform S3 remote state with DynamoDB locking and encryption.", "category": "Multi_Constraint", "judgment_intent": "Require backend locking/encryption configuration; version-specific behavior must be judged from the retained source."}
+{"query_id": "Q20", "query_text": "Prometheus scraping HTTPS metrics with TLS client certificates and Kubernetes service discovery.", "category": "Multi_Constraint", "judgment_intent": "Require scrape TLS client authentication and/or Kubernetes discovery; generic TLS unrelated to Prometheus is not enough."}

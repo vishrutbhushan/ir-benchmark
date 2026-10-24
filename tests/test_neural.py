@@ -109,19 +109,24 @@ class DurableIndexTests(unittest.TestCase):
             self.assertTrue(json.loads((root/'embeddings/checkpoint.json').read_text())['complete'])
 
     def test_full_coverage_gate_rejects_a_missing_character(self):
-        from src.neural.common import connect
-        from src.neural.preprocessing.integrity import audit_passage_coverage
+        from src.neural.preprocessing.integrity import audit_zone_coverage
+        from src.neural.learning.zone_weights.zones import ZONES
         import json
         import sqlite3
         documents=sqlite3.connect(':memory:');documents.row_factory=sqlite3.Row
-        passages=sqlite3.connect(':memory:');passages.row_factory=sqlite3.Row
         documents.execute('CREATE TABLE documents(doc_index INTEGER,record_json TEXT)')
-        documents.execute('INSERT INTO documents VALUES (?,?)',(0,json.dumps({'doc_id':'fixture','sections':[{'blocks':[{'text':'complete content'}]}]})))
-        passages.execute('CREATE TABLE passages(doc_index INTEGER,section_index INTEGER,char_start INTEGER,char_end INTEGER,tokens INTEGER,text TEXT)')
-        passages.execute('INSERT INTO passages VALUES (0,0,0,15,2,"complete conten")')
+        record={'doc_id':'fixture','title':'','headings':[],'sections':[{'blocks':[{'kind':'prose','text':'complete content'}]}]}
+        documents.execute('INSERT INTO documents VALUES (?,?)',(0,json.dumps(record)))
+        stores={}
+        for zone in ZONES:
+            db=sqlite3.connect(':memory:');db.row_factory=sqlite3.Row
+            db.execute('CREATE TABLE passages(passage_index INTEGER,doc_index INTEGER,char_start INTEGER,char_end INTEGER,tokens INTEGER,text TEXT)')
+            stores[zone]=db
+        stores['body'].execute('INSERT INTO passages VALUES (0,0,0,15,2,"complete conten")')
         with self.assertRaisesRegex(RuntimeError,'truncated or omitted'):
-            audit_passage_coverage(documents,passages)
-        documents.close();passages.close()
+            audit_zone_coverage(documents,stores)
+        documents.close()
+        for db in stores.values():db.close()
 
 
     def test_rank_cache_fetches_only_visible_snippets_and_preserves_document_ranks(self):
@@ -133,23 +138,25 @@ class DurableIndexTests(unittest.TestCase):
         engine.summary={'fingerprint':'fixture'}
         engine.documents=[{'doc_index':i,'doc_id':f'doc_{i:03}','title':f'Title {i}','url':'https://example.com','technology':'Python','category':'programming-language'} for i in range(25)]
         engine.ids=np.array([d['doc_id'] for d in engine.documents])
-        engine.doc_indices=np.arange(25,dtype=np.int32)
         engine.lock=threading.RLock()
         engine.cache=OrderedDict();engine.query_cache=OrderedDict()
         engine.technology_options=['Python'];engine.category_options=['programming-language']
-        class EncoderFixture:
-            def encode(self,*args,**kwargs):return np.array([[1.,0.]],dtype=np.float32)
-        engine.encoder=EncoderFixture()
         cosine_calls=[]
-        def cosines(vector):
+        def rank(*args,**kwargs):
             cosine_calls.append(1)
-            return np.linspace(1.,0.,25,dtype=np.float32)
-        engine._cosines=cosines
-        engine.passage_db=sqlite3.connect(':memory:');engine.passage_db.row_factory=sqlite3.Row
-        engine.passage_db.execute('CREATE TABLE passages(passage_index INTEGER PRIMARY KEY,passage_id TEXT,heading TEXT,anchor TEXT,kind TEXT,text TEXT)')
-        engine.passage_db.executemany('INSERT INTO passages VALUES (?,?,?,?,?,?)',[(i,str(i),'heading','','prose',f'Passage {i}') for i in range(25)])
+            scores=np.linspace(1.,0.,25,dtype=np.float32)
+            zones=np.full((25,4),-np.inf,dtype=np.float32);zones[:,2]=scores
+            winners=np.full((25,4),-1,dtype=np.int64);winners[:,2]=np.arange(25)
+            return {'order':np.arange(25),'scores':scores,'zones':zones,'winners':winners,
+                    'winning_zone':np.full(25,2),'contributions':None,'scanned_vectors':25,
+                    'candidate_documents':25,'selected_classes':[]}
+        engine.rank=rank
+        db=sqlite3.connect(':memory:');db.row_factory=sqlite3.Row
+        db.execute('CREATE TABLE passages(passage_index INTEGER PRIMARY KEY,passage_id TEXT,text TEXT)')
+        db.executemany('INSERT INTO passages VALUES (?,?,?)',[(i,str(i),f'Passage {i}') for i in range(25)])
+        engine.stores={'body':db}
         selects=[]
-        engine.passage_db.set_trace_callback(lambda sql:selects.append(sql) if sql.startswith('SELECT') else None)
+        db.set_trace_callback(lambda sql:selects.append(sql) if sql.startswith('SELECT') else None)
         first=engine.search('test',limit=25,offset=0,page_size=3)
         second=engine.search('test',limit=25,offset=3,page_size=3)
         self.assertEqual(len(selects),6)
@@ -163,7 +170,7 @@ class DurableIndexTests(unittest.TestCase):
         self.assertEqual(full['results'][:3],first['results'])
         self.assertEqual(full['returned'],25)
         self.assertAlmostEqual(full['results'][-1]['score'],0.,places=6)
-        engine.passage_db.close()
+        db.close()
 
 if __name__ == "__main__":
     unittest.main()

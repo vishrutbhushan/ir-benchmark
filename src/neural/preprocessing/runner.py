@@ -1,5 +1,6 @@
 """Whole-corpus suitability decisions and persistent independent extraction."""
 from __future__ import annotations
+from src.utils.parallel import bounded_map
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 import hashlib
@@ -9,6 +10,7 @@ import re
 import time
 from src.neural.common import connect, digest_file, records, report
 from src.neural.preprocessing.extract import extract_document
+from src.corpus_validation.fix import REVIEWED_EXCLUSIONS
 
 POLICY = 'english-main-content-v1; ambiguous-language-quarantined; exact-query-alias-dedup; preserve-version-paths'
 
@@ -47,7 +49,8 @@ def run_extraction(corpus_root, validation, out, repairs, workers=8):
     out.mkdir(parents=True,exist_ok=True)
     source = corpus_root/'metadata/corpus_manifest.jsonl'
     corrected = (corpus_root / 'metadata/corpus_state.json').exists()
-    if corrected and (out / 'summary.json').exists():
+    artifacts_complete = all((out / name).is_file() for name in ('corpus.sqlite', 'structured_records.jsonl', 'decisions.jsonl'))
+    if corrected and artifacts_complete and (out / 'summary.json').exists():
         saved = json.loads((out / 'summary.json').read_text())
         if (saved.get('dataset_manifest_sha256') == digest_file(source)
                 and saved.get('extractor_sha256') == digest_file(Path(__file__).with_name('extract.py'))):
@@ -55,13 +58,16 @@ def run_extraction(corpus_root, validation, out, repairs, workers=8):
             return saved
     fingerprint = hashlib.sha256((digest_file(source)+('' if corrected else digest_file(validation/'document_checks.jsonl'))+digest_file(Path(__file__))+digest_file(Path(__file__).with_name('extract.py'))+json.dumps(repairs,sort_keys=True)+POLICY).encode()).hexdigest()
     state_path = out/'summary.json'
-    if state_path.exists() and json.loads(state_path.read_text()).get('fingerprint') == fingerprint:
+    if artifacts_complete and state_path.exists() and json.loads(state_path.read_text()).get('fingerprint') == fingerprint:
         print('Extraction unchanged: using complete persistent corpus.',flush=True)
         return json.loads(state_path.read_text())
     all_records = sorted(records(source),key=lambda r:r['doc_id'])
     checks = {} if corrected else {c['doc_id']:c for c in records(validation/'document_checks.jsonl')}
     decisions, candidates = [], []
     for record in all_records:
+        if record['doc_id'] in REVIEWED_EXCLUSIONS:
+            decisions.append({'doc_id':record['doc_id'],'status':'excluded','reason':REVIEWED_EXCLUSIONS[record['doc_id']]})
+            continue
         repaired = repairs.get(record['doc_id'],{})
         check = checks[record['doc_id']] if not corrected else {'status': 'eligible'}
         if not corrected and repaired.get('status') == 'repaired':
@@ -83,7 +89,7 @@ def run_extraction(corpus_root, validation, out, repairs, workers=8):
     exported = out/'structured_records.jsonl.part'
     allowlist = out/'eligible_manifest.jsonl.part'
     with exported.open('w',encoding='utf-8') as stream, allowlist.open('w',encoding='utf-8') as allowed_stream, ProcessPoolExecutor(max_workers=workers) as pool:
-        for i,(source_record,document,error) in enumerate(pool.map(_extract,[(r,str(corpus_root)) for r in candidates],chunksize=8,buffersize=workers*3),1):
+        for i,(source_record,document,error) in enumerate(bounded_map(pool, _extract, ((r, str(corpus_root)) for r in candidates), workers*24, chunksize=8),1):
             doc_id = source_record['doc_id']
             if error:
                 # Parsing failure is explicit; byte-integrity changes are fatal, never silently dropped.

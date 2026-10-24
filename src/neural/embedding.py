@@ -80,8 +80,8 @@ def run_embeddings(passages,out,model_path,device='cuda',batch_size=512):
             if not np.isfinite(values).all() or np.any(np.abs(norms-1)>.002):
                 raise RuntimeError('Full-vector integrity verification failed')
             norms_min,norms_max = min(norms_min,float(norms.min())),max(norms_max,float(norms.max()))
-        state.update(complete=True,completed_rows=n)
-        write_json(state_path,state)
         stats = {'fingerprint':signature,'input_fingerprint':source['fingerprint'],'documents':source['documents'],'passages':n,'dimension':dimension,'dtype':'float16','model_revision':MODEL_REVISION,'all_vectors_finite':True,'norm_min':norms_min,'norm_max':norms_max,'vector_bytes':path.stat().st_size,'last_session_seconds':round(time.perf_counter()-started,2),'last_session_rows':n-initial_rows,'device':device,'final_batch_size':batch_size,'max_batch_tokens':token_budget,'peak_cuda_allocated_bytes':torch.cuda.max_memory_allocated() if device=='cuda' else 0}
     report(out,'Full-corpus embedding verification',stats,{'vector_coverage':{'embedded':n,'missing':0},'normalization_bounds':{'minimum_norm':norms_min,'maximum_norm':norms_max}})
+    state.update(complete=True,completed_rows=n)
+    write_json(state_path,state)
     return stats

@@ -29,7 +29,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--phase",
-        choices=["0", "1", "phase0", "phase1", "validate", "prepare", "extract", "chunk", "embed", "all", "neural-all", "search", "serve", "verify", "development-features", "classification-data"],
+        choices=["0", "1", "phase0", "phase1", "validate", "prepare", "extract", "chunk", "embed", "all", "neural-all", "search", "serve", "verify", "development-features", "classification-data", "audit", "weights", "classifiers", "routing", "evaluation-pool", "evaluate"],
         default="all",
         help="all=full neural build; serve/search/verify=reuse index; 0/1=legacy classic preparation.",
     )
@@ -97,6 +97,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--device', choices=['cuda','cpu'], default='cuda')
     parser.add_argument('--batch-size', type=int, default=512)
     parser.add_argument('--query')
+    parser.add_argument('--mode', choices=['dense','zones','routed-centroid','routed-nb'], default='routed-centroid')
+    parser.add_argument('--classic-rankings', type=Path, help='Classic document rankings JSONL for the common evaluation')
     parser.add_argument('--limit', type=int, default=20)
     parser.add_argument('--technology', default='')
     parser.add_argument('--category', default='')
@@ -122,7 +124,7 @@ def main() -> None:
         run_validation(args.archive_path, args.corpus_root, args.output_dir / "corpus_validation", logger, args.workers)
         return
 
-    if phase in {'prepare','extract','chunk','embed','all','neural-all','search','serve','verify','development-features','classification-data'}:
+    if phase in {'prepare','extract','chunk','embed','all','neural-all','search','serve','verify','development-features','classification-data','audit','weights','classifiers','routing','evaluation-pool','evaluate'}:
         if args.max_docs is not None:
             raise ValueError('Neural stages always process the full retained corpus; --max-docs is legacy-only')
         if args.workers < 1 or args.batch_size < 1:

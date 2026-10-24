@@ -96,7 +96,8 @@ def export_classification_data(root):
     subset_path = definitions / 'training.csv'
     subset = select_learning_subset(records)
     with closing(connect(root / 'extraction/corpus.sqlite', True)) as db:
-        with subset_path.open('w', newline='', encoding='utf-8') as stream:
+        temporary = subset_path.with_suffix('.csv.part')
+        with temporary.open('w', newline='', encoding='utf-8') as stream:
             fields = ['doc_id', 'title', 'text', 'class_id', 'class_name', 'split', 'group_id']
             writer = csv.DictWriter(stream, fieldnames=fields)
             writer.writeheader()
@@ -104,6 +105,7 @@ def export_classification_data(root):
                 doc = json.loads(db.execute('SELECT record_json FROM documents WHERE doc_id=?', (row['doc_id'],)).fetchone()[0])
                 text = '\n\n'.join(filter(None, [doc['title'], '\n'.join(doc['headings']), doc['body_text'], doc['code_text']]))
                 writer.writerow({k: row[k] for k in ('doc_id', 'class_id', 'class_name', 'split', 'group_id')} | {'title': doc['title'], 'text': text})
+        temporary.replace(subset_path)
     by_class = Counter(r['class_name'] for r in records)
     stats = {
         'learning_documents': len(subset),
@@ -114,7 +116,7 @@ def export_classification_data(root):
         'review_documents': conflicts, 'independent_groups': len(grouped),
         'splits': dict(Counter(r['split'] for r in records)),
         'class_counts': dict(by_class),
-        'label_status': 'metadata-derived domain labels, not human-reviewed semantic gold',
+        'label_status': 'source-domain labels from technology metadata',
         'split_policy': 'class-stratified group allocation targeting 80/10/10; canonical version URLs and identical extracted text stay together',
         'limitations': 'Grouping does not catch every near duplicate; held-out results would measure agreement with source labels, not semantic routing quality',
         'text_policy': 'Use only the text column as model input. Class and split columns are labels/control data; all vocabulary, statistics and centroids use training rows only.',
