@@ -1,72 +1,97 @@
 {
-  "total_documents": 10,
-  "total_tokens": 40390,
-  "average_tokens_per_doc": 4039.0,
-  "median_tokens_per_doc": 1047,
-  "total_vocabulary_size": 3737,
+  "total_documents": 77565,
+  "total_tokens": 163335538,
+  "average_tokens_per_doc": 2105.8,
+  "median_tokens_per_doc": 915,
+  "total_vocabulary_size": 1895749,
   "zone_statistics": {
     "title": {
-      "total_tokens": 55,
-      "docs_with_tokens": 10,
-      "avg_tokens_per_doc": 5.5,
-      "vocabulary_size": 51
+      "total_tokens": 586040,
+      "docs_with_tokens": 77531,
+      "avg_tokens_per_doc": 7.6,
+      "vocabulary_size": 42367
     },
     "heading": {
-      "total_tokens": 1451,
-      "docs_with_tokens": 10,
-      "avg_tokens_per_doc": 145.1,
-      "vocabulary_size": 485
+      "total_tokens": 2981463,
+      "docs_with_tokens": 76225,
+      "avg_tokens_per_doc": 39.1,
+      "vocabulary_size": 136703
     },
     "body": {
-      "total_tokens": 20526,
-      "docs_with_tokens": 10,
-      "avg_tokens_per_doc": 2052.6,
-      "vocabulary_size": 3032
+      "total_tokens": 69547100,
+      "docs_with_tokens": 77563,
+      "avg_tokens_per_doc": 896.7,
+      "vocabulary_size": 1288877
     },
     "code": {
-      "total_tokens": 1716,
-      "docs_with_tokens": 8,
-      "avg_tokens_per_doc": 214.5,
-      "vocabulary_size": 847
+      "total_tokens": 22419003,
+      "docs_with_tokens": 49831,
+      "avg_tokens_per_doc": 449.9,
+      "vocabulary_size": 890231
     },
     "section": {
-      "total_tokens": 16642,
-      "docs_with_tokens": 10,
-      "avg_tokens_per_doc": 1664.2,
-      "vocabulary_size": 2598
+      "total_tokens": 67801932,
+      "docs_with_tokens": 76880,
+      "avg_tokens_per_doc": 881.9,
+      "vocabulary_size": 794320
     }
   },
   "category_statistics": {
+    "cloud": {
+      "doc_count": 12217,
+      "total_tokens": 25023480,
+      "avg_tokens_per_doc": 2048.3
+    },
+    "containers-orchestration": {
+      "doc_count": 2836,
+      "total_tokens": 6988780,
+      "avg_tokens_per_doc": 2464.3
+    },
     "database-search": {
-      "doc_count": 2,
-      "total_tokens": 3298,
-      "avg_tokens_per_doc": 1649.0
+      "doc_count": 17451,
+      "total_tokens": 28077311,
+      "avg_tokens_per_doc": 1608.9
+    },
+    "devops-infrastructure": {
+      "doc_count": 10621,
+      "total_tokens": 19479448,
+      "avg_tokens_per_doc": 1834.1
+    },
+    "distributed-data": {
+      "doc_count": 6303,
+      "total_tokens": 11208058,
+      "avg_tokens_per_doc": 1778.2
     },
     "framework": {
-      "doc_count": 2,
-      "total_tokens": 1271,
-      "avg_tokens_per_doc": 635.5
+      "doc_count": 6039,
+      "total_tokens": 15299841,
+      "avg_tokens_per_doc": 2533.5
     },
     "ml-infrastructure": {
-      "doc_count": 1,
-      "total_tokens": 1812,
-      "avg_tokens_per_doc": 1812.0
+      "doc_count": 7407,
+      "total_tokens": 20251114,
+      "avg_tokens_per_doc": 2734.1
+    },
+    "observability": {
+      "doc_count": 3236,
+      "total_tokens": 5911779,
+      "avg_tokens_per_doc": 1826.9
     },
     "os-networking-web": {
-      "doc_count": 1,
-      "total_tokens": 30208,
-      "avg_tokens_per_doc": 30208.0
+      "doc_count": 7608,
+      "total_tokens": 21784347,
+      "avg_tokens_per_doc": 2863.3
     },
     "programming-language": {
-      "doc_count": 3,
-      "total_tokens": 2754,
-      "avg_tokens_per_doc": 918.0
+      "doc_count": 3785,
+      "total_tokens": 8864763,
+      "avg_tokens_per_doc": 2342.1
     },
     "security": {
-      "doc_count": 1,
-      "total_tokens": 1047,
-      "avg_tokens_per_doc": 1047.0
+      "doc_count": 62,
+      "total_tokens": 446617,
+      "avg_tokens_per_doc": 7203.5
     }
   },
-  "elapsed_seconds": 0.19
+  "elapsed_seconds": 251.02
 }
