@@ -19,8 +19,18 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from concurrent.futures import ProcessPoolExecutor
+
 from src.phase2_tokenization.tokenizer import tokenize_zones
 from src.utils.file_utils import stream_jsonl, write_json, write_text
+
+
+def _tokenize_doc_worker(line: str) -> tuple[dict[str, Any], str]:
+    """Worker for parallel document zone tokenization."""
+    record = json.loads(line)
+    tokenized = tokenize_zones(record)
+    category = record.get("metadata", {}).get("category", "unknown")
+    return tokenized, category
 
 
 def run_tokenization(
@@ -28,9 +38,10 @@ def run_tokenization(
     output_dir: Path,
     logger: logging.Logger,
     max_documents: int | None = None,
+    num_workers: int = 8,
 ) -> dict[str, Any]:
     """
-    Execute Phase 2 tokenization pipeline.
+    Execute Phase 2 tokenization pipeline with parallel multiprocessing.
 
     Reads structured_records.jsonl from Phase 1, tokenizes every zone
     of every document, and writes:
@@ -44,11 +55,12 @@ def run_tokenization(
         output_dir: Directory for Phase 2 outputs.
         logger: Logger instance.
         max_documents: Optional limit for testing.
+        num_workers: Number of parallel worker processes.
 
     Returns:
         Statistics dictionary.
     """
-    logger.info("Starting Phase 2 Tokenization...")
+    logger.info(f"Starting Phase 2 Tokenization (workers={num_workers})...")
     output_dir.mkdir(parents=True, exist_ok=True)
     charts_dir = output_dir / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -69,41 +81,63 @@ def run_tokenization(
     }
 
     start_time = time.time()
+    batch_lines: list[str] = []
+    batch_size = 500
 
     with tokenized_path.open("w", encoding="utf-8") as out_f:
-        for record in stream_jsonl(records_path):
-            if max_documents is not None and doc_count >= max_documents:
-                break
+        with ProcessPoolExecutor(max_workers=max(1, num_workers)) as executor:
+            with records_path.open("r", encoding="utf-8") as in_f:
+                for line in in_f:
+                    if max_documents is not None and doc_count + len(batch_lines) >= max_documents:
+                        break
 
-            tokenized = tokenize_zones(record)
-            out_f.write(json.dumps(tokenized, ensure_ascii=False) + "\n")
+                    batch_lines.append(line)
 
-            doc_count += 1
-            doc_total = tokenized["total_token_count"]
-            total_token_count += doc_total
-            tokens_per_doc.append(doc_total)
+                    if len(batch_lines) >= batch_size:
+                        for tokenized, category in executor.map(_tokenize_doc_worker, batch_lines, chunksize=50):
+                            out_f.write(json.dumps(tokenized, ensure_ascii=False) + "\n")
+                            doc_count += 1
+                            doc_total = tokenized["total_token_count"]
+                            total_token_count += doc_total
+                            tokens_per_doc.append(doc_total)
 
-            # Per-zone stats
-            for zone_key in ["title", "heading", "body", "code", "section"]:
-                tokens_key = f"{zone_key}_tokens"
-                zone_tokens = tokenized.get(tokens_key, [])
-                zone_len = len(zone_tokens)
-                total_tokens_by_zone[zone_key] += zone_len
-                if zone_len > 0:
-                    zone_doc_counts[zone_key] += 1
-                vocab_by_zone[zone_key].update(zone_tokens)
+                            for zone_key in ["title", "heading", "body", "code", "section"]:
+                                zone_tokens = tokenized.get(f"{zone_key}_tokens", [])
+                                z_len = len(zone_tokens)
+                                total_tokens_by_zone[zone_key] += z_len
+                                if z_len > 0:
+                                    zone_doc_counts[zone_key] += 1
+                                vocab_by_zone[zone_key].update(zone_tokens)
 
-            # Per-category stats
-            category = record.get("metadata", {}).get("category", "unknown")
-            category_token_counts[category] += doc_total
-            category_doc_counts[category] += 1
+                            category_token_counts[category] += doc_total
+                            category_doc_counts[category] += 1
 
-            if doc_count % 100 == 0:
-                elapsed = time.time() - start_time
-                logger.info(
-                    f"Tokenized {doc_count:,} docs ({elapsed:.1f}s, "
-                    f"{doc_count / elapsed:.1f} docs/s)..."
-                )
+                        batch_lines = []
+                        elapsed = time.time() - start_time
+                        rate = doc_count / elapsed if elapsed > 0 else 0
+                        logger.info(
+                            f"Tokenized {doc_count:,} docs ({elapsed:.1f}s, {rate:.1f} docs/s)..."
+                        )
+
+                # Process remaining batch
+                if batch_lines:
+                    for tokenized, category in executor.map(_tokenize_doc_worker, batch_lines, chunksize=50):
+                        out_f.write(json.dumps(tokenized, ensure_ascii=False) + "\n")
+                        doc_count += 1
+                        doc_total = tokenized["total_token_count"]
+                        total_token_count += doc_total
+                        tokens_per_doc.append(doc_total)
+
+                        for zone_key in ["title", "heading", "body", "code", "section"]:
+                            zone_tokens = tokenized.get(f"{zone_key}_tokens", [])
+                            z_len = len(zone_tokens)
+                            total_tokens_by_zone[zone_key] += z_len
+                            if z_len > 0:
+                                zone_doc_counts[zone_key] += 1
+                            vocab_by_zone[zone_key].update(zone_tokens)
+
+                        category_token_counts[category] += doc_total
+                        category_doc_counts[category] += 1
 
     total_time = time.time() - start_time
     logger.info(

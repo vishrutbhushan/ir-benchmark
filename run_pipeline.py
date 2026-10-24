@@ -228,6 +228,7 @@ def main() -> None:
             output_dir=phase2_out,
             logger=logger2,
             max_documents=args.max_docs,
+            num_workers=args.workers,
         )
 
     # Execute Phase 3
