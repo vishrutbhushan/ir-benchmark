@@ -19,6 +19,10 @@ function link(text, url) {
   return node;
 }
 
+function updateProgress(data) {
+  byId('progress').textContent = `${data.judged}/10 results labeled in this variant | ${data.pool_judged}/${data.pool_size} labeled in this query's combined pool. Labels carry across variants.`;
+}
+
 async function loadQuery() {
   const number = ++requestNumber;
   const query = options.queries[position];
@@ -35,7 +39,7 @@ async function loadQuery() {
   const data = await response.json();
   if (!response.ok) throw Error(data.error);
   if (number !== requestNumber) return;
-  byId('progress').textContent = `${data.judged}/10 results labeled in this variant | ${data.pool_judged}/${data.pool_size} labeled in this query's combined pool. Labels carry across variants.`;
+  updateProgress(data);
   const results = data.results.map(row => {
     const article = element('article', '', 'result');
     article.append(element('h3', `${row.rank}. ${row.title}`));
@@ -48,15 +52,25 @@ async function loadQuery() {
     const buttons = element('div', '', 'judgments');
     for (const [text, value, className] of [['Relevant', 1, 'relevant'], ['Non-relevant', 0, 'irrelevant'], ['Clear', null, 'clear']]) {
       const button = element('button', text, className + (row.relevant === value ? ' selected' : ''));
+      button.dataset.relevance = value === null ? '' : String(value);
       button.onclick = async () => {
         for (const child of buttons.children) child.disabled = true;
         try {
           const response = await fetch('/api/judgment', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query_id: query.query_id, doc_id: row.doc_id, relevant: value})});
           const result = await response.json();
           if (!response.ok) throw Error(result.error);
-          await loadQuery();
+          if (number !== requestNumber) return;
+          const change = Number(value !== null) - Number(row.relevant !== null);
+          data.judged += change;
+          data.pool_judged += change;
+          row.relevant = value;
+          for (const child of buttons.children) {
+            child.classList.toggle('selected', child.dataset.relevance === button.dataset.relevance);
+          }
+          updateProgress(data);
         } catch (error) {
           byId('error').textContent = error.message;
+        } finally {
           for (const child of buttons.children) child.disabled = false;
         }
       };
