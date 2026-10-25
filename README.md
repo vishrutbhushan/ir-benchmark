@@ -51,10 +51,13 @@ CPU preprocessing load without changing index contents.
   420 documents / 14 source-domain classes for classification (280/70/70 split).
 - Twenty challenge queries and hand-coded NDCG@5/MAP evaluation.
 
-The full four-zone build and evaluation have **not yet completed**. Generated
+The full four-zone build, model fitting and engineering verification are complete.
+Final relevance judgments and comparative evaluation remain pending. Generated
 outputs, checkpoints, weights, models, raw HTML and logs are excluded from Git.
 A fresh clone therefore needs the corpus and a local build. Training refreshes
 CSV features/text against that build; committed feature values are not final results.
+The classification training CSV contains full texts that can exceed Excel cell limits;
+read it with a CSV parser rather than saving it back through Excel.
 
 ## Checks and evaluation
 

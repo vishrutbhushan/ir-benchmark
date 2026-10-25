@@ -8,8 +8,8 @@ analysis. This branch covers the neural engine and shared corpus repairs. Classi
 ranking belongs to the other engine.
 
 The implementation includes the four-zone build, weight learning, both classifiers,
-routing, UI and evaluation code. **The full build is paused and end-to-end results
-are pending.** Unit tests do not establish retrieval quality. Final qrels and the
+routing, UI and evaluation code. **The full build, fitting and engineering
+verification have completed.** Engineering checks do not establish retrieval quality. Final qrels and the
 classic-versus-neural failure report remain unfinished; no improvement is claimed.
 
 ## Data and preprocessing
@@ -85,6 +85,9 @@ over present zones; if those weights sum to zero, they use equal present-zone
 weights. Training and retrieval use the same function. Max pooling favors long
 documents by giving them more opportunities to match.
 
+The current fit assigns title/headings/body/code weights of **0/0/1/0**. This does
+not demonstrate a benefit from combining zones; final retrieval evaluation is pending.
+
 ## Learning tables and category routing
 
 | Table | Contents and use |
@@ -108,6 +111,9 @@ smoothing and empirical priors. Centroids average normalized training-document
 vectors; each document vector averages its pure-zone window embeddings. Both share
 the same labeled examples. Validation/test accuracy, macro-F1 and confusion matrices
 are calculated directly. NB posterior values are not calibrated relevance scores.
+
+On the 70-document held-out test split, centroid accuracy is 84.3% (macro-F1 0.832)
+and NB accuracy is 74.3% (macro-F1 0.727). These measure source-label agreement.
 
 Routing selects the smallest number of top classes retaining mean 98% of exhaustive
 weighted top-20 results, with at least 90% for each development validation query.
