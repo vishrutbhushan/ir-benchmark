@@ -93,7 +93,7 @@ python run_pipeline.py --phase all
 ```
 * **Interactive Dashboard**: Open `outputs/dashboard.html` in your browser for the full interactive visual report across all stages.
 
----
+---waht 
 
 ## Architectural Overview
 

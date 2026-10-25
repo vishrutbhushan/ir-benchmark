@@ -1,0 +1,34 @@
+{"query_id": "NL_01", "query_text": "How to handle out of memory errors when training large vision transformer models in PyTorch", "query_type": "Natural_Language", "category": "AI/ML", "target_tech": "PyTorch"}
+{"query_id": "NL_02", "query_text": "Configuring zero downtime rolling updates in Kubernetes deployments with custom readiness probes", "query_type": "Natural_Language", "category": "Containers & Orchestration", "target_tech": "Kubernetes"}
+{"query_id": "NL_03", "query_text": "Best practices for indexing JSONB documents in PostgreSQL for fast containment lookups", "query_type": "Natural_Language", "category": "DB", "target_tech": "PostgreSQL"}
+{"query_id": "NL_04", "query_text": "How does reference counting interact with generational garbage collection in Python CPython internals", "query_type": "Natural_Language", "category": "Prog Lang", "target_tech": "Python"}
+{"query_id": "NL_05", "query_text": "Setting up asynchronous background task workers using Redis queue and FastAPI endpoints", "query_type": "Natural_Language", "category": "Web Dev", "target_tech": "FastAPI"}
+{"query_id": "KW_01", "query_text": "docker compose healthcheck interval timeout", "query_type": "Keyword", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "KW_02", "query_text": "kafka consumer group rebalance listener", "query_type": "Keyword", "category": "Communication/msg passing", "target_tech": "Kafka"}
+{"query_id": "KW_03", "query_text": "redis pub sub message loss pattern", "query_type": "Keyword", "category": "DB", "target_tech": "Redis"}
+{"query_id": "KW_04", "query_text": "prometheus scrape configs tls cert secret", "query_type": "Keyword", "category": "Observability", "target_tech": "Prometheus"}
+{"query_id": "KW_05", "query_text": "rust borrow checker mutable reference lifetimes", "query_type": "Keyword", "category": "Prog Lang", "target_tech": "Rust"}
+{"query_id": "BOOL_01", "query_text": "python web framework AND asynchronous NOT asyncio", "query_type": "Boolean", "category": "Prog Lang", "target_tech": "Python"}
+{"query_id": "BOOL_02", "query_text": "kubernetes ingress controller AND SSL passthrough NOT nginx", "query_type": "Boolean", "category": "Containers & Orchestration", "target_tech": "Kubernetes"}
+{"query_id": "BOOL_03", "query_text": "database connection pooling AND java NOT hikaricp", "query_type": "Boolean", "category": "Prog Lang", "target_tech": "Java"}
+{"query_id": "BOOL_04", "query_text": "terraform state locking AND (dynamodb OR s3) NOT consul", "query_type": "Boolean", "category": "Version Control & CI/CD", "target_tech": "Terraform"}
+{"query_id": "BOOL_05", "query_text": "docker container networking AND (bridge OR host) NOT overlay", "query_type": "Boolean", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "EXACT_01", "query_text": "PostgreSQL JSONB containment operator @>", "query_type": "Exact_Terminology", "category": "DB", "target_tech": "PostgreSQL"}
+{"query_id": "EXACT_02", "query_text": "Docker multi-stage build caching syntax --mount=type=cache", "query_type": "Exact_Terminology", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "EXACT_03", "query_text": "PyTorch find_unused_parameters=True DistributedDataParallel", "query_type": "Exact_Terminology", "category": "AI/ML", "target_tech": "PyTorch"}
+{"query_id": "EXACT_04", "query_text": "Resolving org.apache.kafka.common.errors.RetriableException", "query_type": "Exact_Terminology", "category": "Communication/msg passing", "target_tech": "Kafka"}
+{"query_id": "EXACT_05", "query_text": "FastAPI dependency injection updates in version 0.100", "query_type": "Exact_Terminology", "category": "Web Dev", "target_tech": "FastAPI"}
+{"query_id": "TYPO_01", "query_text": "kubernets deploymnt rediness probe configration", "query_type": "Spelling_Error", "category": "Containers & Orchestration", "target_tech": "Kubernetes"}
+{"query_id": "TYPO_02", "query_text": "postgre sql jsonb contanment operater preformance", "query_type": "Spelling_Error", "category": "DB", "target_tech": "PostgreSQL"}
+{"query_id": "TYPO_03", "query_text": "pytorh cuda out of memry eror trainig", "query_type": "Spelling_Error", "category": "AI/ML", "target_tech": "PyTorch"}
+{"query_id": "TYPO_04", "query_text": "dockr contaner netwrking brigde mode", "query_type": "Spelling_Error", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "TYPO_05", "query_text": "apche kafak consmer rebalence retriable exceptin", "query_type": "Spelling_Error", "category": "Communication/msg passing", "target_tech": "Kafka"}
+{"query_id": "SHORT_KW_01", "query_text": "docker compose", "query_type": "Short_Keyword", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "SHORT_KW_02", "query_text": "aws kafka", "query_type": "Short_Keyword", "category": "Cloud", "target_tech": "AWS"}
+{"query_id": "SHORT_KW_03", "query_text": "pytorch ddp", "query_type": "Short_Keyword", "category": "AI/ML", "target_tech": "PyTorch"}
+{"query_id": "SHORT_KW_09", "query_text": "grpc tls", "query_type": "Short_Keyword", "category": "Communication/msg passing", "target_tech": "gRPC"}
+{"query_id": "SHORT_KW_10", "query_text": "react hooks", "query_type": "Short_Keyword", "category": "Web Dev", "target_tech": "React"}
+{"query_id": "SHORT_TYPO_01", "query_text": "dockr compse", "query_type": "Short_Spelling_Error", "category": "Containers & Orchestration", "target_tech": "Docker"}
+{"query_id": "SHORT_TYPO_02", "query_text": "aws kafak", "query_type": "Short_Spelling_Error", "category": "Cloud", "target_tech": "AWS"}
+{"query_id": "SHORT_TYPO_04", "query_text": "pytorh cuda", "query_type": "Short_Spelling_Error", "category": "AI/ML", "target_tech": "PyTorch"}
+{"query_id": "SHORT_TYPO_05", "query_text": "postgre jsnb", "query_type": "Short_Spelling_Error", "category": "DB", "target_tech": "PostgreSQL"}

@@ -466,13 +466,14 @@ class InvertedIndex:
 
         idx = cls()
 
-        # Check if legacy wrapped format or clean index format
-        if "postings" in raw_data and "total_docs" in raw_data:
+        # Check if legacy wrapped format or clean index format (clean index format is term -> {df, idf, postings})
+        is_legacy = isinstance(raw_data, dict) and "total_docs" in raw_data and isinstance(raw_data["total_docs"], int) and "avg_zone_lengths" in raw_data
+        if is_legacy:
             idx.total_docs = raw_data["total_docs"]
             idx.avg_zone_lengths = raw_data["avg_zone_lengths"]
             idx.doc_zone_lengths = raw_data["doc_zone_lengths"]
             idx.doc_metadata = raw_data["doc_metadata"]
-            postings_dict = raw_data["postings"]
+            postings_dict = raw_data.get("postings", {})
         else:
             if catalog_path.exists():
                 with catalog_path.open("r", encoding="utf-8") as f:
