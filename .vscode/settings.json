@@ -1,4 +1,13 @@
 {
   "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
-  "python.terminal.activateEnvironment": true
+  "python.terminal.activateEnvironment": true,
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/.cache/**": true,
+    "**/.agent/local/**": true,
+    "**/data/00_corpus/**": true,
+    "**/technical_web_corpus/**": true,
+    "**/outputs/**": true,
+    "**/logs/**": true
+  }
 }

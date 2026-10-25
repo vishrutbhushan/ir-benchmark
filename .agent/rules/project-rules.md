@@ -14,3 +14,5 @@
 - Questions do not authorize implementation. Complete authorized fixes and commit verified source/data/results changes locally; never push.
 
 - Current reorganization publishing authorization: user permits pushes and will complete GitHub login if needed. Publish only source, compact label/configuration tables and small analytical results. Never publish corpus/source-document folders, ZIPs, SQLite databases, model weights or embeddings; inspect outgoing commit history as well as the final tree. Do not modify BM25 branches.
+
+- Ignore legacy corpus folders and large binary artifacts as well as the numbered runtime folders. Keep large local inputs/artifacts out of editor file watching; distinguish actual Git changes from stale editor status.

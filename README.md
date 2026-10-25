@@ -49,6 +49,9 @@ python -m unittest discover -s tests -v
 - `outputs/step_*/`: ignored working databases, model files and vectors.
 - `logs/`: ignored run logs.
 
+If VS Code shows stale changes after switching branches, use **Git: Refresh** or
+**Developer: Reload Window**. `git status` shows the current repository state.
+
 The current build covers **68,414 documents / 476,906 vectors**. Dense, learned-zone and NB/centroid-routed modes are implemented. Learned weights currently select body-only scoring, and routing retains most classes; improvements are not assumed. Final comparative evaluation belongs to the evaluation branch.
 
 See [docs/NEURAL.md](docs/NEURAL.md) for design details.

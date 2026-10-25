@@ -1,5 +1,8 @@
 # Large runtime inputs and artifacts; small reports belong in results/.
 /data/00_corpus/
+# Older checkouts may still contain the corpus at the repository root.
+/technical_web_corpus/
+/corpus_backup/
 /outputs/
 /logs/
 *.zip
@@ -8,7 +11,12 @@
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+*.db
+*.db-wal
+*.db-shm
 *.safetensors
+*.pt
+*.pth
 
 # One local environment and tool caches.
 /.venv/
