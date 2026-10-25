@@ -38,7 +38,8 @@ it will be slower. No database server is needed.
 Interrupt with Ctrl+C to pause. Run the same command to resume: unchanged stages
 and completed zones are reused, and partial embeddings resume at their checkpoint.
 Keep the corpus, downloaded model and `outputs/` intact. Changes to embedding inputs
-or the encoder can invalidate affected vectors.
+or the encoder can invalidate affected vectors. Use fewer `--workers` to reduce
+CPU preprocessing load without changing index contents.
 
 ## What is included
 

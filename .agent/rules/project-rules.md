@@ -24,3 +24,6 @@
 
 ### Publishing authorization — 2026-10-24
 - The user requested one commit and a push of the current source changes. Exclude generated/incomplete outputs and keep clone instructions concise. This does not authorize restarting the paused build. Push only the current development branch, without force.
+
+### Resume authorization — 2026-10-25
+- Resume the paused workload only after checking correctness, saved-vector integrity and cache compatibility. Preserve completed work, process the full corpus and monitor actual resource use. Do not assume a power profile prevents throttling. The latest AGENTS.md prohibits pushing code.
