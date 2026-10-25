@@ -53,3 +53,11 @@ See [docs/NEURAL.md](docs/NEURAL.md) for architecture and learning details. If V
 Set `result_limit` (default 10) and `page_size` (default 5) in `config.json`. The UI starts with an empty search box and has no technology/category filters or document snippets.
 
 Ranking reads manual `zone_weights` from `config.json`: title 0.15, headings 0.15, body 0.50, code 0.20. They must be positive and sum to one. Restart search after changing them. Existing learning results remain available as previous experiments.
+
+Export fixed queries and measurements for the evaluation branch without changing live weights:
+
+```bash
+python run_pipeline.py --step export --queries /path/to/evaluation/queries/final_queries.jsonl --variants /path/to/evaluation/config/neural_variants.json --export-dir /path/to/evaluation/results/neural
+```
+
+The exporter records top 10 results, three uncached query timings, process RSS and CUDA memory. The evaluation branch owns judgments and metrics.

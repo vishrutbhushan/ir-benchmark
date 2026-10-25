@@ -51,3 +51,6 @@ Thumbs.db
 /AGENTS.md
 /agents.md
 /.agent/rules/
+
+# Local branch worktrees.
+/.worktrees/

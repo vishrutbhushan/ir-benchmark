@@ -30,6 +30,7 @@ def parse_and_run():
             "08",
             "09",
             "audit",
+            "export",
         ],
         default="all",
     )
@@ -45,6 +46,9 @@ def parse_and_run():
     parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
     parser.add_argument("--device", choices=["cuda", "cpu"], default=settings["device"])
     parser.add_argument("--query")
+    parser.add_argument("--queries", type=Path)
+    parser.add_argument("--variants", type=Path)
+    parser.add_argument("--export-dir", type=Path)
     parser.add_argument(
         "--mode",
         choices=["dense", "zones", "routed-centroid"],
@@ -102,6 +106,9 @@ def run(args, parser):
     from src.step_08_search.step_08_search import SearchEngine
 
     learning = args.step in {"all", "05", "06"}
+    import time
+
+    startup = time.perf_counter()
     engine = SearchEngine(
         root,
         args.device,
@@ -109,7 +116,23 @@ def run(args, parser):
         require_learning=not learning,
         corpus_zip=args.corpus_zip,
     )
+    startup_seconds = time.perf_counter() - startup
     try:
+        if args.step == "export":
+            if not all((args.queries, args.variants, args.export_dir)):
+                parser.error("export requires --queries, --variants and --export-dir")
+            from src.step_08_search.export_results import export_results
+
+            run_stage(
+                "08",
+                export_results,
+                engine,
+                args.queries,
+                args.variants,
+                args.export_dir,
+                startup_seconds,
+            )
+            return
         if args.step == "all":
             from src.step_04_weights.step_04_weights import configure_weights
 
@@ -165,7 +188,7 @@ def main():
     preview = argparse.ArgumentParser(add_help=False)
     preview.add_argument("--step", default="all")
     args, _ = preview.parse_known_args()
-    step = "07" if args.step == "audit" else args.step
+    step = {"audit": "07", "export": "08"}.get(args.step, args.step)
     if step not in {"all", *[f"{i:02}" for i in range(1, 10)]}:
         step = "all"
     with run_log(step):
