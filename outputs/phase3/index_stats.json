@@ -1,16 +1,19 @@
 {
-  "total_documents": 10,
-  "vocabulary_size": 3374,
-  "total_postings_entries": 4096,
-  "total_position_entries": 23745,
-  "avg_postings_per_term": 1.21,
+  "total_documents": 77565,
+  "vocabulary_size": 1824935,
+  "total_postings_entries": 18821101,
+  "total_position_entries": 95481935,
+  "avg_postings_per_term": 10.31,
   "avg_zone_lengths": {
-    "title": 5.5,
-    "heading": 145.1,
-    "body": 2052.6,
-    "code": 171.6
+    "title": 7.6,
+    "heading": 38.4,
+    "body": 896.6,
+    "code": 289.0
   },
-  "hierarchical_categories": 6,
-  "hierarchical_technologies": 9,
-  "hierarchical_domains": 5
+  "hierarchical_categories": 13,
+  "hierarchical_technologies": 76,
+  "hierarchical_domains": 5,
+  "total_sections_indexed": 851580,
+  "avg_section_length": 79.6,
+  "champion_lists_count": 1824935
 }
