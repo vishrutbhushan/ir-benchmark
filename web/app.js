@@ -74,7 +74,6 @@ byId('prev').onclick = () => {position--; loadQuery().catch(showError);};
 byId('next').onclick = () => {position++; loadQuery().catch(showError);};
 fetch('/api/options').then(response => response.json()).then(data => {
   options = data;
-  const comparison = data.comparison;
-  byId('comparison').textContent = `Classical corpus: ${comparison.classical_corpus_documents.toLocaleString()} documents. Neural: ${comparison.neural_corpus_documents.toLocaleString()}. This is an exploratory comparison until classical results use the same corpus. Recall and MAP use the judged result pool.`;
+  byId('comparison').textContent = 'Labels save automatically and carry across matching query/document pairs. Recall and MAP use the combined judged pool.';
   loadQuery().catch(showError);
 }).catch(showError);

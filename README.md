@@ -4,11 +4,25 @@ This branch contains fixed results and a labeling UI. It does not retrieve or em
 
 ## Run
 
-Use the existing Python environment; this application needs only the standard library.
+Run these commands from an `evaluation` branch checkout. Python 3 is enough; no package installation is required.
 
 ```bash
-python run_evaluation.py --corpus-zip /path/to/technical_web_corpus.zip
+python3 run_evaluation.py
 ```
+
+To enable saved HTML links, supply the corpus ZIP:
+
+```bash
+python3 run_evaluation.py --corpus-zip /path/to/technical_web_corpus.zip
+```
+
+From the existing neural checkout with the local evaluation worktree:
+
+```bash
+.venv/bin/python .worktrees/evaluation/run_evaluation.py --corpus-zip data/00_corpus/technical_web_corpus.zip --port 8001
+```
+
+Stop with Ctrl+C. Judgments remain saved when you restart.
 
 Open **http://127.0.0.1:8001**. Choose Classical (BM25) or Neural (dense cosine), and judge one query at a time. Relevant and Non-relevant buttons save immediately to `data/judgments.csv`. Clear removes a judgment. Blank means unjudged. Labels carry across variants for the same query and document.
 
@@ -35,7 +49,7 @@ Metrics use K=1,3,5,10. Recall and F1 use all relevant documents in the combined
 
 ## Comparison limits
 
-Classical results came from 77,565 documents; neural used 68,414. This is an exploratory comparison until classical reruns on the same prepared corpus. Do not silently remove unavailable classical hits or invent replacement rankings.
+Use the supplied exports for labeling now. The manifests retain the original corpus counts and provenance; differing corpora can affect document statistics and rankings. Do not remove unavailable classical hits or invent replacement rankings.
 
 The classical files lack per-query timing, RSS, startup time, exact index bytes, corpus manifest hash and cache policy. Those fields remain blank. Their legacy aggregate times cover 34 queries and top 20, so they are not comparable to this neural run. Neural timings include uncached query encoding, ranking and sorting over a warm model, with three repetitions. RSS high-water marks cover the process lifetime; CUDA peaks include the resident model and index. Full index-build time was not measured in this run.
 
