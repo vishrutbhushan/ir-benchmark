@@ -1,21 +1,27 @@
-# Technical IR Benchmark
+# Technical IR Benchmark — Classical IR & BM25 Engine
 
-An Information Retrieval benchmark comparing a hand-coded **Classic IR engine** (BM25 → zone-weighted BM25F) against a **Neural IR engine** (pretrained dense embeddings with exact matrix ranking) on a technical web documentation corpus.
+A high-performance Information Retrieval system featuring a hand-coded, zero-dependency **Classical IR Engine** evaluated over a 77,565-document technical web documentation corpus.
+
+This branch focuses on:
+- **Okapi BM25** (Flat Document Baseline)
+- **Zone-Weighted BM25F** (`title`, `heading`, `code`, `body`)
+- **Hierarchical Multi-Level Indexing** (Level 1: Document Zonal Index, Level 2: Section / Passage Sub-Index, Level 0: Hierarchical Taxonomy Routing)
+- **Tier-1 Champion Lists** for fast postings candidate pruning
+
+> **Constraint & Design Rule**: All core indexing structures, posting lists, scoring equations (BM25 / BM25F), and evaluation metrics (NDCG@5, MAP, P@5) are hand-coded from scratch without external retrieval or search libraries (no Lucene, Rank-BM25, Whoosh, or FAISS).
 
 ---
 
-## Setup
+## Quick Setup
 
-Activate your virtual environment and install dependencies:
+Activate your virtual environment and install the required dependencies:
 
 ```bash
-# Activate virtual environment (macOS / Linux)
-source .venv/bin/activate
+# Activate virtual environment
+source .venv/bin/activate       # macOS / Linux
+# or: .venv\Scripts\activate    # Windows
 
-# Or on Windows
-.venv\Scripts\activate
-
-# Install required packages
+# Install required dependencies
 pip install -r requirements-technical-web-corpus.txt
 pip install trafilatura langdetect matplotlib pillow python-dateutil
 ```
@@ -24,66 +30,101 @@ pip install trafilatura langdetect matplotlib pillow python-dateutil
 
 ## Pipeline Execution
 
-All pipeline phases are executed through the unified master runner `run_pipeline.py`. Each run automatically generates visual charts (`.png`), markdown summaries, and an interactive HTML dashboard (`outputs/dashboard.html`).
+All pipeline phases are run via the unified CLI runner `run_pipeline.py`.
 
-### 1. Phase 0 — Corpus Audit
-Audits the raw HTML corpus for empty/JS-rendered bodies, language detection, error pages, and near-duplicate SimHash clusters:
-
-```bash
-# Run balanced audit across all 11 technical categories (equal representation)
-python run_pipeline.py --phase 0 --sample-per-category 60 --sample-size 660
-```
-- **Outputs**: `outputs/phase0/audit_report.md`, `outputs/phase0/audit_report.json`, `outputs/phase0/charts/` (6 visual plots), `outputs/phase0/sample_inspections.jsonl`
-- **Logs**: `logs/phase0/audit.log`
-
-### 2. Phase 1 — Structured Extraction
-Parses HTML pages into structured records (titles, heading hierarchy, sections, boilerplate-free body, isolated code blocks, and ISO dates):
+### 1. Phase 1 — Structured Extraction
+Parses raw crawled HTML files into structured records (`title`, `headings`, `sections`, boilerplate-free `body_text`, isolated `code_text`, and normalized `dates`):
 
 ```bash
-# Run stratified extraction across all technology categories
+# Run stratified extraction (small sample)
 python run_pipeline.py --phase 1 --stratified --max-docs 500
 
-# Run full corpus extraction
-python run_pipeline.py --phase 1 --corpus-root technical_web_corpus/technical_web_corpus --manifest-path technical_web_corpus/technical_web_corpus/metadata/corpus_manifest.jsonl
+# Run full corpus extraction (77,565 documents)
+python run_pipeline.py --phase 1 --num-workers 8
 ```
-- **Outputs**: `outputs/phase1/structured_records.jsonl`, `outputs/phase1/corpus_statistics.md`, `outputs/phase1/corpus_statistics.json`, `outputs/phase1/charts/`
+- **Outputs**: `outputs/phase1/structured_records.jsonl`, `outputs/phase1/corpus_statistics.json`, `outputs/phase1/corpus_statistics.md`, `outputs/phase1/charts/`
 - **Logs**: `logs/phase1/extraction.log`
 
-### 3. Phase 2 — Tokenization & Normalization
-Tokenizes all structured records into per-zone token lists using Porter stemming, version-string preservation, and technical identifier expansion:
+---
+
+### 2. Phase 2 — Tokenization & Linguistic Normalization
+Processes extracted records with technical-aware tokenization (preserves version numbers like `3.11`, hyphenated identifiers like `react-router-dom`, code symbols, and Porter stemming):
 
 ```bash
-python run_pipeline.py --phase 2
+# Run tokenization with 8 parallel worker processes
+python run_pipeline.py --phase 2 --num-workers 8
 ```
-- **Outputs**: `outputs/phase2/tokenized_corpus.jsonl`, `outputs/phase2/tokenization_stats.json`, `outputs/phase2/tokenization_stats.md`, `outputs/phase2/charts/` (4 visual plots)
+- **Outputs**: `outputs/phase2/tokenized_corpus.jsonl`, `outputs/phase2/tokenization_stats.json`, `outputs/phase2/tokenization_stats.md`, `outputs/phase2/charts/`
 - **Logs**: `logs/phase2/tokenization.log`
 
-### 4. Phase 3 — Classic IR Engine (Multi-Level Indexing, BM25 & BM25F)
-Builds a hand-coded multi-zone inverted index with hierarchical taxonomy postings (Domain → Category → Technology), fine-grained structural sections/passages (`doc_id#sec_i`), and Tier-1 Champion lists for fast candidate pruning:
+---
+
+### 3. Phase 3 — Classical IR Engine (Multi-Level Indexing, BM25 & BM25F)
+Constructs the hand-coded multi-zone inverted index, section sub-index (851,580 passages), category directory, and evaluates the benchmark query suite:
 
 ```bash
 # Run both Flat BM25 and Hierarchical BM25F side-by-side (default)
 python run_pipeline.py --phase 3 --scorer both
 
-# Run with Category-First Hierarchical Routing
+# Run with Category-First Hierarchical Routing (Level 0 Taxonomy Sub-Index)
 python run_pipeline.py --phase 3 --scorer bm25f --routing-mode hierarchical_first
 
-# Run with Tier-1 Champion List candidate pruning
+# Run with Tier-1 Champion List candidate pruning (Acceleration)
 python run_pipeline.py --phase 3 --scorer bm25f --routing-mode tiered
 
 # Run with custom BM25 hyperparameters
 python run_pipeline.py --phase 3 --k1 1.5 --b 0.8 --top-k 30
 ```
-- **Outputs**: `outputs/phase3/inverted_index.json`, `outputs/phase3/document_catalog.json` (with multi-level sections and postings), `outputs/phase3/multi_level_results.json` (document + section-level rankings), `outputs/phase3/bm25_results.json`, `outputs/phase3/bm25f_results.json`, `outputs/phase3/phase3_summary.md`, `outputs/phase3/charts/`
+- **Outputs**:
+  - `outputs/phase3/inverted_index.json` (Inverted postings with zonal counts & positions)
+  - `outputs/phase3/document_catalog.json` (Catalog with lengths and section catalog)
+  - `outputs/phase3/bm25_results.json` (Flat Okapi BM25 rankings)
+  - `outputs/phase3/bm25f_results.json` (Zonal BM25F rankings)
+  - `outputs/phase3/multi_level_results.json` (Document + Best Section passage rankings)
+  - `outputs/phase3/phase3_summary.md` (Performance & NDCG@5 comparison report)
+  - `outputs/phase3/charts/` (Visual comparison plots)
 - **Logs**: `logs/phase3/classic_ir.log`
 
-### 5. Run All Phases & Interactive Dashboard
-Execute the end-to-end pipeline in sequence:
+---
 
+### 4. Run Entire End-to-End Pipeline
 ```bash
 python run_pipeline.py --phase all
 ```
-- **Visual Dashboard**: Open `outputs/dashboard.html` in any browser for an interactive, graphical overview of corpus health, extraction, tokenization, and BM25 retrieval metrics.
+* **Interactive Dashboard**: Open `outputs/dashboard.html` in your browser for the full interactive visual report across all stages.
+
+---
+
+## Architectural Overview
+
+```
+                      Query String
+                           │
+                 [query_processor.py]
+                           │
+       ┌───────────────────┼───────────────────┐
+       ▼                   ▼                   ▼
+ [bm25_scorer.py]   [bm25f_scorer.py]   [multilevel_index.py]
+   (Okapi Flat)       (Field-Weighted)    (Doc + Passage + Champion)
+       │                   │                   │
+       └───────────────────┼───────────────────┘
+                           ▼
+                  [inverted_index.py]
+             (Postings, Zonal Freqs, Catalog)
+                           │
+                           ▼
+                [classic_ir_runner.py]
+       (Executes Benchmark, Computes NDCG@5 & MAP,
+               Outputs Results & Charts)
+```
+
+### Retrieval Models
+| Model | Granularity / Zones | Formula / Strategy |
+| :--- | :--- | :--- |
+| **Flat BM25** | Whole Document | Okapi BM25 ($k_1=1.2, b=0.75$) over all terms |
+| **BM25F** | 4 Zones: Title ($w=4.0$), Heading ($w=2.5$), Code ($w=2.0$), Body ($w=1.0$) | Weighted pseudo-frequencies $\tilde{f}(t, D)$ with length normalization per zone |
+| **Multi-Level** | Level 1: Document + Level 2: Section/Passage | Fuses document relevance with highest scoring passage snippet: $\text{Score} = \alpha \cdot \text{BM25F}_{\text{doc}} + (1 - \alpha) \cdot \max(\text{BM25}_{\text{sec}})$ |
+| **Champion Tiering** | Pruning Layer | Pre-screens candidate documents using Tier-1 high-frequency / title matches |
 
 ---
 
@@ -91,20 +132,32 @@ python run_pipeline.py --phase all
 
 ```text
 ir-benchmark/
-├── run_pipeline.py            # Master CLI runner
-├── src/                       # Modular pipeline source code
-│   ├── phase0_audit/          # Corpus sampling, validation, and near-duplicate detection
-│   ├── phase1_extraction/     # HTML parsing, boilerplate removal, and statistics
-│   ├── phase2_tokenization/   # Tokenizer, Porter stemmer, normalizer, and tests
-│   ├── phase3_classic_ir/     # Inverted index, BM25 scorer, query processor, and tests
-│   └── utils/                 # Logging, file I/O, SimHash, and chart visualizer
-├── outputs/                   # Hierarchical phase outputs, charts, and dashboard.html
-│   ├── dashboard.html         # Interactive visual analytics dashboard
-│   ├── phase0/charts/         # Phase 0 exclusion & length charts (.png)
-│   ├── phase1/charts/         # Phase 1 category & code prevalence charts (.png)
-│   ├── phase2/charts/         # Phase 2 token distribution & vocabulary charts (.png)
-│   └── phase3/charts/         # Phase 3 BM25 scores, postings & vocabulary charts (.png)
-├── logs/                      # Hierarchical execution logs
-├── queries.jsonl              # 25 technical queries across 7 categories
-└── technical_web_corpus/      # Raw HTML documents and crawl metadata
+├── run_pipeline.py               # Master CLI runner
+├── queries.jsonl                 # 25 benchmark queries across technical domains
+├── Category_Labels.txt           # Master taxonomy labels
+├── src/
+│   ├── phase1_extraction/        # HTML boilerplate stripping, code isolation, structure
+│   │   ├── boilerplate.py        # Chrome removal and <pre>/<code> extraction
+│   │   ├── html_parser.py        # Structural parsing: headings, sections, dates
+│   │   ├── extraction_runner.py  # Parallel multi-core extractor
+│   │   └── corpus_statistics.py  # Quality validation and distribution metrics
+│   ├── phase2_tokenization/      # Technical-aware tokenizer & normalizer
+│   │   ├── tokenizer.py          # Porter stemmer, code tokens, version strings
+│   │   ├── tokenization_runner.py# Parallel batch tokenization
+│   │   └── test_tokenizer.py     # Tokenizer test suite
+│   ├── phase3_classic_ir/        # Hand-coded Classical IR Engine
+│   │   ├── inverted_index.py     # Postings, positional indices, and catalog storage
+│   │   ├── bm25_scorer.py        # Hand-coded Okapi BM25 scorer
+│   │   ├── bm25f_scorer.py       # Hand-coded Zone-Weighted BM25F scorer
+│   │   ├── multilevel_index.py   # Multi-Level Document & Passage retrieval
+│   │   ├── query_processor.py    # Query tokenizer and taxonomy router
+│   │   ├── classic_ir_runner.py  # CLI benchmark evaluation & charts
+│   │   └── test_classic_ir.py    # Complete IR verification test suite
+│   └── utils/                    # Common taxonomy, charting, and logging utilities
+│       ├── taxonomy.py           # 76-technology hierarchical taxonomy ontology
+│       ├── chart_visualizer.py   # Matplotlib automated chart generation
+│       ├── html_dashboard.py     # Interactive dashboard generator
+│       └── logger.py             # Structured multi-phase logging
+├── outputs/                      # Generated results, JSON reports, charts, and dashboard
+└── logs/                         # Execution logs per phase
 ```
