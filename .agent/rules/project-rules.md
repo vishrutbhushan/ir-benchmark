@@ -1,29 +1,16 @@
-# Project rules
+# Neural project rules
 
-- This is a course comparison of classic BM25/TF-IDF and neural dense retrieval on the same technical HTML corpus. Changes here cover the neural engine and shared corpus; preserve teammates' classic work.
-- Hand-code dense cosine ranking with NumPy/PyTorch matrix operations. Hand-code classic indexing/scoring and final NDCG@5/MAP; no retrieval/vector libraries such as FAISS, Annoy, Chroma, Lucene or Rank-BM25.
-- Use one repository .venv and requirements-technical-web-corpus.txt. Use pretrained models only for embeddings; keep model revision and input conventions reproducible.
-- Apply repairs/exclusions to technical_web_corpus itself and its normal manifest. Do not require a separate teammate allowlist. Keep the original ZIP and local recovery backup.
-- Process the whole retained corpus for production builds. Small diagnostic fixtures and labeled learning subsets are allowed.
-- Keep neural preprocessing separate from classic normalization. Neural text preserves negation, case, punctuation, technical identifiers, versions and code whitespace. Classic rules: Porter stemming only, atomic versions, split/unsplit identifiers and structured dates.
-- Structured records contain doc_id, url, title, headings, sections, body_text, code_text, dates and metadata. Dates are mentions unless publication provenance is established.
-- Keep simple, named modules and one CLI, run_pipeline.py. Outputs/logs are hierarchical and ignored; analytical stages save charts and a dashboard.
-- The summary hierarchy is removed. The baseline uses pure-zone windows and exact cosine. Learned four-zone scoring (title/headings/body/code) and class routing are separate extensions; do not claim completed builds or improvements without verified artifacts. Table text belongs to body in the simplified target.
-- Learning tables are self-contained. Relevance labels are query/document judgments; classification labels currently map source technologies to 14 fixed domains. Never equate the two or falsely attribute labels to independent human review.
-- No annotation burden goes to the user. Keep development queries separate from final evaluation, split zone data by query, and group duplicate document families before classification splits. Fit on training data only.
-- Keep one neural reference document and concise README commands. Do not include personal system specs, local paths, setup notes or session narrative in shared files. Private history stays in ignored .agent/local/.
-- Discussion questions do not authorize implementation. Fix verified defects within an authorized task; ask before replacing agreed architecture.
-- Maintain current decisions here. Do not commit or push unless requested; publishing is handled by the user through their editor. Never force push or alter main without explicit authorization.
+- Branch ownership: `data` owns collection, archive validation, repairs, shared filtering and corrected ZIP export; this branch owns neural retrieval; `evaluation` owns final benchmark queries and future evaluation. Never modify BM25 branches. Never push.
+- Consume the corrected ZIP/folder from `data` and preserve original document IDs. Neural extraction may verify input integrity but must not silently exclude or repair corpus documents.
+- Process the full retained corpus. Preserve completed vectors and verify cache fingerprints and content before migrating artifacts. Do not restart embedding from zero for a layout-only change.
+- Use pinned Qwen3 embeddings and hand-coded cosine matrix operations. No FAISS, Annoy, Chroma or other delegated retrieval ranking.
+- Neural inputs preserve negation, stopwords, case, versions, punctuation, identifiers and code indentation. Tables join body text; no language-specific code parsing or execution.
+- Use four fixed zones: title, headings, body and code. The summary/RAPTOR hierarchy is removed. Keep plain dense retrieval separate from learned zone and class-routing variants.
+- Fit on training examples only. Keep development queries in learning tables; final benchmark queries live on `evaluation`. Source-domain class labels are not relevance judgments. Do not falsely attribute labels to independent human review.
+- Classification CSV fields are doc_id, class_id, class_name and split. Resolve full text by ID from SQLite. Group duplicates internally before splits; do not expose group_id in the CSV.
+- Store readable source references in each numbered learning-data folder's documents/ directory, one file per document ID.
+- Use numbered source steps, one requirements.txt, one run_pipeline.py and one environment. data/ holds inputs, results/ holds versioned small charts/metrics/JSON, outputs/ holds ignored models, vectors and working databases. ZIPs and embeddings must never enter Git.
+- Keep README concise and accurate. Keep one neural architecture reference; no PDFs, course-text dumps, device specifications or session history in shared files. Private history stays under .agent/local/.
+- Questions do not authorize implementation. Complete authorized fixes and commit verified source/data/results changes locally; never push.
 
-
-### Implementation authorization — 2026-10-23
-* Implement the agreed fixed four-zone production retrieval and learned weights, both classifiers and validated category routing, corpus-quality fixes, final query/evaluation preparation and tests. Preserve a plain cosine baseline. Process the entire corrected corpus, keep source labels and relevance labels distinct, and report measured results honestly. Do not implement teammates' classic engine or fabricate its results. No new push/commit is requested.
-
-### Pause and resume — 2026-10-23
-- The user explicitly paused the current build. Do not restart it until requested. Preserve all model/index files and embedding checkpoints; resume completed work rather than rebuilding it. Confirm cache fingerprints before resuming and never silently reset progress.
-
-### Publishing authorization — 2026-10-24
-- The user requested one commit and a push of the current source changes. Exclude generated/incomplete outputs and keep clone instructions concise. This does not authorize restarting the paused build. Push only the current development branch, without force.
-
-### Resume authorization — 2026-10-25
-- Resume the paused workload only after checking correctness, saved-vector integrity and cache compatibility. Preserve completed work, process the full corpus and monitor actual resource use. Do not assume a power profile prevents throttling. The latest AGENTS.md prohibits pushing code.
+- Current reorganization publishing authorization: user permits pushes and will complete GitHub login if needed. Publish only source, compact label/configuration tables and small analytical results. Never publish corpus/source-document folders, ZIPs, SQLite databases, model weights or embeddings; inspect outgoing commit history as well as the final tree. Do not modify BM25 branches.

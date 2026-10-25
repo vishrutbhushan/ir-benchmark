@@ -1,0 +1,19 @@
+# step 05 classification/inspection
+
+```json
+{
+  "documents": 420,
+  "columns": [
+    "doc_id",
+    "class_id",
+    "class_name",
+    "split"
+  ],
+  "csv_bytes": 19637,
+  "duplicate_grouping": "Internal only; retained during split generation",
+  "all_text_labels_and_splits_preserved": true,
+  "existing_classifier_arrays_unchanged": true
+}
+```
+
+![rows_by_split](charts/rows_by_split.png)

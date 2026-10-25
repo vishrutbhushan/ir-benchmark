@@ -1,17 +1,14 @@
-# Agent Instructions & Project Guidelines
+# Neural branch guidelines
 
-This file is automatically loaded by AI coding agents.
+Read [.agent/rules/project-rules.md](.agent/rules/project-rules.md).
 
-The detailed rules and hard constraints are maintained in:
-[.agent/rules/project-rules.md](.agent/rules/project-rules.md)
-
-### Key Rules at a Glance:
-1. **Hand-Coded Core**: BM25 / BM25F indexing & scoring, dense ranking (matrix multiplication cosine similarity), and evaluation metrics (NDCG@5, MAP) must be hand-coded from scratch (no off-the-shelf retrieval/vector libraries like Lucene, Rank-BM25, FAISS, or Annoy).
-2. **Tokenizer Rules**: Porter stemming only; atomic version numbers (`3.11`, `v2.4`); preserve both split and unsplit technical identifiers (`react-router-dom`); separate structured dates.
-3. **Structured Format**: `doc_id, url, title, headings[], sections[], body_text, code_text, dates[], metadata`.
-4. **Modularity & Hierarchy**: Clean, modular files. Hierarchical `outputs/` and `logs/`. Master single CLI runner (`run_pipeline.py`).
-5. **README Maintenance**: Keep `README.md` up to date with changes every time. Keep it simple, focusing on the overall idea and exact commands to run.
-6. **Git Commits**: Create a descriptive git commit every time changes are made.
-7. **NEVER PUSH CODE**: Never execute `git push` or push code to any remote repository.
-8. **Agent Memory**: Whenever the user provides hard instructions, design choices, or constraints, immediately append them to [.agent/rules/project-rules.md](.agent/rules/project-rules.md).
-9. **Visualized Outputs**: All phase analytical outputs must be visualized with charts and graphs (saved in `outputs/<phase>/charts/`, plus interactive HTML dashboards and markdown figures).
+- This branch owns only neural extraction, embeddings, learning, retrieval and UI.
+- Collection, repairs, shared filtering and corpus ZIP export belong to `data`.
+- Final benchmark queries and future comparative evaluation belong to `evaluation`.
+- Never modify BM25 branches and never push code.
+- Hand-code cosine ranking and learning metrics; no vector-search libraries.
+- Keep numbered steps, one `requirements.txt` and one `run_pipeline.py`.
+- Keep source labels in `data/`, small reports/charts in `results/`, large runtime artifacts in ignored `outputs/`.
+- Preserve completed embeddings and checkpoints. Verify cache compatibility after changes.
+- Keep CSVs compact; duplicate-family grouping stays internal.
+- Update README and project rules when behavior or constraints change. Commit verified changes with a descriptive message.

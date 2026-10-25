@@ -1,172 +1,45 @@
-# Neural retrieval
+# Neural architecture
 
-## Scope and status
-
-The teacher's assignment compares classic keyword ranking with open-source neural
-embeddings ranked by cosine, using 20 challenge queries, NDCG@5, MAP and failure
-analysis. This branch covers the neural engine and shared corpus repairs. Classic
-ranking belongs to the other engine.
-
-The implementation includes the four-zone build, weight learning, both classifiers,
-routing, UI and evaluation code. **The full build, fitting and engineering
-verification have completed.** Engineering checks do not establish retrieval quality. Final qrels and the
-classic-versus-neural failure report remain unfinished; no improvement is claimed.
-
-## Data and preprocessing
-
-The original ZIP contains 79,268 captures. The corrected local corpus contains
-68,414 documents across 76 technologies and 11 original categories. Repairs replace
-HTML at its normal path; exclusions leave the working manifest and remain locally
-recoverable. The original archive is preserved. Both engines must use this same
-corrected snapshot, not independently recovered versions.
-
-Records contain `doc_id`, URL, title, headings, sections, body, code, date mentions
-and metadata. Generic content selectors remove navigation and boilerplate. The
-extractor preserves `<pre>` and standalone multiline `<code>` indentation. Inline
-code stays in prose. Tables become plain visible text with spaces between cells;
-there is no table reconstruction, language-specific code parser or code execution.
-A retained RFC rule distinguishes preformatted prose from code.
-
-Neural text keeps case, stopwords, negation, punctuation, versions and identifiers.
-It uses the model tokenizer, without stemming or lemmatization. Dates are mentions,
-not verified publication dates. Code is embedded as text in its own zone with the
-same model. Exact identifiers, negation and version constraints can still fail.
-
-## Index and query pipeline
+The input is the corrected corpus ZIP from `data`. This branch does not collect pages or apply shared corpus filtering.
 
 ```text
-Corrected HTML and manifest
-  → structured extraction in SQLite
-  → independent title / headings / body / code windows
-  → pinned encoder → normalized vectors in four NumPy stores
-  → refresh learning tables → fit weights → train classifiers → tune routing
-
-Query → retrieval instruction → query embedding
-  → optional class routing and explicit user filters
-  → hand-coded cosine → per-document zone maxima
-  → dense or weighted ranking → snippets → pagination
+01 Prepared HTML → structured SQLite records
+02 Four fixed zones → overlapping token windows
+03 Pinned Qwen3 encoder → four persistent vector matrices
+04 Relevance labels → learned zone weights
+05 Source-domain labels → NB and neural centroid models
+06 Development queries → validated class-routing depth
+07 Full-index and learning-data verification
+08 Query embedding → cosine → document scores → ranking
+09 Search UI → filters, snippets and cached pagination
 ```
 
-Each zone uses up to 496 content tokens, 64-token overlap and a checked maximum
-of 512 total input tokens. Windows contain source text only; no synthetic title or
-technology prefix. Long zones are fully windowed. The current preparation produces
-68,414 title, 61,511 heading, 255,445 body and 91,536 code windows: 476,906 total.
+## Inputs and representation
 
-The encoder is `Qwen/Qwen3-Embedding-0.6B`, revision
-`97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`, producing 1,024 dimensions. Queries use
-its retrieval instruction; documents do not. Pooling selects the last real token
-and L2-normalizes. The pinned causal decoder permits right padding without a
-redundant attention mask for the pooled real-token positions.
+The current snapshot has 68,414 documents across 76 technologies. Extracted records retain document IDs, URLs, titles, headings, sections, body, code, date mentions and metadata. Neural text preserves negation, case, punctuation, versions and identifiers. Code keeps indentation and uses the same text encoder. Tables become visible body text. Dates are mentions, not verified publication dates.
 
-FP16 vectors persist on disk (about 0.91 GiB for this prepared index). Scoring uses
-FP32, renormalizes stored vectors and computes matrix-vector cosine directly.
-SQLite stores text/metadata; NumPy memory maps support block scans, with GPU
-residence when memory permits. No vector database, ANN library or external service
-is needed. Small bounded caches reuse query embeddings and rankings; pagination
-loads text only for visible results.
+Title, headings, body and code are separate zones. Each uses up to 496 content tokens, 64-token overlap and a checked 512-total-token limit. The index has 68,414 title, 61,511 heading, 255,445 body and 91,536 code windows.
 
-## Four retrieval modes
+Qwen3-Embedding-0.6B is pinned to revision `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`. Last-real-token pooling and L2 normalization produce 1,024-dimensional vectors. Queries receive the model's retrieval instruction. Documents do not receive synthetic context prefixes. No model fine-tuning is performed.
 
-| Mode | Document ranking |
-|---|---|
-| `dense` | Maximum window cosine across all zones; comparison baseline |
-| `zones` | Learned weighted sum of per-zone maximum cosines |
-| `routed-centroid` | Predict source classes with centroids, then weighted-zone retrieval |
-| `routed-nb` | Predict source classes with multinomial Naive Bayes, then weighted-zone retrieval |
+SQLite stores text and metadata. NumPy FP16 matrices persist about 0.91 GiB of vectors. Scoring uses FP32 cosine with renormalization and direct matrix operations, optionally GPU-resident. Completed embedding checkpoints are durable and reusable.
 
-The UI defaults to `routed-centroid`; report the plain dense baseline separately.
-Explicit technology/category filters restrict routing candidates. Ties use document
-IDs, and equal window scores choose the earliest window. Fixed vectors give
-reproducible ranking; GPU rebuilding is not promised bitwise identical.
+## Ranking and learning
 
-Weights are nonnegative and sum to one. A deterministic grid with step 0.05
-minimizes training-only squared error against binary relevance. Scores renormalize
-over present zones; if those weights sum to zero, they use equal present-zone
-weights. Training and retrieval use the same function. Max pooling favors long
-documents by giving them more opportunities to match.
+`dense` takes the highest window cosine per document across all zones. `zones` combines per-zone maximum cosines using learned nonnegative weights, renormalized over present zones. If all present-zone weights are zero, it uses equal weights for those zones. Ties use document ID; winning-window ties use the earliest index.
 
-The current fit assigns title/headings/body/code weights of **0/0/1/0**. This does
-not demonstrate a benefit from combining zones; final retrieval evaluation is pending.
+Weight fitting uses 262 binary relevance pairs across 44 development queries (33 training / 11 validation queries). A deterministic simplex grid with step 0.05 minimizes training squared error. Current title/headings/body/code weights are **0/0/1/0**; this does not demonstrate a benefit from blending zones. Cosines are features; relevance labels remain 0/1.
 
-## Learning tables and category routing
+Classification uses 14 fixed source-domain classes. The 420-document table contains only doc_id, class_id, class_name and split: 20/5/5 train/validation/test per class. Full text is loaded by ID; duplicate families stay within one split. Readable source files are in each learning folder's documents/ directory.
 
-| Table | Contents and use |
-|---|---|
-| `data/neural/zone_weights/training.csv` | Query/document details, binary relevance, split, four cosines and presence flags; 262 pairs, 44 queries split 33 train / 11 validation |
-| `data/neural/classification/training.csv` | Full document text, title, class, split and duplicate-group ID; 420 documents, 20/5/5 per class |
-| `classes.csv`, `technology_classes.csv` in the classification folder | Fixed class definitions and complete technology-to-class mapping |
+NB uses training-only word counts, vocabulary with df ≥ 2, add-one smoothing and empirical priors. Neural centroids average normalized training-document vectors; document vectors average their window embeddings. Test accuracy is 74.3% for NB and 84.3% for centroids, measuring source-label agreement rather than relevance.
 
-The 14 domains are cloud platforms, AI/ML compute, MLOps orchestration, programming
-languages, databases/storage, search engines, messaging/RPC, distributed data,
-application frameworks, containers/orchestration, DevOps/build/release,
-OS/networking/web, security/identity and observability.
+`routed-nb` and `routed-centroid` select classes before weighted cosine retrieval. Routing chooses the smallest top-k retaining mean 98% of exhaustive weighted top-20 results and at least 90% per validation query. Current k values are 12/14 and 13/14, so pruning benefit is limited. This is supervised source-class routing, not clustering or RAPTOR; the summary hierarchy is removed.
 
-Class labels describe source domains, not independent semantic topics or relevance.
-Canonical version URL families and identical extracted content stay within one
-classification split. The build refreshes classification text and zone features
-from the production index. Only training examples fit model parameters.
+## Checks and branch boundary
 
-Naive Bayes uses training token counts, training-only vocabulary (df ≥ 2), add-one
-smoothing and empirical priors. Centroids average normalized training-document
-vectors; each document vector averages its pure-zone window embeddings. Both share
-the same labeled examples. Validation/test accuracy, macro-F1 and confusion matrices
-are calculated directly. NB posterior values are not calibrated relevance scores.
+Step 07 checks every window's source offsets, vector/document mappings, normalization, GPU/NumPy cosine agreement, development-query ranking, filters and cached pagination. These are engineering checks, not relevance evaluation.
 
-On the 70-document held-out test split, centroid accuracy is 84.3% (macro-F1 0.832)
-and NB accuracy is 74.3% (macro-F1 0.727). These measure source-label agreement.
+Final challenge queries, qrels, NDCG/MAP comparison and failure analysis belong to `evaluation`. Development queries remain here because they are required for learning. The book connections retained in this branch are vector-space cosine, learned weighted zones, Naive Bayes and Rocchio-style classification.
 
-Routing selects the smallest number of top classes retaining mean 98% of exhaustive
-weighted top-20 results, with at least 90% for each development validation query.
-This measures reference-ranking recall, not relevance recall. All 14 classes may
-be required; speedup is measured rather than assumed. Source-class partitions are
-predefined: this is supervised classification, not unsupervised clustering or RAPTOR.
-The summary hierarchy is completely removed.
-
-## Queries, evaluation and checks
-
-The repository originally had 25 candidate queries. The current 20-query suite was
-revised for technical ambiguity and retained-source support. It includes three
-negation, four homonym, four temporal, four exact-terminology, four multiple-constraint
-and one paraphrase query. Each has a judgment intent. The 44 `DEV...` queries were
-created separately for learning and are not final test queries.
-
-After freezing the build, `evaluation-pool` unions dense/weighted top-10 and routed
-top-5 candidates with source excerpts. Grades are 0 (irrelevant), 1 (substantive
-partial answer), 2 (direct answer satisfying the constraints). They must come from
-source evidence, not candidate rank. Final `data/evaluation/qrels.csv` is pending.
-
-Evaluation uses full returned rankings, exponential-gain NDCG@5 and binary AP
-(grade > 0), averaged across queries for MAP. Unjudged documents receive zero gain;
-pooled judgments limit MAP interpretation. Classic results must use the same query
-hash, corpus IDs and qrels, extending the pool with their top-20 before comparison.
-Report ranking depth, judged coverage and failures by query type.
-
-Verification checks every window's source offsets, vector/document mappings,
-normalization, GPU-versus-NumPy cosine agreement, all query/mode combinations,
-filters and cached pagination. Raw corpus validation checks manifest hashes and
-coverage. Checkpoints flush completed vectors before advancing progress. Interrupted
-builds repeat only the unfinished checkpoint block; completed unchanged zones reuse
-their saved files. Keep local outputs to resume.
-
-## Course connections and source map
-
-- Chapter 6: cosine/vector scoring and learned weighted zones. Our continuous
-  cosine features adapt the book's Boolean zone-match table; they are not its exact
-  binary example.
-- Chapter 8: NDCG/MAP and common relevance judgments.
-- Chapters 13–14 and the text-mining slides: fixed classes, labeled documents,
-  Naive Bayes priors/likelihoods/smoothing and Rocchio-style centroid classification.
-- Classification routing reduces candidate space; no claim of clustering or
-  summary-tree indexing is made.
-
-`run_pipeline.py` and `src/neural/pipeline.py` orchestrate stages.
-`src/corpus_validation/` repairs the shared corpus; `src/neural/preprocessing/`
-extracts and windows it. `zone_index.py`, `model.py`, `embedding.py` build stores.
-`learning/`, `routing.py`, `scoring.py`, `search.py` implement learning/retrieval.
-`evaluation/`, `verification.py`, `audit.py` provide checks and metrics.
-`server.py` and `web/` provide the UI. See README for commands.
-
-References: [weighted-zone learning](https://nlp.stanford.edu/IR-book/html/htmledition/learning-weights-1.html),
-[Naive Bayes](https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html),
-[Rocchio classification](https://nlp.stanford.edu/IR-book/html/htmledition/rocchio-classification-1.html),
-[Qwen model card](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B).
+Small analytical reports live in numbered results/ folders and may be versioned. Large runtime artifacts stay under ignored outputs/. No vector database or delegated ranking library is used.

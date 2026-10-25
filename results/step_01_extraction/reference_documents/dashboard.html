@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Learning document references</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>Learning document references</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>datasets</th><td>{&#x27;classification&#x27;: {&#x27;documents&#x27;: 420, &#x27;bytes&#x27;: 7881223, &#x27;directory&#x27;: &#x27;data/step_05_classification/documents&#x27;}, &#x27;zone_weights&#x27;: {&#x27;documents&#x27;: 258, &#x27;bytes&#x27;: 11032988, &#x27;directory&#x27;: &#x27;data/step_04_weights/documents&#x27;}}</td></tr><tr><th>unique_documents</th><td>668</td></tr><tr><th>source</th><td>Full extracted source text from SQLite; these files are for reference, not model inputs</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/documents.png"><figcaption>documents</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

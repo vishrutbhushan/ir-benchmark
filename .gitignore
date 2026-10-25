@@ -1,70 +1,40 @@
-# Generated artifacts, reports, dashboards, model weights, indexes and logs.
-# Keep reusable scripts in scripts/ and durable project notes in docs/.
+# Large runtime inputs and artifacts; small reports belong in results/.
+/data/00_corpus/
 /outputs/
 /logs/
-*.log
+*.zip
+*.npy
+*.npz
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.safetensors
 
-# Downloaded raw corpus (source scripts and query definitions remain versioned).
-/technical_web_corpus/
-/technical_web_corpus.zip
-
-# Local Python environments, bytecode and build products.
+# One local environment and tool caches.
 /.venv/
 /venv/
-/env/
-/ENV/
+/.cache/
 __pycache__/
 *.py[cod]
-*.so
-/build/
-/dist/
-*.egg-info/
-.eggs/
-
-# Download/model caches, tests, linters, notebooks and coverage.
-/.cache/
-.pytest_cache/
 .ruff_cache/
-.mypy_cache/
-.hypothesis/
-.tox/
-.nox/
-.ipynb_checkpoints/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
+.pytest_cache/
 
-# Secrets and machine-local agent state; retain .agent/ project instructions.
+# Local credentials and private history.
 .env
 .env.*
 !.env.example
-!.env.*.example
-.envrc
+/.agent/local/
 /.aws/
 /.codex/
 /.agents/
-.pypirc
-
-# Keep shared editor configuration, ignore personal workspace state.
+.idea/
 /.vscode/*
 !/.vscode/settings.json
 !/.vscode/extensions.json
-.idea/
 *.code-workspace
-tempCodeRunnerFile.py
-
-# OS/editor temporary files and Windows download sidecars.
+*:Zone.Identifier
 .DS_Store
 Thumbs.db
-desktop.ini
-*.swp
-*.swo
-*~
-*:Zone.Identifier
 
-# Local submission instructions.
-/intermediate_status_report_instructions.txt
-
-# Private device/session history; shared project rules remain versioned.
-/.agent/local/
+# Source document snapshots remain local.
+/data/**/documents/

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>step 01 extraction</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>step 01 extraction</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>fingerprint</th><td>f15488c8b98dc3f6f7f38152db2226dfef073173cd184609831edea290884f26</td></tr><tr><th>policy</th><td>Prepared data snapshot; no neural-side filtering</td></tr><tr><th>source_documents</th><td>68414</td></tr><tr><th>retained_documents</th><td>68414</td></tr><tr><th>code_documents</th><td>40303</td></tr><tr><th>extracted_characters</th><td>540845114</td></tr><tr><th>blocks</th><td>5549609</td></tr><tr><th>seconds</th><td>95.69</td></tr><tr><th>dataset_manifest_sha256</th><td>20cc401c26cf7144238dd0d55826ed39741ff58600f13235c2f7d80237dfe02a</td></tr><tr><th>extractor_sha256</th><td>28b717813eb2f0c68adca316ce134374b03299a147340d30adeaea0a1a9c8818</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/block_types.png"><figcaption>block_types</figcaption></figure><figure><img style="max-width:100%" src="charts/categories.png"><figcaption>categories</figcaption></figure><figure><img style="max-width:100%" src="charts/technologies.png"><figcaption>technologies</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

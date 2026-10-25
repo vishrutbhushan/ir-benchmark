@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>step 07 verification/learning audit</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>step 07 verification/learning audit</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>checks_passed</th><td>True</td></tr><tr><th>zone_pairs</th><td>262</td></tr><tr><th>usable_zone_pairs</th><td>262</td></tr><tr><th>development_queries</th><td>44</td></tr><tr><th>query_splits</th><td>{&#x27;train&#x27;: 33, &#x27;validation&#x27;: 11}</td></tr><tr><th>classification_documents</th><td>420</td></tr><tr><th>classes</th><td>14</td></tr><tr><th>classification_splits</th><td>{&#x27;train&#x27;: 280, &#x27;validation&#x27;: 70, &#x27;test&#x27;: 70}</td></tr><tr><th>query_scope</th><td>Learning queries only; final benchmark queries live on the evaluation branch</td></tr><tr><th>source_text_and_label_mapping_checked</th><td>True</td></tr><tr><th>classification_duplicate_group_leakage</th><td>False</td></tr><tr><th>semantic_label_scope</th><td>Binary query-specific development relevance; classification labels describe source domains. Structural checks do not prove judgment correctness.</td></tr><tr><th>zone_training_sha256</th><td>e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc</td></tr><tr><th>classification_training_sha256</th><td>e9ff13c8df76535b2838baa4139264dfe1abd5a37583331bbba731a2409203bf</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/class_counts.png"><figcaption>class_counts</figcaption></figure><figure><img style="max-width:100%" src="charts/classification_splits.png"><figcaption>classification_splits</figcaption></figure><figure><img style="max-width:100%" src="charts/development_query_splits.png"><figcaption>development_query_splits</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

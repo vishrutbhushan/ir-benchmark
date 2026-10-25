@@ -1,0 +1,12 @@
+# step 04 weights/features
+
+```json
+{
+  "pairs": 262,
+  "queries": 44,
+  "index_fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
+  "training_csv_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc"
+}
+```
+
+![pairs_by_split](charts/pairs_by_split.png)

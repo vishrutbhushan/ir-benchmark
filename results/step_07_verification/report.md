@@ -1,0 +1,80 @@
+# step 07 verification
+
+```json
+{
+  "index_fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
+  "documents": 68414,
+  "windows": 476906,
+  "coverage": {
+    "documents": 68414,
+    "characters": {
+      "title": 4379303,
+      "headings": 15004332,
+      "body": 437602372,
+      "code": 103242742
+    },
+    "windows": {
+      "title": 68414,
+      "headings": 61511,
+      "body": 255445,
+      "code": 91536
+    },
+    "all_zone_characters_covered": true
+  },
+  "vectors_sha256": {
+    "title": "52a918fc2c4df4f980e99b77184fa11b30f6d036fd73dc9c1e1790e370afc139",
+    "headings": "df700bed0e288f900ba258f6d39022cd3182962e88f7a885532ef95dac1bf181",
+    "body": "58ff9d9b1d319ac24b88f7f0a124e81876322307668130b578ac81e6ebcf3db1",
+    "code": "b4303ad7d13a96066a7d8233ccc27c24cb0edc577f48fd3444c48e553498e6d5"
+  },
+  "norm_ranges": {
+    "title": [
+      0.9997560381889343,
+      1.000244140625
+    ],
+    "headings": [
+      0.9997633695602417,
+      1.0002410411834717
+    ],
+    "body": [
+      0.9997549653053284,
+      1.0002442598342896
+    ],
+    "code": [
+      0.9997583031654358,
+      1.0002418756484985
+    ]
+  },
+  "cosine_reference_max_error": {
+    "title": 1.7881393432617188e-07,
+    "headings": 1.4901161193847656e-07,
+    "body": 1.4901161193847656e-07,
+    "code": 2.086162567138672e-07
+  },
+  "query_runs": {
+    "dense": 44,
+    "zones": 44,
+    "routed-centroid": 44,
+    "routed-nb": 44
+  },
+  "all_vector_document_mappings_checked": true,
+  "cached_pagination_checked": true,
+  "development_csv_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc",
+  "query_scope": "Development queries for engineering checks; benchmark queries belong to evaluation branch",
+  "seconds": 17.03,
+  "latencies": {
+    "dense_p50_ms": 57.345,
+    "dense_p95_ms": 85.3815,
+    "zones_p50_ms": 37.235,
+    "zones_p95_ms": 41.317,
+    "routed-centroid_p50_ms": 37.825,
+    "routed-centroid_p95_ms": 40.565,
+    "routed-nb_p50_ms": 35.114999999999995,
+    "routed-nb_p95_ms": 38.6155
+  }
+}
+```
+
+![latencies_ms](charts/latencies_ms.png)
+
+![query_categories](charts/query_categories.png)

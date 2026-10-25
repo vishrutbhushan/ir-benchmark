@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>step 04 weights/features</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>step 04 weights/features</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>pairs</th><td>262</td></tr><tr><th>queries</th><td>44</td></tr><tr><th>index_fingerprint</th><td>4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790</td></tr><tr><th>training_csv_sha256</th><td>e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/pairs_by_split.png"><figcaption>pairs_by_split</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

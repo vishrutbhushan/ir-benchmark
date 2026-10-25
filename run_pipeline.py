@@ -1,214 +1,190 @@
 #!/usr/bin/env python3
-"""
-IR Benchmark Master Pipeline Runner
-
-A single CLI entrypoint to trigger any pipeline phase step with hierarchical
-outputs and logging.
-
-Usage examples:
-    python run_pipeline.py --phase 0 --sample-size 1000
-    python run_pipeline.py --phase 1 --max-docs 500
-    python run_pipeline.py --phase all  # complete neural corpus/index
-    python run_pipeline.py --phase serve
-"""
-
-from __future__ import annotations
+"""Run numbered neural stages; collection and final evaluation live on other branches."""
 
 import argparse
 import json
 import os
-import sys
 from pathlib import Path
 
-from src.utils.logging_utils import setup_logger
 
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Master runner for Information Retrieval Benchmark pipeline phases."
-    )
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--phase",
-        choices=["0", "1", "phase0", "phase1", "validate", "prepare", "extract", "chunk", "embed", "all", "neural-all", "search", "serve", "verify", "development-features", "classification-data", "audit", "weights", "classifiers", "routing", "evaluation-pool", "evaluate"],
+        "--step",
+        choices=[
+            "all",
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "audit",
+            "labels",
+            "references",
+        ],
         default="all",
-        help="all=full neural build; serve/search/verify=reuse index; 0/1=legacy classic preparation.",
     )
-    parser.add_argument("--archive-path", type=Path, default=Path("technical_web_corpus.zip"))
-    parser.add_argument("--workers", type=int, default=8, help="Workers for full raw validation.")
     parser.add_argument(
-        "--corpus-root",
+        "--corpus-dir", type=Path, default=Path("data/00_corpus/technical_web_corpus")
+    )
+    parser.add_argument(
+        "--corpus-zip",
         type=Path,
-        default=Path("technical_web_corpus"),
-        help="Path to root corpus folder containing documents/ and metadata/.",
+        default=Path("data/00_corpus/technical_web_corpus.zip"),
     )
+    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--batch-size", type=int, default=512)
+    parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
+    parser.add_argument("--query")
     parser.add_argument(
-        "--manifest-path",
-        type=Path,
-        default=Path("technical_web_corpus") / "metadata" / "corpus_manifest.jsonl",
-        help="Path to corpus_manifest.jsonl.",
+        "--mode",
+        choices=["dense", "zones", "routed-centroid", "routed-nb"],
+        default="routed-centroid",
     )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path("outputs"),
-        help="Root directory for structured outputs.",
-    )
-    parser.add_argument(
-        "--logs-dir",
-        type=Path,
-        default=Path("logs"),
-        help="Root directory for hierarchical logs.",
-    )
-    parser.add_argument(
-        "--sample-size",
-        type=int,
-        default=1000,
-        help="Total sample size for Phase 0 audit (stratified across technologies).",
-    )
-    parser.add_argument(
-        "--sample-per-tech",
-        type=int,
-        default=15,
-        help="Max documents to sample per technology in Phase 0 audit.",
-    )
-    parser.add_argument(
-        "--max-docs",
-        type=int,
-        default=None,
-        help="Maximum documents to extract in Phase 1 (useful for test runs; omit for full corpus).",
-    )
-    parser.add_argument(
-        "--min-char-length",
-        type=int,
-        default=200,
-        help="Minimum body text character length threshold.",
-    )
-    parser.add_argument(
-        "--stratified",
-        action="store_true",
-        help="When sampling or running subset extraction, stratify evenly across all technologies.",
-    )
-    parser.add_argument(
-        "--exclusion-file",
-        type=Path,
-        default=None,
-        help="Optional path to a JSON file containing doc_ids to exclude from Phase 1 extraction.",
-    )
-    parser.add_argument('--device', choices=['cuda','cpu'], default='cuda')
-    parser.add_argument('--batch-size', type=int, default=512)
-    parser.add_argument('--query')
-    parser.add_argument('--mode', choices=['dense','zones','routed-centroid','routed-nb'], default='routed-centroid')
-    parser.add_argument('--classic-rankings', type=Path, help='Classic document rankings JSONL for the common evaluation')
-    parser.add_argument('--limit', type=int, default=20)
-    parser.add_argument('--technology', default='')
-    parser.add_argument('--category', default='')
-    parser.add_argument('--host', default='127.0.0.1')
-    parser.add_argument('--port', type=int, default=8000)
-    return parser.parse_args()
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--technology", default="")
+    parser.add_argument("--category", default="")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args()
+    if args.workers < 1 or args.batch_size < 1:
+        parser.error("Workers and batch size must be positive")
+    os.environ.setdefault("MPLCONFIGDIR", str(Path(".cache/matplotlib").resolve()))
+    os.environ.setdefault("HF_HOME", str(Path(".cache/huggingface").resolve()))
+    from contextlib import redirect_stdout, redirect_stderr
+    import sys
+    from datetime import datetime, timezone
+
+    class Tee:
+        def __init__(self, *streams):
+            self.streams = streams
+
+        def write(self, text):
+            for stream in self.streams:
+                stream.write(text)
+            return len(text)
+
+        def flush(self):
+            for stream in self.streams:
+                stream.flush()
+
+    step = {"audit": "07", "labels": "05", "references": "01"}.get(args.step, args.step)
+    logdir = Path("logs") / ("all" if step == "all" else f"step_{step}")
+    logdir.mkdir(parents=True, exist_ok=True)
+    with (logdir / "run.log").open("a", encoding="utf-8") as logfile:
+        with (
+            redirect_stdout(Tee(sys.stdout, logfile)),
+            redirect_stderr(Tee(sys.stderr, logfile)),
+        ):
+            print(
+                f"{datetime.now(timezone.utc).isoformat()} | step {args.step}",
+                flush=True,
+            )
+            run(args, parser)
 
 
-def main() -> None:
-    args = parse_args()
-    os.environ.setdefault('MPLCONFIGDIR',str(Path('.cache/matplotlib').resolve()))
-    os.environ.setdefault('HF_HOME',str(Path('.cache/huggingface').resolve()))
+def run(args, parser):
+    root = Path("outputs")
+    from src.common.artifacts import save_configuration
 
-    phase = args.phase.lower()
-    if phase.startswith("phase"):
-        phase = phase.replace("phase", "")
-
-    print(f"=== Running IR Benchmark Pipeline [Phase: {phase}] ===")
-
-    if phase == "validate":
-        from src.corpus_validation.runner import run_validation
-        logger = setup_logger("corpus_validation", args.logs_dir / "corpus_validation" / "validation.log")
-        run_validation(args.archive_path, args.corpus_root, args.output_dir / "corpus_validation", logger, args.workers)
-        return
-
-    if phase in {'prepare','extract','chunk','embed','all','neural-all','search','serve','verify','development-features','classification-data','audit','weights','classifiers','routing','evaluation-pool','evaluate'}:
-        if args.max_docs is not None:
-            raise ValueError('Neural stages always process the full retained corpus; --max-docs is legacy-only')
-        if args.workers < 1 or args.batch_size < 1:
-            raise ValueError('Workers and batch size must be positive')
-        from src.neural.pipeline import run
-        # Mirror stdout/stderr to the stage log while retaining live progress.
-        import contextlib
-        class Tee:
-            def __init__(self,*streams): self.streams=streams
-            def write(self,text):
-                for stream in self.streams: stream.write(text)
-                return len(text)
-            def flush(self):
-                for stream in self.streams: stream.flush()
-        logdir=args.logs_dir/'neural'; logdir.mkdir(parents=True,exist_ok=True)
-        with (logdir/f'{phase}.log').open('a',encoding='utf-8') as logfile:
-            with contextlib.redirect_stdout(Tee(sys.stdout,logfile)), contextlib.redirect_stderr(Tee(sys.stderr,logfile)):
-                from datetime import datetime,timezone
-                print(f'Run started: {datetime.now(timezone.utc).isoformat()} | phase={phase}',flush=True)
-                run(args)
-        return
-
-    # Load the legacy classical-preparation path only when explicitly requested.
-    from src.phase0_audit.audit_runner import run_corpus_audit
-    from src.phase1_extraction.extraction_runner import run_structured_extraction
-    from src.utils.visualizer import generate_interactive_dashboard_html
-
-    # Execute Phase 0
-    if phase == "0":
-        phase0_out = args.output_dir / "phase0"
-        phase0_log = args.logs_dir / "phase0" / "audit.log"
-        logger0 = setup_logger("phase0_audit", phase0_log)
-
-        run_corpus_audit(
-            corpus_root=args.corpus_root,
-            manifest_path=args.manifest_path,
-            output_dir=phase0_out,
-            logger=logger0,
-            sample_size_per_tech=args.sample_per_tech,
-            total_sample_limit=args.sample_size,
-            min_char_length_threshold=args.min_char_length,
+    if args.step in {"all", "01", "02", "03"}:
+        from src.step_01_extraction.step_01_extraction import (
+            unpack_corpus,
+            run_extraction,
         )
 
-    # Execute Phase 1
-    if phase == "1":
-        phase1_out = args.output_dir / "phase1"
-        phase1_log = args.logs_dir / "phase1" / "extraction.log"
-        logger1 = setup_logger("phase1_extraction", phase1_log)
+        unpack_corpus(args.corpus_zip, args.corpus_dir)
+        run_extraction(args.corpus_dir, root / "step_01_extraction", args.workers)
+        save_configuration(root)
+        if args.step == "01":
+            return
+        from src.step_02_windows.step_02_windows import prepare_zones
 
-        excluded_ids: set[str] = set()
-        if args.exclusion_file and args.exclusion_file.exists():
-            with args.exclusion_file.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    excluded_ids = set(data)
-                elif isinstance(data, dict) and "excluded_doc_ids" in data:
-                    excluded_ids = set(data["excluded_doc_ids"])
-            logger1.info(f"Loaded {len(excluded_ids)} excluded doc IDs from {args.exclusion_file}")
+        prepare_zones(root, args.workers)
+        if args.step == "02":
+            return
+        from src.step_03_embeddings.step_03_embeddings import embed_zones
 
-        run_structured_extraction(
-            corpus_root=args.corpus_root,
-            manifest_path=args.manifest_path,
-            output_dir=phase1_out,
-            logger=logger1,
-            max_documents=args.max_docs,
-            min_char_length=args.min_char_length,
-            excluded_doc_ids=excluded_ids,
-            stratified=args.stratified,
-            sample_per_tech=args.sample_per_tech,
-        )
+        embed_zones(root, args.device, args.batch_size)
+        if args.step == "03":
+            return
+    if args.step == "audit":
+        from src.step_07_verification.learning_audit import audit_learning_data
 
-    # Compile / update visual interactive dashboard
-    p0_json_path = args.output_dir / "phase0" / "audit_report.json"
-    p1_json_path = args.output_dir / "phase1" / "corpus_statistics.json"
-    p0_data = json.loads(p0_json_path.read_text(encoding="utf-8")) if p0_json_path.exists() else None
-    p1_data = json.loads(p1_json_path.read_text(encoding="utf-8")) if p1_json_path.exists() else None
+        audit_learning_data(root)
+        return
+    if args.step == "labels":
+        from src.step_05_classification.labels import export_classification_data
 
-    dashboard_path = args.output_dir / "dashboard.html"
-    generate_interactive_dashboard_html(p0_data, p1_data, dashboard_path)
-    print(f"Visual dashboard generated: {dashboard_path}")
+        export_classification_data(root)
+        return
+    if args.step == "references":
+        from src.common.reference_documents import export_reference_documents
 
-    print("=== Pipeline Step Finished Successfully ===")
+        export_reference_documents(root)
+        return
+    from src.step_08_search.step_08_search import SearchEngine
+
+    learning = args.step in {"all", "04", "05", "06"}
+    engine = SearchEngine(
+        root, args.device, args.corpus_dir, require_learning=not learning
+    )
+    try:
+        if args.step in {"all", "04"}:
+            from src.step_04_weights.step_04_weights import fit_weights
+
+            fit_weights(root, engine)
+            if args.step == "04":
+                return
+        if args.step in {"all", "05"}:
+            from src.step_05_classification.labels import export_classification_data
+            from src.step_05_classification.step_05_classification import (
+                train_classifiers,
+                Classifiers,
+            )
+
+            export_classification_data(root)
+            train_classifiers(root, engine)
+            engine.classifier = Classifiers(root)
+            if args.step == "05":
+                return
+        if args.step in {"all", "06"}:
+            from src.step_06_routing.step_06_routing import tune_routing
+
+            tune_routing(root, engine)
+            if args.step == "06":
+                return
+        if args.step in {"all", "07"}:
+            from src.step_07_verification.step_07_verification import verify
+
+            verify(engine, root)
+        elif args.step == "08":
+            if not args.query:
+                parser.error("--query is required for step 08")
+            print(
+                json.dumps(
+                    engine.search(
+                        args.query,
+                        mode=args.mode,
+                        limit=args.limit,
+                        technology=args.technology,
+                        category=args.category,
+                    ),
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+        elif args.step == "09":
+            from src.step_09_ui.step_09_ui import serve
+
+            serve(engine, args.host, args.port)
+    finally:
+        engine.close()
 
 
 if __name__ == "__main__":
     main()
-
