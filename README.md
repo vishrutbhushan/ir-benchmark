@@ -95,27 +95,31 @@ python run_pipeline.py --phase all
 
 ---waht 
 
-## Architectural Overview
-
 ```
                       Query String
                            │
                  [query_processor.py]
                            │
-       ┌───────────────────┼───────────────────┐
-       ▼                   ▼                   ▼
- [bm25_scorer.py]   [bm25f_scorer.py]   [multilevel_index.py]
-   (Okapi Flat)       (Field-Weighted)    (Doc + Passage + Champion)
-       │                   │                   │
-       └───────────────────┼───────────────────┘
                            ▼
-                  [inverted_index.py]
-             (Postings, Zonal Freqs, Catalog)
-                           │
-                           ▼
-                [classic_ir_runner.py]
-       (Executes Benchmark, Computes NDCG@5 & MAP,
-               Outputs Results & Charts)
+ ┌────────────────────────────────────────────────────────────────────────┐
+ │            MULTI-LEVEL INDEXING CORE (inverted_index.py)               │
+ ├────────────────────────────────────────────────────────────────────────┤
+ │  • Level 0: Taxonomy Directory (13 Categories, 76 Technologies)        │
+ │  • Level 1: Document Zonal Index (Title, Heading, Code, Body Postings) │
+ │  • Level 2: Section / Passage Sub-Index (851,580 Structural Sections)  │
+ │  • Optimization: Tier-1 Champion Lists (Candidate Pruning)             │
+ └───────────────────────────────────┬────────────────────────────────────┘
+                                     │
+         ┌───────────────────────────┼───────────────────────────┐
+         ▼                           ▼                           ▼
+  [bm25_scorer.py]            [bm25f_scorer.py]        [multilevel_index.py]
+    (Flat BM25)              (Zone-Weighted BM25F)     (Doc + Passage Retrieval)
+         │                           │                           │
+         └───────────────────────────┼───────────────────────────┘
+                                     ▼
+                          [classic_ir_runner.py]
+              (Executes Benchmark, Computes Ranking Metrics,
+                        Outputs Results & Charts)
 ```
 
 ### Retrieval Models
