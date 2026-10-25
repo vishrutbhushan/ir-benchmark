@@ -12,3 +12,6 @@ Read [.agent/rules/project-rules.md](.agent/rules/project-rules.md).
 - Preserve completed embeddings and checkpoints. Verify cache compatibility after changes.
 - Keep CSVs compact; duplicate-family grouping stays internal.
 - Update README and project rules when behavior or constraints change. Commit verified changes with a descriptive message.
+
+- Do not create tests. Keep runtime data and checkpoint validation.
+- Keep comments short and direct. Use plain punctuation.

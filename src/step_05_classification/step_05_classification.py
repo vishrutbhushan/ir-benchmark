@@ -15,7 +15,7 @@ def normalized(values):
     return values / np.maximum(np.linalg.norm(values, axis=-1, keepdims=True), 1e-12)
 
 
-def build_document_vectors(root, engine):
+def build_document_vectors(engine):
     """Each available zone contributes one normalized mean, regardless of length."""
     total = np.zeros((len(engine.documents), engine.encoder.dimension), np.float32)
     for zone in ZONES:
@@ -30,7 +30,6 @@ def build_document_vectors(root, engine):
             np.add.at(counts, ids, 1)
         total += normalized(sums / np.maximum(counts[:, None], 1))
     vectors = normalized(total).astype(np.float32)
-    np.save(Path(root) / "step_05_classification/document_vectors.npy", vectors)
     return vectors
 
 
@@ -63,7 +62,7 @@ def train_classifiers(root, engine):
     train = np.array([r["split"] == "train" for r in rows])
     if any(not np.any(train & (targets == c)) for c in range(len(classes))):
         raise ValueError("Every class needs training seeds")
-    vectors = build_document_vectors(root, engine)
+    vectors = build_document_vectors(engine)
     centroids = normalized(
         np.stack(
             [
@@ -87,9 +86,9 @@ def train_classifiers(root, engine):
         for r, p, use in zip(rows, predicted, mask)
         if use
     ]
-    with (out / "predictions.csv").open(
-        "w", newline="", encoding="utf-8-sig"
-    ) as stream:
+    predictions_path = Path("results/step_05_classification/training/predictions.csv")
+    predictions_path.parent.mkdir(parents=True, exist_ok=True)
+    with predictions_path.open("w", newline="", encoding="utf-8-sig") as stream:
         writer = csv.DictWriter(stream, fieldnames=["doc_id", "actual", "predicted"])
         writer.writeheader()
         writer.writerows(predictions)

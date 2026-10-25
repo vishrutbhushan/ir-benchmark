@@ -12,7 +12,7 @@ python run_pipeline.py --step all
 python run_pipeline.py --step 09
 ```
 
-Put the prepared ZIP at `data/00_corpus/technical_web_corpus.zip`, or its extracted folder alongside it. Open **http://127.0.0.1:8000**. Configure `config.json`; explicit CLI options override run defaults. Use `--device cpu` without CUDA. Compatible completed embeddings are reused.
+Put the prepared ZIP at `data/00_corpus/technical_web_corpus.zip`, or its extracted folder alongside it. Search reads HTML directly from the ZIP. Builds remove temporary HTML after extraction and reuse an unchanged ZIP. Open **http://127.0.0.1:8000**. Configure `config.json`; explicit CLI options override run defaults. Use `--device cpu` without CUDA. The pipeline reuses compatible embeddings.
 
 | Step | Purpose |
 |---|---|
@@ -29,22 +29,22 @@ Put the prepared ZIP at `data/00_corpus/technical_web_corpus.zip`, or its extrac
 ```bash
 python run_pipeline.py --step 08 --mode dense --query "PostgreSQL JSONB indexing"
 python run_pipeline.py --step audit
-python run_pipeline.py --step references
-python -m unittest discover -s tests -v
 ```
 
-Steps 01–03 check preceding stages; later steps require earlier artifacts. Default search routes to the nearest **3 content classes**, configurable. `dense` and `zones` search exhaustively. Query text resembling Boolean syntax is embedded; logical operators are not enforced.
+Steps 01-03 check preceding stages; later steps require earlier artifacts. Default search routes to the nearest **3 content classes**, configurable. `dense` and `zones` search exhaustively. Query text resembling Boolean syntax is embedded; logical operators are not enforced.
+
+Logs append to `logs/step_NN/run.log` or `logs/all/run.log`. They record stage times, progress, errors and tracebacks. Ctrl+C preserves completed embedding checkpoints.
 
 ## Files
 
 - `data/step_04_weights/`: 240 judged pairs, 60 query formulations / 20 intents; training and validation stay separate by intent.
-- `data/step_05_classification/`: 168 content seeds, 14 classes, 10 training + 2 validation documents per class; review decisions are retained.
-- Reviewed labels are inputs and are never overwritten by pipeline runs. Local `documents/` reference folders are ignored.
-- `results/`: small reports and actual cosine feature tables.
+- `data/step_05_classification/`: 168 content seeds, 14 classes, 10 training + 2 validation documents per class; the review CSV records label decisions.
+- The pipeline reads reviewed labels without overwriting them. Read saved documents through the search UI.
+- `results/`: learning summaries, charts and actual cosine features.
 - `outputs/`: ignored databases, model weights, vectors and category row lists.
 - `logs/`: ignored run logs.
 
-The corpus has **68,414 documents and 476,906 window vectors**. Click a result to open its saved HTML; original URLs are secondary links. Scripts are disabled in the saved-document viewer; external assets may be unavailable.
+The corpus has **68,414 documents and 476,906 window vectors**. Click a result to open its saved HTML; original URLs are secondary links. The saved-document viewer disables scripts. Some external assets may be unavailable.
 
 Model/window changes require compatible embeddings. Weight and category changes reuse existing window vectors. Do not add corpus files or embeddings to Git.
 

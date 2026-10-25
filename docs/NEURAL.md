@@ -41,8 +41,10 @@ Queries select the nearest 3 available classes by default. Their window lists ar
 
 ## Search and configuration
 
-Modes are exhaustive `dense` (maximum across all windows), exhaustive `zones`, and `routed-centroid`. Ties use document ID, then earliest winning window. Results are documents with explanatory snippets. Main links open sandboxed saved HTML; secondary links open original websites. Filters and cached pagination remain available. Boolean-looking queries are semantic inputs, not executable Boolean expressions.
+Modes are exhaustive `dense` (maximum across all windows), exhaustive `zones`, and `routed-centroid`. Ties use document ID, then earliest winning window. Results are documents with explanatory snippets. Main links open sandboxed HTML from the corpus ZIP or extracted folder; secondary links open original websites. Filters and cached pagination remain available. Boolean-looking queries are semantic inputs, not executable Boolean expressions.
 
 `config.json` controls the pinned model/revision/weight checksum, token limits, overlap, device, batch size, workers, weighting/routing switches, routing depth, membership margin and cache limits. Alternate models must satisfy the implemented Qwen3 pooling and single-weight-file contract and provide their own revision/checksum. CLI run options override defaults. Model/window changes require compatible new embeddings; label changes require refitting derived learning artifacts. Existing completed embeddings/checkpoints are preserved when compatible.
 
 Step 07 verifies the full index and development-query retrieval, including cosine agreement, mappings, coverage, filters and pagination. Learning audits check references, evidence offsets, features and split consistency. Final challenge queries, relevance metrics and the classic/neural comparison belong to `evaluation` and are not run here.
+
+Run logs record stage times, progress and tracebacks under `logs/`. Keep only the current model, vectors, passage databases and learned artifacts in `outputs/`. The pipeline does not copy source documents into learning folders or write a duplicate extracted JSONL file.

@@ -1,6 +1,6 @@
 """Learn four nonnegative zone weights from binary relevance judgments."""
 
-from collections import defaultdict, Counter
+from collections import defaultdict
 import csv
 import json
 from pathlib import Path
@@ -10,7 +10,6 @@ import numpy as np
 from src.common.artifacts import digest_file, report, write_json
 from src.common.zones import ZONES
 from src.step_08_search.scoring import weighted_zone_scores
-from src.common.reference_documents import export_reference_documents
 
 
 def refresh_features(root, engine):
@@ -49,7 +48,6 @@ def refresh_features(root, engine):
         writer.writeheader()
         writer.writerows(rows)
     temporary.replace(feature_path)
-    export_reference_documents(root, ("zone_weights",))
     report(
         root / "step_04_weights/features",
         "Full-index zone learning features",
@@ -59,7 +57,7 @@ def refresh_features(root, engine):
             "index_fingerprint": engine.summary["fingerprint"],
             "training_csv_sha256": digest_file(path),
         },
-        {"pairs_by_split": dict(Counter(r["split"] for r in rows))},
+        {},
     )
     print(f"Refreshed {len(rows)} full-index zone feature rows.", flush=True)
     return rows
@@ -84,8 +82,7 @@ def fit_weights(root, engine):
     train = np.array([r["split"] == "train" for r in rows])
     if not train.any() or train.all():
         raise ValueError("Need separate training and validation queries")
-    # Squared error is quadratic in the four fixed global weights.
-    # Evaluate the simplex grid using its sufficient statistics, not repeated scans.
+    # Use quadratic statistics to avoid rescoring the grid.
     xt, yt = x[train], y[train]
     gram, cross, constant = (
         xt.T @ xt / len(xt),

@@ -143,11 +143,7 @@ def audit_learning_data(root):
         root / "step_07_verification/learning_audit",
         "Neural learning-data audit",
         stats,
-        {
-            "development_query_splits": stats["query_splits"],
-            "classification_splits": stats["classification_splits"],
-            "class_counts": dict(Counter(r["class_name"] for r in classified)),
-        },
+        {},
     )
     print(json.dumps(stats, indent=2), flush=True)
     return stats

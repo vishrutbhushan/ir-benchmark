@@ -36,28 +36,11 @@ def serve(engine, host="127.0.0.1", port=8000):
                     if not re.fullmatch(r"document_[0-9]+", doc_id):
                         self.send_error(404)
                         return
-                    row = engine.document_db.execute(
-                        "SELECT record_json FROM documents WHERE doc_id=?", (doc_id,)
-                    ).fetchone()
-                    if row is None:
+                    try:
+                        source = engine.corpus.read_html(doc_id)
+                    except (KeyError, FileNotFoundError):
                         self.send_error(404)
                         return
-                    record = json.loads(row[0])
-                    raw = record.get("metadata", {}).get("html_path") or record.get(
-                        "html_path"
-                    )
-                    if raw is None:
-                        # Collection paths are retained in the corpus manifest.
-                        raw = engine.html_paths.get(doc_id)
-                    path = (engine.corpus_root / raw).resolve() if raw else None
-                    if (
-                        path is None
-                        or not path.is_relative_to(engine.corpus_root)
-                        or not path.is_file()
-                    ):
-                        self.send_error(404)
-                        return
-                    source = path.read_text(encoding="utf-8", errors="replace")
                     data = (
                         "<!doctype html><meta charset=utf-8><title>Saved document</title>"
                         '<iframe sandbox="" referrerpolicy="no-referrer" style="border:0;width:100%;height:97vh" srcdoc="'

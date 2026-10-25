@@ -79,9 +79,7 @@ def run_extraction(corpus_root, out, workers=4):
         digest_file(Path(__file__).with_name("extract_html.py")),
     )
     summary = out / "summary.json"
-    if summary.exists() and all(
-        (out / name).exists() for name in ("corpus.sqlite", "structured_records.jsonl")
-    ):
+    if summary.exists() and (out / "corpus.sqlite").exists():
         saved = json.loads(summary.read_text())
         if (
             saved["dataset_manifest_sha256"] == sha
@@ -96,10 +94,8 @@ def run_extraction(corpus_root, out, workers=4):
     for suffix in ("", "-wal", "-shm"):
         Path(str(temporary) + suffix).unlink(missing_ok=True)
     categories, technologies = Counter(), Counter()
-    text_path = out / "structured_records.jsonl.part"
     with (
         closing(connect(temporary)) as db,
-        text_path.open("w", encoding="utf-8") as stream,
         ProcessPoolExecutor(max_workers=workers) as pool,
     ):
         db.execute(
@@ -124,13 +120,11 @@ def run_extraction(corpus_root, out, workers=4):
                     encoded,
                 ),
             )
-            stream.write(encoded + "\n")
             categories[row["category"]] += 1
             technologies[row["technology"]] += 1
         db.commit()
         db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     temporary.replace(out / "corpus.sqlite")
-    text_path.replace(out / "structured_records.jsonl")
     stats = {
         "fingerprint": hashlib.sha256(
             (sha + extractor_sha + "neural-extraction-v1").encode()
@@ -148,3 +142,33 @@ def run_extraction(corpus_root, out, workers=4):
         {"categories": dict(categories), "technologies": dict(technologies)},
     )
     return stats
+
+
+def prepare_extraction(archive, corpus, out, workers):
+    """Reuse extraction from an unchanged ZIP and remove temporary HTML files."""
+    import shutil
+    from src.common.artifacts import write_json
+
+    archive, corpus, out = Path(archive), Path(corpus), Path(out)
+    archive_sha = digest_file(archive) if archive.is_file() else None
+    summary = out / "summary.json"
+    if (
+        not corpus.exists()
+        and archive_sha
+        and summary.exists()
+        and (out / "corpus.sqlite").exists()
+    ):
+        saved = json.loads(summary.read_text())
+        if saved.get("archive_sha256") == archive_sha and saved[
+            "extractor_sha256"
+        ] == digest_file(Path(__file__).with_name("extract_html.py")):
+            print("01: corpus ZIP unchanged; reusing extracted records.", flush=True)
+            return saved
+    temporary_corpus = not corpus.exists()
+    unpack_corpus(archive, corpus)
+    saved = run_extraction(corpus, out, workers)
+    if archive_sha and temporary_corpus:
+        saved["archive_sha256"] = archive_sha
+        write_json(summary, saved)
+        shutil.rmtree(corpus)
+    return saved

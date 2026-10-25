@@ -24,7 +24,14 @@ MODES = ("dense", "zones", "routed-centroid")
 
 
 class SearchEngine:
-    def __init__(self, root, device="cuda", corpus_root=None, require_learning=True):
+    def __init__(
+        self,
+        root,
+        device="cuda",
+        corpus_root=None,
+        require_learning=True,
+        corpus_zip=None,
+    ):
         self.config = load_config()
         self.default_mode = default_mode(self.config)
         self.corpus_root = Path(
@@ -37,11 +44,12 @@ class SearchEngine:
         source = json.loads((self.root / "step_01_extraction/summary.json").read_text())
         if source["fingerprint"] != self.summary["source_fingerprint"]:
             raise RuntimeError("Zone index is stale; run --step all")
-        if (
-            corpus_root is not None
-            and digest_file(Path(corpus_root) / "metadata/corpus_manifest.jsonl")
-            != source["dataset_manifest_sha256"]
-        ):
+        from src.common.corpus import CorpusSource
+
+        self.corpus = CorpusSource(
+            self.corpus_root, corpus_zip or "data/00_corpus/technical_web_corpus.zip"
+        )
+        if self.corpus.manifest_sha256 != source["dataset_manifest_sha256"]:
             raise RuntimeError("Dataset changed; run --step all")
         verified = json.loads(
             (self.root / "step_03_embeddings/model/verified_files.json").read_text()
@@ -69,13 +77,6 @@ class SearchEngine:
                 "SELECT doc_index,doc_id,title,url,technology,category FROM documents ORDER BY doc_index"
             )
         ]
-        manifest = self.corpus_root / "metadata/corpus_manifest.jsonl"
-        self.html_paths = {}
-        if manifest.exists():
-            with manifest.open(encoding="utf-8") as stream:
-                for line in stream:
-                    entry = json.loads(line)
-                    self.html_paths[entry["doc_id"]] = entry["html_path"]
         self.ids = np.array([d["doc_id"] for d in self.documents])
         if [d["doc_index"] for d in self.documents] != list(range(len(self.documents))):
             raise RuntimeError("Document indexes must be contiguous")
@@ -230,7 +231,7 @@ class SearchEngine:
         if mode not in MODES:
             raise ValueError("Unknown retrieval mode")
         if not query.strip() or len(query) > 4000:
-            raise ValueError("Enter 1–4000 query characters")
+            raise ValueError("Enter 1-4000 query characters")
         if technology and technology not in self.technology_options:
             raise ValueError("Unknown technology")
         if category and category not in self.category_options:

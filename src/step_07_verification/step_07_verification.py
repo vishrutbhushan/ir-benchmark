@@ -1,6 +1,5 @@
 """Complete zone-index, reference cosine, retrieval and cache verification."""
 
-from collections import Counter
 import csv
 from pathlib import Path
 import time
@@ -135,7 +134,6 @@ def verify(engine, root):
         stats,
         {
             "latencies_ms": timings,
-            "query_categories": dict(Counter(q["category"] for q in queries)),
         },
     )
     return stats
