@@ -16,5 +16,11 @@
   "query_cache_size": 64,
   "ranking_cache_size": 16,
   "result_limit": 10,
-  "page_size": 5
+  "page_size": 5,
+  "zone_weights": {
+    "title": 0.15,
+    "headings": 0.15,
+    "body": 0.5,
+    "code": 0.2
+  }
 }

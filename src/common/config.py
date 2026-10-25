@@ -2,6 +2,9 @@
 
 import json
 import os
+import math
+
+from src.common.zones import ZONES
 from pathlib import Path
 
 
@@ -25,6 +28,16 @@ def load_config():
             0 if key in {"reserved_tokens", "overlap"} else 1
         ):
             raise ValueError(f"Invalid {key}")
+    weights = values["zone_weights"]
+    if set(weights) != set(ZONES) or any(
+        type(w) not in {int, float} or not math.isfinite(w) or w <= 0
+        for w in weights.values()
+    ):
+        raise ValueError(
+            "zone_weights must specify a positive number for each of the four zones"
+        )
+    if not math.isclose(sum(weights.values()), 1.0, abs_tol=1e-9):
+        raise ValueError("zone_weights must sum to one")
     budget = values["max_tokens"] - values["reserved_tokens"]
     if (
         budget < 4

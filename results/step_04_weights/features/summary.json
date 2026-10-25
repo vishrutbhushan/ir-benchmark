@@ -1,6 +1,6 @@
 {
-  "pairs": 240,
-  "queries": 60,
+  "pairs": 63,
+  "queries": 16,
   "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
-  "training_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d"
+  "training_csv_sha256": "5a0fba14a30cb374f05d145ede6282e1cfdbba775fe897e99738ce8c5998d887"
 }

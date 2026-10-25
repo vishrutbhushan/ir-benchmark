@@ -1,5 +1,5 @@
 {
-  "schema": "fixed-zone-sse-v2",
+  "schema": "fixed-zone-sse-v3",
   "zones": [
     "title",
     "headings",
@@ -7,45 +7,61 @@
     "code"
   ],
   "weights": [
-    0.0,
-    0.0,
-    1.0,
-    0.0
+    0.01,
+    0.01,
+    0.9700000000000001,
+    0.01
   ],
   "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
-  "training_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d",
-  "objective": "training-only squared error to binary relevance; deterministic simplex grid step 0.01",
+  "training_csv_sha256": "5a0fba14a30cb374f05d145ede6282e1cfdbba775fe897e99738ce8c5998d887",
+  "objective": "Training-only squared error; continuous four-zone fit with a positive minimum weight",
+  "minimum_zone_weight": 0.01,
+  "unrestricted_weights": [
+    0.0,
+    0.0,
+    1.0000000000000004,
+    0.0
+  ],
+  "minimum_policy": "Configured lower bound guarantees every zone contributes when present; it is not learned evidence",
+  "query_focus_counts": {
+    "title": 4,
+    "headings": 4,
+    "body": 4,
+    "code": 4
+  },
+  "unrestricted_training_mse": 0.1309667264842765,
+  "unrestricted_validation_mse": 0.14992965361886937,
   "missing_zone_policy": "absent zones contribute zero; fixed global weights",
   "evaluation": {
     "train": {
-      "mse": 0.1096827086071108,
-      "queries": 45
+      "mse": 0.1314472994791453,
+      "queries": 12
     },
     "validation": {
-      "mse": 0.11997245743987367,
-      "queries": 15
+      "mse": 0.14876802573710096,
+      "queries": 4
     }
   },
   "zone_diagnostics": {
     "title": {
-      "relevant_mean_cosine": 0.5833160367777778,
-      "irrelevant_mean_cosine": 0.34122188977777784,
-      "training_mse_alone": 0.15712229027746388
+      "relevant_mean_cosine": 0.6143120039130434,
+      "irrelevant_mean_cosine": 0.39019409000000005,
+      "training_mse_alone": 0.16172584809504345
     },
     "headings": {
-      "relevant_mean_cosine": 0.5155979937777778,
-      "irrelevant_mean_cosine": 0.2766121008888889,
-      "training_mse_alone": 0.1817634509928305
+      "relevant_mean_cosine": 0.579522405652174,
+      "irrelevant_mean_cosine": 0.3438901566666667,
+      "training_mse_alone": 0.15754479750479114
     },
     "body": {
-      "relevant_mean_cosine": 0.6881330627777777,
-      "irrelevant_mean_cosine": 0.30871120522222223,
-      "training_mse_alone": 0.10968270864920504
+      "relevant_mean_cosine": 0.6894718282608696,
+      "irrelevant_mean_cosine": 0.386455995,
+      "training_mse_alone": 0.13096672648427654
     },
     "code": {
-      "relevant_mean_cosine": 0.5340618965555556,
-      "irrelevant_mean_cosine": 0.22581871588888888,
-      "training_mse_alone": 0.167744001402468
+      "relevant_mean_cosine": 0.5239643317391305,
+      "irrelevant_mean_cosine": 0.31735849416666667,
+      "training_mse_alone": 0.19628588205331676
     }
   },
   "judgment_scope": "Small judged development pools, not final retrieval evaluation"

@@ -112,19 +112,9 @@ class SearchEngine:
                 if resident
                 else None
             )
-        self.weights = None
-        weights_path = self.root / "step_04_weights/model.json"
-        if weights_path.exists():
-            weights = json.loads(weights_path.read_text())
-            if (
-                weights.get("schema") == "fixed-zone-sse-v2"
-                and weights["index_fingerprint"] == self.summary["fingerprint"]
-                and weights["training_csv_sha256"]
-                == digest_file("data/step_04_weights/training.csv")
-            ):
-                self.weights = np.array(weights["weights"], dtype=np.float32)
-            elif require_learning:
-                raise RuntimeError("Zone weights belong to an older index")
+        self.weights = np.array(
+            [self.config["zone_weights"][z] for z in ZONES], dtype=np.float32
+        )
         self.classifier = None
         if (self.root / "step_05_classification/model.json").exists():
             from src.step_05_classification.step_05_classification import Classifiers

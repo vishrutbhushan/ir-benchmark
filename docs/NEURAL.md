@@ -19,13 +19,13 @@ Four independent zones are title, headings, body and code. Default windows allow
 
 SQLite holds text and metadata. FP16 NumPy arrays persist about 0.91 GiB of vectors; hand-coded FP32 cosine renormalizes stored vectors. No vector-search library or vector database handles ranking.
 
-## Book-style zone weights
+## Zone weights
 
 For each query/document pair, each feature is the highest window cosine in that zone. Missing zones contribute zero. The score is `sum(weight[zone] * cosine[zone])`, with nonnegative global weights summing to one. Similarities themselves are not normalized to sum to one.
 
-Weights minimize squared error against binary relevance judgments using a deterministic simplex grid with step 0.01. This extends the book's Boolean-zone features to continuous cosine; the Boolean counting shortcut does not directly apply. There is no logistic loss, Precision@5 objective, or forced positive weight. Cosine is not a relevance probability, so this remains an approximation.
+Runtime ranking reads manual `zone_weights` from `config.json`: title 0.15, headings 0.15, body 0.50 and code 0.20. The four values must be positive and sum to one. No fitting runs when loading these weights.
 
-The reviewed development table has 240 pairs and 60 formulations across 20 intents: conversational, keywords and Boolean-style. Fifteen intents train weights; five validate them. Paraphrases stay together. Labels include rationales and source evidence offsets. Actual full-index cosine features are generated under `results/step_04_weights/features/`; label CSVs remain unchanged. These are small deliberately selected pools, not representative final evaluation. Consult the current weight report for learned values; a body-only solution is valid and does not demonstrate multi-zone improvement.
+The existing relevance tables, actual cosine features and squared-error experiment results remain unchanged. They describe the previous learning experiment, not the active manual weights. Final evaluation remains separate.
 
 ## Content classification and pruning
 
@@ -48,5 +48,3 @@ Modes are exhaustive `dense` (maximum across all windows), exhaustive `zones`, a
 Step 07 verifies the full index and development-query retrieval, including cosine agreement, mappings, coverage, result limits and pagination. Learning audits check references, evidence offsets, features and split consistency. Final challenge queries, relevance metrics and the classic/neural comparison belong to `evaluation` and are not run here.
 
 Run logs record stage times, progress and tracebacks under `logs/`. Keep only the current model, vectors, passage databases and learned artifacts in `outputs/`. The pipeline does not copy source documents into learning folders or write a duplicate extracted JSONL file.
-
-The current squared-error fit chooses title/headings/body/code weights 0/0/1/0. Training error is 0.109683 for body alone, 0.113208 for 10% title plus 90% body, and 0.140820 for equal weights. This describes the best fit on the selected examples; it does not establish that other zones contain no useful information.

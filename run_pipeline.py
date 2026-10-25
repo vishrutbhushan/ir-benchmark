@@ -94,9 +94,14 @@ def run(args, parser):
 
         audit_learning_data(root)
         return
+    if args.step == "04":
+        from src.step_04_weights.step_04_weights import configure_weights
+
+        run_stage("04", configure_weights, root)
+        return
     from src.step_08_search.step_08_search import SearchEngine
 
-    learning = args.step in {"all", "04", "05", "06"}
+    learning = args.step in {"all", "05", "06"}
     engine = SearchEngine(
         root,
         args.device,
@@ -105,12 +110,10 @@ def run(args, parser):
         corpus_zip=args.corpus_zip,
     )
     try:
-        if args.step in {"all", "04"}:
-            from src.step_04_weights.step_04_weights import fit_weights
+        if args.step == "all":
+            from src.step_04_weights.step_04_weights import configure_weights
 
-            run_stage("04", fit_weights, root, engine)
-            if args.step == "04":
-                return
+            run_stage("04", configure_weights, root, engine)
         if args.step in {"all", "05"}:
             from src.step_05_classification.step_05_classification import (
                 train_classifiers,

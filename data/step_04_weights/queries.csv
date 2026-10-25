@@ -1,61 +1,26 @@
-﻿query_id,query_text,query_category,split,intent_id
-DEV01_C,How can Python read CSV rows as dictionaries?,conversational,train,DEV01
-DEV01_K,python csv DictReader dictionary rows,keywords,train,DEV01
-DEV01_B,Python AND csv AND DictReader,boolean,train,DEV01
-DEV02_C,When should Rust return a Result rather than panic?,conversational,train,DEV02
-DEV02_K,rust Result panic recoverable errors,keywords,train,DEV02
-DEV02_B,Rust AND Result AND panic,boolean,train,DEV02
-DEV03_C,How do React effects clean up a subscription?,conversational,train,DEV03
-DEV03_K,react useEffect subscription cleanup,keywords,train,DEV03
-DEV03_B,React AND useEffect AND cleanup,boolean,train,DEV03
-DEV04_C,What happens when a Kubernetes readiness probe fails?,conversational,validation,DEV04
-DEV04_K,kubernetes readiness probe failure traffic,keywords,validation,DEV04
-DEV04_B,Kubernetes AND readiness AND probe,boolean,validation,DEV04
-DEV05_C,How can Docker volumes retain data after a container is removed?,conversational,train,DEV05
-DEV05_K,docker named volume persistent data,keywords,train,DEV05
-DEV05_B,Docker AND volume AND persistence,boolean,train,DEV05
-DEV06_C,How does PostgreSQL VACUUM recover space occupied by dead tuples?,conversational,train,DEV06
-DEV06_K,postgresql VACUUM dead tuples disk space,keywords,train,DEV06
-DEV06_B,"PostgreSQL AND VACUUM AND ""dead tuples""",boolean,train,DEV06
-DEV07_C,How do I set an expiration time for a Redis key?,conversational,train,DEV07
-DEV07_K,redis EXPIRE key ttl,keywords,train,DEV07
-DEV07_B,Redis AND EXPIRE AND key,boolean,train,DEV07
-DEV08_C,How does MongoDB aggregation group documents and compute fields?,conversational,validation,DEV08
-DEV08_K,mongodb aggregation grouping computed fields,keywords,validation,DEV08
-DEV08_B,MongoDB AND aggregation AND grouping,boolean,validation,DEV08
-DEV09_C,How do Spark cache and persist control DataFrame storage?,conversational,train,DEV09
-DEV09_K,spark DataFrame cache persist storageLevel,keywords,train,DEV09
-DEV09_B,Spark AND DataFrame AND (cache OR persist),boolean,train,DEV09
-DEV10_C,When should a RabbitMQ consumer acknowledge a message?,conversational,train,DEV10
-DEV10_K,rabbitmq consumer acknowledgement message loss,keywords,train,DEV10
-DEV10_B,RabbitMQ AND consumer AND acknowledgement,boolean,train,DEV10
-DEV11_C,How do I read an earlier Apache Iceberg table snapshot?,conversational,train,DEV11
-DEV11_K,iceberg snapshot time travel query,keywords,train,DEV11
-DEV11_B,"Iceberg AND snapshot AND ""time travel""",boolean,train,DEV11
-DEV12_C,How does git revert undo changes while retaining commit history?,conversational,validation,DEV12
-DEV12_K,git revert undo commit history,keywords,validation,DEV12
-DEV12_B,git AND revert AND commit,boolean,validation,DEV12
-DEV13_C,How do Terraform count and for_each create multiple resources?,conversational,train,DEV13
-DEV13_K,terraform count for_each resource instances,keywords,train,DEV13
-DEV13_B,Terraform AND (count OR for_each) AND resources,boolean,train,DEV13
-DEV14_C,How can a GitHub Actions job use another job’s outputs?,conversational,train,DEV14
-DEV14_K,github actions jobs needs outputs,keywords,train,DEV14
-DEV14_B,"""GitHub Actions"" AND jobs AND outputs",boolean,train,DEV14
-DEV15_C,How can openssl x509 display a certificate expiration date?,conversational,train,DEV15
-DEV15_K,openssl x509 -enddate certificate expiry,keywords,train,DEV15
-DEV15_B,OpenSSL AND x509 AND (enddate OR notAfter),boolean,train,DEV15
-DEV16_C,How does a gRPC deadline limit the duration of an RPC?,conversational,validation,DEV16
-DEV16_K,grpc deadline timeout cancellation,keywords,validation,DEV16
-DEV16_B,gRPC AND deadline AND timeout,boolean,validation,DEV16
-DEV17_C,What distinguishes Prometheus counters from gauges?,conversational,train,DEV17
-DEV17_K,prometheus counter gauge metric types,keywords,train,DEV17
-DEV17_B,Prometheus AND counter AND gauge,boolean,train,DEV17
-DEV18_C,What is the nonce parameter used for in OpenID Connect?,conversational,train,DEV18
-DEV18_K,openid connect nonce replay protection,keywords,train,DEV18
-DEV18_B,"""OpenID Connect"" AND nonce",boolean,train,DEV18
-DEV19_C,How do tokenizers pad and truncate model inputs?,conversational,train,DEV19
-DEV19_K,transformers tokenizer padding truncation,keywords,train,DEV19
-DEV19_B,tokenizer AND padding AND truncation,boolean,train,DEV19
-DEV20_C,How do I log parameters and metrics for an MLflow run?,conversational,validation,DEV20
-DEV20_K,mlflow log parameters metrics runs,keywords,validation,DEV20
-DEV20_B,MLflow AND parameters AND metrics,boolean,validation,DEV20
+﻿query_id,query_text,query_category,split,intent_id,focus_zone
+T01,Rust ownership rules,keywords,train,T01,title
+T02,Prometheus metric types counter gauge,keywords,train,T02,title
+T03,Dockerfile reference instruction syntax,keywords,train,T03,title
+T04,OpenID Connect Discovery jwks_uri,keywords,validation,T04,title
+H01,"Angular AND ""route guards"" AND (CanActivate OR CanMatch)",boolean,train,H01,headings
+H02,How does nginx select a name-based virtual server?,conversational,train,H02,headings
+H03,Helm using the default function in pipelines,keywords,train,H03,headings
+H04,How do Kubernetes startup probes protect slow-starting containers?,conversational,validation,H04,headings
+B01,How do PostgreSQL vacuum and autovacuum maintain space occupied by deleted rows?,conversational,train,B01,body
+B02,How does a gRPC deadline limit how long an RPC can run?,conversational,train,B02,body
+B03,Redis AND key AND (EXPIRE OR PEXPIREAT),boolean,train,B03,body
+B04,How do I log parameters and metrics for an MLflow run?,conversational,validation,B04,body
+C01,"reader = csv.DictReader(csvfile)
+for row in reader:
+    print(row[""first_name""], row[""last_name""])",code,train,C01,code
+C02,"useEffect(() => {
+  const connection = createConnection(serverUrl, roomId);
+  connection.connect();
+  return () => connection.disconnect();
+}, [serverUrl, roomId]);",code,train,C02,code
+C03,openssl x509 -in cert.pem -noout -subject -nameopt RFC2253,command,train,C03,code
+C04,"x = torch.tensor([1.], requires_grad=True)
+with torch.no_grad():
+    y = x * 2
+print(y.requires_grad)",code,validation,C04,code

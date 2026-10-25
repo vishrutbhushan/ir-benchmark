@@ -70,11 +70,15 @@ def audit_learning_data(root):
                 raise ValueError("Judgment source metadata changed")
             if row["use_for_weight_learning"] == "1":
                 query_labels.setdefault(qid, set()).add(row["relevant"])
-            evidence = doc[
-                {"title": "title", "body": "body_text", "code": "code_text"}.get(
-                    row["evidence_zone"], "body_text"
-                )
-            ]
+            evidence = (
+                "\n".join(doc["headings"])
+                if row["evidence_zone"] == "headings"
+                else doc[
+                    {"title": "title", "body": "body_text", "code": "code_text"}[
+                        row["evidence_zone"]
+                    ]
+                ]
+            )
             if (
                 not 0
                 <= int(row["evidence_start"])
