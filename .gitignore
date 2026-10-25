@@ -6,3 +6,24 @@
 *.zip
 __pycache__/
 *.py[cod]
+/data/00_corpus/
+/.agent/local/
+/.venv/
+/.cache/
+/outputs/
+/logs/
+*.zip
+__pycache__/
+
+# Source document snapshots remain local.
+/data/**/documents/
+
+.env
+.env.*
+/.aws/
+/.codex/
+/.agents/
+*.npy
+*.npz
+*.sqlite
+*.safetensors

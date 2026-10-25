@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 
 
-def setup_logger(name: str, log_file: Path | str, level: int = logging.INFO) -> logging.Logger:
+def setup_logger(
+    name: str, log_file: Path | str, level: int = logging.INFO
+) -> logging.Logger:
     """Configures a hierarchical logger that logs to both console and a specific log file."""
     log_path = Path(log_file)
     log_path.parent.mkdir(parents=True, exist_ok=True)

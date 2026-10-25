@@ -19,7 +19,9 @@ def stream_jsonl(file_path: Path | str) -> Generator[dict[str, Any], None, None]
             try:
                 yield json.loads(line)
             except json.JSONDecodeError as e:
-                raise ValueError(f"Invalid JSON at line {line_num} in {path}: {e}") from e
+                raise ValueError(
+                    f"Invalid JSON at line {line_num} in {path}: {e}"
+                ) from e
 
 
 def write_jsonl(records: Iterable[dict[str, Any]], file_path: Path | str) -> int:

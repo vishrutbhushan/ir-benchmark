@@ -7,23 +7,44 @@ from pathlib import Path
 
 def write_report(summary: dict, examples: list[dict], output_dir: Path) -> None:
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     charts = output_dir / "charts"
     charts.mkdir(exist_ok=True)
     chart_specs = [
-        ("document_status", "Every document: integrity and content triage", summary["status_counts"]),
+        (
+            "document_status",
+            "Every document: integrity and content triage",
+            summary["status_counts"],
+        ),
         ("category_distribution", "Full manifest categories", summary["categories"]),
-        ("quality_reasons", "Exclusion/review reasons (may overlap)", summary["quality_reasons"]),
-        ("language_evidence", "Language evidence across every document", summary["languages"]),
-        ("code_prevalence", "HTML documents with and without code", summary["code_prevalence"]),
+        (
+            "quality_reasons",
+            "Exclusion/review reasons (may overlap)",
+            summary["quality_reasons"],
+        ),
+        (
+            "language_evidence",
+            "Language evidence across every document",
+            summary["languages"],
+        ),
+        (
+            "code_prevalence",
+            "HTML documents with and without code",
+            summary["code_prevalence"],
+        ),
     ]
     for name, title, counts in chart_specs:
         items = sorted(counts.items(), key=lambda item: item[1], reverse=True)[:25]
         fig, ax = plt.subplots(figsize=(10, max(3, len(items) * 0.33)))
         if items:
-            ax.barh([k for k, _ in items][::-1], [v for _, v in items][::-1], color="#3178ad")
+            ax.barh(
+                [k for k, _ in items][::-1],
+                [v for _, v in items][::-1],
+                color="#3178ad",
+            )
         ax.set_title(title)
         ax.set_xlabel("Documents")
         fig.tight_layout()
@@ -35,7 +56,10 @@ def write_report(summary: dict, examples: list[dict], output_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(10, 5))
     left = [0] * len(categories)
     for status in statuses:
-        values = [summary["category_status"][category].get(status, 0) for category in categories]
+        values = [
+            summary["category_status"][category].get(status, 0)
+            for category in categories
+        ]
         ax.barh(categories, values, left=left, label=status)
         left = [a + b for a, b in zip(left, values)]
     ax.set_title("Content eligibility by category (all documents)")
@@ -70,20 +94,26 @@ def write_report(summary: dict, examples: list[dict], output_dir: Path) -> None:
         "can contain identical text. This pass does not compute a neural representation or perform "
         "full near-duplicate semantic detection.\n\n"
     )
-    text += (f"Exact visible-text candidate groups: **{summary['identical_visible_content_groups']:,}**, "
-             f"covering {summary['documents_in_identical_visible_content_groups']:,} documents; not automatically removed.\n\n"
-             f"Technologies with no eligible page: `{summary['technologies_without_eligible_documents']}`. "
-             "Kafka's three captures are redirect stubs, not usable documentation bodies.\n\n"
-             "The default normalized raw manifest retains all 79,268 files. Both engines must use the same "
-             "explicitly frozen eligibility manifest later; review pages are not silently admitted.\n\n"
-             "![Eligibility by category](charts/category_eligibility.png)\n\n")
+    text += (
+        f"Exact visible-text candidate groups: **{summary['identical_visible_content_groups']:,}**, "
+        f"covering {summary['documents_in_identical_visible_content_groups']:,} documents; not automatically removed.\n\n"
+        f"Technologies with no eligible page: `{summary['technologies_without_eligible_documents']}`. "
+        "Kafka's three captures are redirect stubs, not usable documentation bodies.\n\n"
+        "The default normalized raw manifest retains all 79,268 files. Both engines must use the same "
+        "explicitly frozen eligibility manifest later; review pages are not silently admitted.\n\n"
+        "![Eligibility by category](charts/category_eligibility.png)\n\n"
+    )
     for name, title, _ in chart_specs:
         text += f"![{title}](charts/{name}.png)\n\n"
     text += "[Interactive report](dashboard.html) · [Machine-readable summary](summary.json)\n"
     (output_dir / "report.md").write_text(text, encoding="utf-8")
     rows = "".join(
-        "<tr>" + "".join(f"<td>{html.escape(str(row.get(key, '')))}</td>" for key in
-                        ["doc_id", "technology", "status", "reasons", "flags"]) + "</tr>"
+        "<tr>"
+        + "".join(
+            f"<td>{html.escape(str(row.get(key, '')))}</td>"
+            for key in ["doc_id", "technology", "status", "reasons", "flags"]
+        )
+        + "</tr>"
         for row in examples
     )
     (output_dir / "dashboard.html").write_text(
@@ -96,11 +126,15 @@ def write_report(summary: dict, examples: list[dict], output_dir: Path) -> None:
         "<p>All decisions: <a href='document_checks.jsonl'>document_checks.jsonl</a>. "
         "The table shows up to five examples per technology/status, not the inspection population.</p>"
         "<img alt='Eligibility by category' src='charts/category_eligibility.png'>"
-        + "".join(f"<img alt='{html.escape(title)}' src='charts/{name}.png'>" for name, title, _ in chart_specs)
+        + "".join(
+            f"<img alt='{html.escape(title)}' src='charts/{name}.png'>"
+            for name, title, _ in chart_specs
+        )
         + "<label>Filter examples <input id='filter'></label><table><thead><tr>"
         "<th>Document</th><th>Technology</th><th>Status</th><th>Reasons</th><th>Flags</th>"
         "</tr></thead><tbody>" + rows + "</tbody></table>"
         "<script>document.querySelector('#filter').addEventListener('input',e=>{"
         "for(const r of document.querySelectorAll('tbody tr'))r.hidden=!r.textContent.toLowerCase()"
-        ".includes(e.target.value.toLowerCase())})</script>", encoding="utf-8",
+        ".includes(e.target.value.toLowerCase())})</script>",
+        encoding="utf-8",
     )

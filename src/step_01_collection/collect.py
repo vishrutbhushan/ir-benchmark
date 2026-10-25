@@ -37,7 +37,6 @@ import hashlib
 import html as html_lib
 import json
 import logging
-import os
 import re
 import sys
 import threading
@@ -47,15 +46,18 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
 
 DATA_ROOT = "https://data.commoncrawl.org/"
-DEFAULT_CANDIDATES = Path("technical_web_corpus") / "metadata" / "common_crawl_candidates.jsonl"
+DEFAULT_CANDIDATES = (
+    Path("technical_web_corpus") / "metadata" / "common_crawl_candidates.jsonl"
+)
 DEFAULT_OUTPUT = Path("technical_web_corpus")
 
 DEFAULT_WORKERS = 8
 DEFAULT_MAX_DOCUMENTS = 200_000
-DEFAULT_MAX_BYTES = None  # Unlimited by default; continue until all candidates are attempted
+DEFAULT_MAX_BYTES = (
+    None  # Unlimited by default; continue until all candidates are attempted
+)
 HARD_MAX_BYTES = 10 * 1024**3
 USER_AGENT = "technical-ir-corpus-builder/3.0"
 
@@ -63,6 +65,7 @@ USER_AGENT = "technical-ir-corpus-builder/3.0"
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
+
 
 def setup_logging(root: Path) -> logging.Logger:
     logs_dir = root / "logs"
@@ -94,6 +97,7 @@ def setup_logging(root: Path) -> logging.Logger:
 # ---------------------------------------------------------------------------
 # Utility
 # ---------------------------------------------------------------------------
+
 
 def format_bytes(value: int) -> str:
     units = ["B", "KiB", "MiB", "GiB", "TiB"]
@@ -165,6 +169,7 @@ def read_jsonl(path: Path):
 # WARC / Common Crawl
 # ---------------------------------------------------------------------------
 
+
 def extract_http_body(warc_gzip: bytes) -> bytes:
     raw = gzip.decompress(warc_gzip)
 
@@ -173,7 +178,7 @@ def extract_http_body(warc_gzip: bytes) -> bytes:
         raise ValueError("Invalid WARC record: missing WARC header separator")
 
     warc_headers = raw[:warc_separator].decode("latin-1", "replace")
-    body = raw[warc_separator + 4:]
+    body = raw[warc_separator + 4 :]
 
     content_length = re.search(
         r"(?im)^Content-Length:\s*(\d+)\s*$",
@@ -185,7 +190,7 @@ def extract_http_body(warc_gzip: bytes) -> bytes:
     http_separator = body.find(b"\r\n\r\n")
     if body.startswith((b"HTTP/", b"ICY ")) and http_separator >= 0:
         http_headers = body[:http_separator].decode("latin-1", "replace")
-        body = body[http_separator + 4:]
+        body = body[http_separator + 4 :]
 
         http_length = re.search(
             r"(?im)^Content-Length:\s*(\d+)\s*$",
@@ -257,14 +262,12 @@ def fetch_warc(
         except Exception as exc:
             last_error = exc
             if attempt + 1 < retries:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         finally:
             if response is not None:
                 response.close()
 
-    raise RuntimeError(
-        f"WARC fetch failed after {retries} attempts: {last_error}"
-    )
+    raise RuntimeError(f"WARC fetch failed after {retries} attempts: {last_error}")
 
 
 def get_session() -> requests.Session:
@@ -276,6 +279,7 @@ def get_session() -> requests.Session:
 # ---------------------------------------------------------------------------
 # Document download
 # ---------------------------------------------------------------------------
+
 
 def download_one(
     candidate_line: int,
@@ -314,6 +318,7 @@ def download_one(
 # Resume state
 # ---------------------------------------------------------------------------
 
+
 def load_resume_state(manifest_path: Path) -> tuple[set[int], int, int]:
     completed_lines: set[int] = set()
     saved_docs = 0
@@ -338,16 +343,17 @@ def load_resume_state(manifest_path: Path) -> tuple[set[int], int, int]:
 # Main build
 # ---------------------------------------------------------------------------
 
+
 def build(args: argparse.Namespace) -> int:
     output = Path(args.output).resolve()
     candidates_path = Path(args.candidates).resolve()
 
     if not candidates_path.exists():
-        raise FileNotFoundError(
-            f"Candidate file not found: {candidates_path}"
-        )
+        raise FileNotFoundError(f"Candidate file not found: {candidates_path}")
 
-    if args.max_bytes is not None and (args.max_bytes <= 0 or args.max_bytes > HARD_MAX_BYTES):
+    if args.max_bytes is not None and (
+        args.max_bytes <= 0 or args.max_bytes > HARD_MAX_BYTES
+    ):
         raise ValueError(
             f"--max-bytes must be > 0 and <= {HARD_MAX_BYTES:,}, or omit it for unlimited"
         )
@@ -424,7 +430,10 @@ def build(args: argparse.Namespace) -> int:
             if saved_docs >= args.max_documents:
                 return False, "document limit reached"
 
-            if args.max_bytes is not None and stored_bytes + len(result["body"]) > args.max_bytes:
+            if (
+                args.max_bytes is not None
+                and stored_bytes + len(result["body"]) > args.max_bytes
+            ):
                 return False, "byte budget reached"
 
         tmp_path = html_path.with_suffix(".html.part")
@@ -476,7 +485,6 @@ def build(args: argparse.Namespace) -> int:
     pending = {}
 
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
-
         # Prime the pool.
         while len(pending) < args.workers:
             try:

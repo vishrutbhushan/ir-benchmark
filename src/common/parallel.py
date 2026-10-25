@@ -1,4 +1,5 @@
 """Ordered worker mapping with bounded inputs on Python 3.12 and newer."""
+
 from itertools import islice
 
 
