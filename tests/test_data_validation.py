@@ -1,4 +1,5 @@
 import hashlib
+import json
 import tempfile
 import unittest
 import zipfile
@@ -232,3 +233,42 @@ class CorrectedDatasetTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DownloadSnapshotTests(unittest.TestCase):
+    def test_download_snapshot_keeps_manifest_and_document_bytes(self):
+        from src.step_05_archive.pack import snapshot_downloads
+        from zipfile import ZipFile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            corpus = root / "corpus"
+            path = corpus / "documents/html/Python/example.html"
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"<main>Original capture</main>")
+            metadata = corpus / "metadata"
+            metadata.mkdir()
+            manifest = (
+                json.dumps(
+                    {
+                        "doc_id": "example",
+                        "html_path": "documents/html/Python/example.html",
+                    }
+                )
+                + "\n"
+            )
+            (metadata / "corpus_manifest.jsonl").write_text(manifest)
+            archive = snapshot_downloads(corpus, root / "original.zip")
+            with ZipFile(archive) as source:
+                self.assertEqual(
+                    source.read(
+                        "technical_web_corpus/documents/html/Python/example.html"
+                    ),
+                    path.read_bytes(),
+                )
+                self.assertEqual(
+                    source.read(
+                        "technical_web_corpus/metadata/corpus_manifest.jsonl"
+                    ).decode(),
+                    manifest,
+                )

@@ -69,6 +69,23 @@ def main():
         validate_dataset(args.corpus, args.workers)
         repairs = {}
     else:
+        manifest = args.corpus / "metadata/corpus_manifest.jsonl"
+        if not args.archive.exists():
+            if not manifest.exists():
+                raise FileNotFoundError(
+                    "Provide the original ZIP or run the collect step first"
+                )
+            from src.step_05_archive.pack import snapshot_downloads
+
+            snapshot_downloads(args.corpus, args.archive)
+        if manifest.exists():
+            import shutil
+
+            backup = args.output_dir / "recovery/downloaded_manifest.jsonl"
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            if not backup.exists():
+                shutil.copy2(manifest, backup)
+            manifest.unlink()
         run_validation(
             args.archive,
             args.corpus,
