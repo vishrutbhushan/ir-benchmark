@@ -24,10 +24,10 @@ Put the prepared ZIP at `data/00_corpus/technical_web_corpus.zip`, or its extrac
 | 06 | Build category-to-window row lists |
 | 07 | Verify full-corpus coverage, cosine, ranking and pagination |
 | 08 | Run a search from the command line |
-| 09 | Serve search UI and saved HTML documents |
+| 09 | Serve document links and saved HTML |
 
 ```bash
-python run_pipeline.py --step 08 --mode dense --query "PostgreSQL JSONB indexing"
+python run_pipeline.py --step 08 --mode dense --query "your query"
 python run_pipeline.py --step audit
 ```
 
@@ -44,8 +44,10 @@ Logs append to `logs/step_NN/run.log` or `logs/all/run.log`. They record stage t
 - `outputs/`: ignored databases, model weights, vectors and category row lists.
 - `logs/`: ignored run logs.
 
-The corpus has **68,414 documents and 476,906 window vectors**. Click a result to open its saved HTML; original URLs are secondary links. The saved-document viewer disables scripts. Some external assets may be unavailable.
+The corpus has **68,414 documents and 476,906 window vectors**. Each result shows its title, technology, assigned categories and scores. Original and saved-HTML links open in new tabs. The saved-document viewer disables scripts. Some external assets may be unavailable.
 
 Model/window changes require compatible embeddings. Weight and category changes reuse existing window vectors. Do not add corpus files or embeddings to Git.
 
 See [docs/NEURAL.md](docs/NEURAL.md) for architecture and learning details. If VS Code shows stale Git changes, use **Git: Refresh** or **Developer: Reload Window**.
+
+Set `result_limit` (default 10) and `page_size` (default 5) in `config.json`. The UI starts with an empty search box and has no technology/category filters or document snippets.

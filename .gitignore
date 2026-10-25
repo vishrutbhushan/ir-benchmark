@@ -46,3 +46,8 @@ Thumbs.db
 
 # Source document snapshots remain local.
 /data/**/documents/
+
+# Keep agent instructions local.
+/AGENTS.md
+/agents.md
+/.agent/rules/

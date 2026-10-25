@@ -82,11 +82,14 @@ def verify(engine, root):
     for mode in MODES:
         elapsed = []
         for query in queries:
-            result = engine.search(
-                query["query_text"], mode=mode, limit=100, use_cache=False
-            )
+            result = engine.search(query["query_text"], mode=mode, use_cache=False)
             ids = [r["doc_id"] for r in result["results"]]
-            if len(ids) != 100 or len(ids) != len(set(ids)):
+            expected = min(
+                engine.config["page_size"],
+                engine.config["result_limit"],
+                len(engine.documents),
+            )
+            if len(ids) != expected or len(ids) != len(set(ids)):
                 raise RuntimeError("Invalid result depth/IDs")
             scores = [r["score"] for r in result["results"]]
             if scores != sorted(scores, reverse=True):
@@ -96,20 +99,19 @@ def verify(engine, root):
         timings[mode + "_p95_ms"] = float(np.percentile(elapsed, 95))
         counts[mode] = len(queries)
         print(f"Verified {mode}: {len(queries)} queries.", flush=True)
-    first = engine.search("PostgreSQL JSONB indexing", limit=30, offset=0, page_size=10)
-    second = engine.search(
-        "PostgreSQL JSONB indexing", limit=30, offset=10, page_size=10
-    )
-    if (
-        not second["cache_hit"]
-        or second["results"][0]["rank"] != 11
+    query = queries[0]["query_text"]
+    size = engine.config["page_size"]
+    first = engine.search(query)
+    paged = first["total_results"] > size
+    second = engine.search(query, offset=size if paged else 0)
+    if not second["cache_hit"]:
+        raise RuntimeError("Ranking cache mismatch")
+    if paged and (
+        second["results"][0]["rank"] != size + 1
         or {r["doc_id"] for r in first["results"]}
         & {r["doc_id"] for r in second["results"]}
     ):
-        raise RuntimeError("Pagination/cache mismatch")
-    filtered = engine.search("reference documentation", limit=10, technology="Python")
-    if any(r["technology"] != "Python" for r in filtered["results"]):
-        raise RuntimeError("Technology filter mismatch")
+        raise RuntimeError("Pagination mismatch")
     stats = {
         "index_fingerprint": engine.summary["fingerprint"],
         "documents": len(engine.documents),

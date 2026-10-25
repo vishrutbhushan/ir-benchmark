@@ -61,8 +61,8 @@ def serve(engine, host="127.0.0.1", port=8000):
                                     map(float, engine.weights),
                                 )
                             ),
-                            "technologies": engine.technology_options,
-                            "categories": engine.category_options,
+                            "result_limit": engine.config["result_limit"],
+                            "page_size": engine.config["page_size"],
                             "index_version": engine.summary["fingerprint"],
                             "startup_warmup_ms": engine.startup_warmup_ms,
                         }
@@ -74,19 +74,21 @@ def serve(engine, host="127.0.0.1", port=8000):
                     def get(name, default=""):
                         return values.get(name, [default])[0]
 
-                    page = max(1, int(get("page", "1")))
-                    if page > 100:
-                        raise ValueError("Only the first 100 pages are available")
+                    page = int(get("page", "1"))
+                    size = engine.config["page_size"]
+                    maximum = (engine.config["result_limit"] + size - 1) // size
+                    if not 1 <= page <= maximum:
+                        raise ValueError(f"Page must be between 1 and {maximum}")
+                    if set(values) - {"q", "mode", "page"}:
+                        raise ValueError(
+                            "Only q, mode and page parameters are supported"
+                        )
                     result = engine.search(
                         get("q"),
                         mode=get("mode", engine.default_mode),
-                        limit=1000,
-                        technology=get("technology"),
-                        category=get("category"),
-                        offset=(page - 1) * 10,
-                        page_size=10,
+                        offset=(page - 1) * size,
                     )
-                    result = {**result, "page": page, "page_size": 10}
+                    result = {**result, "page": page}
                     data = json.dumps(result, ensure_ascii=False).encode()
                     content_type = "application/json; charset=utf-8"
                 else:

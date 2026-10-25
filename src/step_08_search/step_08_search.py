@@ -162,12 +162,6 @@ class SearchEngine:
             OrderedDict(),
             OrderedDict(),
         )
-        self.technology_options = sorted({d["technology"] for d in self.documents})
-        self.category_options = (
-            sorted(self.classifier.model["class_names"].values())
-            if self.classifier
-            else []
-        )
 
     def _query(self, query):
         if query not in self.query_cache:
@@ -227,26 +221,13 @@ class SearchEngine:
                     winners[valid, column] = rows[local[valid]]
         return values, winners, scanned
 
-    def rank(self, query, mode="zones", technology="", category="", route_k=None):
+    def rank(self, query, mode="zones", route_k=None):
         if mode not in MODES:
             raise ValueError("Unknown retrieval mode")
         if not query.strip() or len(query) > 4000:
             raise ValueError("Enter 1-4000 query characters")
-        if technology and technology not in self.technology_options:
-            raise ValueError("Unknown technology")
-        if category and category not in self.category_options:
-            raise ValueError("Unknown category")
         q = self._query(query.strip())
         allowed = np.ones(len(self.documents), dtype=bool)
-        if technology:
-            allowed &= np.array([d["technology"] == technology for d in self.documents])
-        if category:
-            selected_class = next(
-                i
-                for i, cid in enumerate(self.classifier.model["classes"])
-                if self.classifier.model["class_names"][cid] == category
-            )
-            allowed &= (self.classifier.document_classes == selected_class).any(axis=1)
         selected = []
         selected_rows = None
         if mode == "routed-centroid":
@@ -308,51 +289,42 @@ class SearchEngine:
     def search(
         self,
         query,
-        limit=100,
-        technology="",
-        category="",
         use_cache=True,
         offset=0,
         page_size=None,
         mode=None,
     ):
         mode = mode or self.default_mode
-        if not 1 <= limit <= len(self.documents):
-            raise ValueError("Invalid result depth")
-        if offset < 0 or (page_size is not None and not 1 <= page_size <= 1000):
+        limit = min(self.config["result_limit"], len(self.documents))
+        page_size = self.config["page_size"] if page_size is None else page_size
+        if offset < 0 or not 1 <= page_size:
             raise ValueError("Invalid pagination")
         started = time.perf_counter()
-        key = (query.strip(), mode, technology, category)
+        key = (query.strip(), mode)
         with self.lock:
             hit = use_cache and key in self.cache
             if hit:
                 ranking = self.cache.pop(key)
             else:
-                ranking = self.rank(query, mode, technology, category)
+                ranking = self.rank(query, mode)
             if use_cache:
                 self.cache[key] = ranking
                 while len(self.cache) > self.config["ranking_cache_size"]:
                     self.cache.popitem(last=False)
             order = ranking["order"][:limit]
-            stop = (
-                len(order) if page_size is None else min(offset + page_size, len(order))
-            )
+            stop = min(offset + page_size, len(order))
             results = []
             for position in range(offset, stop):
                 index = int(order[position])
                 column = int(ranking["winning_zone"][index])
                 zone = ZONES[column]
-                row = (
-                    self.stores[zone]
-                    .execute(
-                        "SELECT passage_id,text FROM passages WHERE passage_index=?",
-                        (int(ranking["winners"][index, column]),),
-                    )
-                    .fetchone()
-                )
                 results.append(
                     {
-                        **self.documents[index],
+                        **{
+                            k: v
+                            for k, v in self.documents[index].items()
+                            if k != "category"
+                        },
                         "content_categories": [
                             self.classifier.model["class_names"][
                                 self.classifier.model["classes"][int(c)]
@@ -381,13 +353,7 @@ class SearchEngine:
                             if ranking["contributions"] is not None
                             else None
                         ),
-                        "passage": {
-                            "passage_id": row["passage_id"],
-                            "text": row["text"],
-                            "heading": zone.title(),
-                            "anchor": "",
-                            "kind": zone,
-                        },
+                        "matched_zone": zone,
                     }
                 )
             return {
@@ -395,9 +361,11 @@ class SearchEngine:
                 "mode": mode,
                 "index_version": self.summary["fingerprint"],
                 "results": results,
-                "total_documents": len(ranking["order"]),
+                "total_results": len(order),
                 "retrieved_depth": len(order),
                 "returned": len(results),
+                "result_limit": self.config["result_limit"],
+                "page_size": page_size,
                 "cache_hit": hit,
                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
                 "scanned_vectors": ranking["scanned_vectors"],

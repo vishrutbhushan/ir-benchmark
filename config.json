@@ -14,5 +14,7 @@
   "secondary_margin": 0.03,
   "max_memberships": 2,
   "query_cache_size": 64,
-  "ranking_cache_size": 16
+  "ranking_cache_size": 16,
+  "result_limit": 10,
+  "page_size": 5
 }

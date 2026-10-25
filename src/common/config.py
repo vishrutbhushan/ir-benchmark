@@ -18,6 +18,8 @@ def load_config():
         "max_memberships",
         "query_cache_size",
         "ranking_cache_size",
+        "result_limit",
+        "page_size",
     ):
         if type(values[key]) is not int or values[key] < (
             0 if key in {"reserved_tokens", "overlap"} else 1

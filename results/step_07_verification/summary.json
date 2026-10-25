@@ -59,13 +59,13 @@
   "cached_pagination_checked": true,
   "development_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d",
   "query_scope": "Development queries for engineering checks; benchmark queries belong to evaluation branch",
-  "seconds": 17.61,
+  "seconds": 16.73,
   "latencies": {
-    "dense_p50_ms": 59.31,
-    "dense_p95_ms": 87.839,
-    "zones_p50_ms": 31.79,
-    "zones_p95_ms": 35.743,
-    "routed-centroid_p50_ms": 27.455,
-    "routed-centroid_p95_ms": 35.543
+    "dense_p50_ms": 55.81,
+    "dense_p95_ms": 85.27250000000001,
+    "zones_p50_ms": 30.770000000000003,
+    "zones_p95_ms": 37.104499999999994,
+    "routed-centroid_p50_ms": 25.744999999999997,
+    "routed-centroid_p95_ms": 35.946
   }
 }
