@@ -30,6 +30,20 @@ def run_embeddings(passages, out, model_path, device="cuda", batch_size=512):
     state_path = out / "checkpoint.json"
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
     if state.get("fingerprint") != signature:
+        if (out / "vectors.npy").exists():
+            # Keep the durable old build until its replacement is verified.
+            archive = (
+                out.parent
+                / "archive"
+                / f"{out.name}-{state.get('fingerprint', 'unknown')}"
+            )
+            archive.parent.mkdir(parents=True, exist_ok=True)
+            if archive.exists():
+                raise RuntimeError(
+                    f"Previous build already archived at {archive}; choose a new output directory"
+                )
+            out.rename(archive)
+            out.mkdir()
         state = {"fingerprint": signature, "completed_rows": 0, "complete": False}
         write_json(state_path, state)
     n = source["passages"]
@@ -86,7 +100,11 @@ def run_embeddings(passages, out, model_path, device="cuda", batch_size=512):
                     take -= 1
                 portion = pending[:take]
                 try:
-                    encoded = encoder.encode([text for _, text, _ in portion])
+                    from src.common.artifacts import MAX_TOKENS
+
+                    encoded = encoder.encode(
+                        [text for _, text, _ in portion], max_length=MAX_TOKENS
+                    )
                 except torch.cuda.OutOfMemoryError:
                     torch.cuda.empty_cache()
                     if batch_size <= 1:

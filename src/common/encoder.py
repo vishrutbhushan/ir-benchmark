@@ -27,7 +27,9 @@ def download_model(path):
         local_dir=path,
         max_workers=8,
     )
-    expected = "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd"
+    from src.common.config import load_config
+
+    expected = load_config()["model_weights_sha256"]
     if digest_file(path / "model.safetensors") != expected:
         raise RuntimeError("Pinned model weight SHA-256 mismatch")
     files = {

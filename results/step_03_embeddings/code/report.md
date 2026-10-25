@@ -1,8 +1,8 @@
-# Code
+# Code zone embeddings
 
 ```json
 {
-  "fingerprint": "ceb0fc1a0bf9baa0602b902e38ceb66cb529609c8bf433a36dcd7841f865cf38",
+  "fingerprint": "08c335a04af980a1ac47e40912ab18f3e6b085d8fb0b6c2a64ea8b305e0565f1",
   "input_fingerprint": "fac014e30dcee5b06352befa8d7cfc921b7c48bba9476caf57c2cb84dd574b19",
   "documents": 68414,
   "passages": 91536,

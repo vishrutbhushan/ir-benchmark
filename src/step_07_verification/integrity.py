@@ -4,6 +4,7 @@ import json
 from itertools import groupby
 
 from src.common.zones import ZONES, document_zones
+from src.common.artifacts import MAX_TOKENS
 
 
 def audit_zone_coverage(document_db, stores):
@@ -37,7 +38,7 @@ def audit_zone_coverage(document_db, stores):
                 for row in current[1]:
                     start, end = row["char_start"], row["char_end"]
                     if (
-                        not 0 < row["tokens"] <= 512
+                        not 0 < row["tokens"] <= MAX_TOKENS
                         or start < 0
                         or start > covered
                         or end <= start

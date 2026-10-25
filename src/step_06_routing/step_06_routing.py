@@ -1,90 +1,40 @@
-"""Choose class-pruning depth against exhaustive validation-query retrieval."""
+"""Build category row lists over existing embeddings, without duplicating vectors."""
 
-import csv
 import json
 from pathlib import Path
-import time
-
 import numpy as np
-
-from src.common.artifacts import report, write_json, digest_file
+from src.common.artifacts import digest_file, report, write_json
+from src.common.config import load_config
+from src.common.zones import ZONES
 
 
 def tune_routing(root, engine):
-    with Path("data/step_04_weights/training.csv").open() as stream:
-        rows = list(csv.DictReader(stream))
-    queries = {
-        r["query_id"]: r["query_text"] for r in rows if r["split"] == "validation"
-    }
-    if not queries:
-        raise ValueError("Routing requires held-out development queries")
-    classes = len(engine.classifier.centroids)
-    measurements = {
-        method: {k: [] for k in range(1, classes + 1)} for method in ("nb", "centroid")
-    }
-    candidate_fractions = {
-        method: {k: [] for k in range(1, classes + 1)} for method in measurements
-    }
-    for qid, query in queries.items():
-        reference = engine.rank(query, "zones")["order"][:20]
-        vector = engine._query(query)
-        for method in measurements:
-            order = np.argsort(
-                -engine.classifier.query_scores(query, vector, method), kind="stable"
-            )
-            for k in range(1, classes + 1):
-                allowed = np.isin(engine.classifier.document_classes, order[:k])
-                measurements[method][k].append(float(allowed[reference].mean()))
-                candidate_fractions[method][k].append(float(allowed.mean()))
-    chosen = {}
-    for method in measurements:
-        chosen[method] = next(
-            k
-            for k in range(1, classes + 1)
-            if np.mean(measurements[method][k]) >= 0.98
-            and min(measurements[method][k]) >= 0.9
-        )
+    root = Path(root)
+    out = root / "step_06_routing"
+    out.mkdir(parents=True, exist_ok=True)
+    memberships = engine.classifier.document_classes
+    arrays, counts = {}, {}
+    for c, cid in enumerate(engine.classifier.model["classes"]):
+        allowed = (memberships == c).any(axis=1)
+        counts[cid] = int(allowed.sum())
+        for zone in ZONES:
+            arrays[f"{c}_{zone}"] = np.flatnonzero(
+                allowed[engine.mappings[zone]]
+            ).astype(np.int32)
+    np.savez_compressed(out / "rows.npz", **arrays)
     model = {
-        "weights_sha256": digest_file(Path(root) / "step_04_weights/model.json"),
-        "classifier_csv_sha256": engine.classifier.model["training_csv_sha256"],
+        "schema": "category-postings-v2",
         "index_fingerprint": engine.summary["fingerprint"],
-        "top_classes": chosen,
-        "validation_queries": list(queries),
-        "selection_rule": "Smallest top-k classes with mean exact-zone top-20 recall >=0.98 and each query >=0.90",
-        "recall": {
-            m: {str(k): float(np.mean(v)) for k, v in measurements[m].items()}
-            for m in measurements
-        },
-        "candidate_fraction": {
-            m: {str(k): float(np.mean(v)) for k, v in candidate_fractions[m].items()}
-            for m in measurements
-        },
-        "meaning": "Recall of exhaustive weighted-zone top-20, not relevance Recall@20; validation is not a guarantee on new queries",
+        "classifier_sha256": digest_file(root / "step_05_classification/model.json"),
+        "default_top_classes": load_config()["route_classes"],
+        "documents": len(memberships),
+        "class_documents": counts,
+        "meaning": "Configurable category pruning; no relevance-retention guarantee",
     }
-    write_json(Path(root) / "step_06_routing/model.json", model)
+    write_json(out / "model.json", model)
     engine.routing = model
-    latencies = {}
-    # Record actual end-to-end scans after choosing k, separately from membership recall.
-    for mode in ("zones", "routed-nb", "routed-centroid"):
-        values = []
-        for query in queries.values():
-            start = time.perf_counter()
-            engine.rank(query, mode)
-            values.append((time.perf_counter() - start) * 1000)
-        latencies[mode] = float(np.median(values))
-    model["warm_query_p50_ms"] = latencies
-    write_json(Path(root) / "step_06_routing/model.json", model)
-    report(
-        Path(root) / "routing",
-        "Validated category routing",
-        model,
-        {
-            "selected_top_classes": chosen,
-            "warm_query_p50_ms": latencies,
-            "selected_candidate_fraction": {
-                m: model["candidate_fraction"][m][str(k)] for m, k in chosen.items()
-            },
-        },
-    )
-    print(json.dumps({"top_classes": chosen, "latency_ms": latencies}), flush=True)
+    with np.load(out / "rows.npz") as saved:
+        engine.routing_rows = {k: saved[k] for k in saved.files}
+    report(out, "Category vector row lists", model, {"class_documents": counts})
+    print(json.dumps(model), flush=True)
     return model

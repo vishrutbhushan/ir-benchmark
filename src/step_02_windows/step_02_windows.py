@@ -13,6 +13,10 @@ from src.common.encoder import tokenizer, download_model
 from src.step_02_windows.windows import passage_parts
 from src.common.parallel import bounded_map
 
+from src.common.config import load_config
+
+_SETTINGS = load_config()
+_BUDGET = _SETTINGS["max_tokens"] - _SETTINGS["reserved_tokens"]
 _TOKENIZER = None
 
 
@@ -28,9 +32,11 @@ def _document_windows(task):
     result = {}
     for zone, text in document_zones(doc).items():
         pieces = []
-        for piece, start, end in passage_parts(text, _TOKENIZER, 496, 64):
+        for piece, start, end in passage_parts(
+            text, _TOKENIZER, _BUDGET, _SETTINGS["overlap"]
+        ):
             tokens = len(_TOKENIZER.encode(piece, add_special_tokens=True))
-            if tokens > 512:
+            if tokens > _SETTINGS["max_tokens"]:
                 raise ValueError(f"{doc['doc_id']}/{zone}: window exceeds token limit")
             pid = hashlib.sha256(
                 f"{doc['doc_id']}:{zone}:{start}:{end}".encode()
@@ -48,7 +54,9 @@ def prepare_zones(root, workers=8):
             extraction["fingerprint"]
             + digest_file(__file__)
             + digest_file(Path(__file__).parents[1] / "common/zones.py")
-            + "496:64:pure-zones-v1"
+            + f"{_BUDGET}:{_SETTINGS['overlap']}:pure-zones-v1"
+            + _SETTINGS["model_id"]
+            + _SETTINGS["model_revision"]
         ).encode()
     ).hexdigest()
     summary = root / "step_02_windows/summary.json"
@@ -181,8 +189,9 @@ def prepare_zones(root, workers=8):
         "windows": dict(counts),
         "zone_coverage": dict(coverage),
         "zones": list(ZONES),
-        "content_tokens": 496,
-        "overlap": 64,
+        "max_tokens": _SETTINGS["max_tokens"],
+        "content_tokens": _BUDGET,
+        "overlap": _SETTINGS["overlap"],
         "source_fingerprint": extraction["fingerprint"],
     }
     report(

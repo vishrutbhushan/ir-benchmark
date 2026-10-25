@@ -1,8 +1,8 @@
-# Title
+# Title zone embeddings
 
 ```json
 {
-  "fingerprint": "a0eefc420f8daceae3ffe4ce2d69fc10aa3e5d524c92630978f19d7ae1c3b592",
+  "fingerprint": "b24c743c9f2772bbbdf9bcabe5d2616ef1a752a2078b17389077ea8063875f35",
   "input_fingerprint": "71668d940cb276669256315dcfd18c9f2536f5d3b8c3044b085a1a50be45531c",
   "documents": 68414,
   "passages": 68414,

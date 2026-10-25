@@ -1,1 +1,27 @@
-<!doctype html><meta charset="utf-8"><title>Step 02 Windows</title><style>body{font:16px system-ui;max-width:1000px;margin:40px auto;background:#f7fafb;color:#18313a}td,th{text-align:left;padding:8px;border-bottom:1px solid #ccd}input{padding:12px;width:95%}</style><h1>Step 02 Windows</h1><label>Filter measurements <input id="filter" type="search"></label><table><tr><th>fingerprint</th><td>4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790</td></tr><tr><th>documents</th><td>68414</td></tr><tr><th>windows</th><td>{&#x27;title&#x27;: 68414, &#x27;headings&#x27;: 61511, &#x27;body&#x27;: 255445, &#x27;code&#x27;: 91536}</td></tr><tr><th>zone_coverage</th><td>{&#x27;title&#x27;: 68414, &#x27;headings&#x27;: 59579, &#x27;body&#x27;: 67867, &#x27;code&#x27;: 40303}</td></tr><tr><th>zones</th><td>[&#x27;title&#x27;, &#x27;headings&#x27;, &#x27;body&#x27;, &#x27;code&#x27;]</td></tr><tr><th>content_tokens</th><td>496</td></tr><tr><th>overlap</th><td>64</td></tr><tr><th>source_fingerprint</th><td>f15488c8b98dc3f6f7f38152db2226dfef073173cd184609831edea290884f26</td></tr></table><figure><img style="max-width:100%" src="charts/coverage.png"><figcaption>coverage</figcaption></figure><figure><img style="max-width:100%" src="charts/windows.png"><figcaption>windows</figcaption></figure><script>document.querySelector("#filter").oninput=e=>document.querySelectorAll("tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(e.target.value.toLowerCase()))</script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Complete fixed-zone index preparation</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>Complete fixed-zone index preparation</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>fingerprint</th><td>6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf</td></tr><tr><th>documents</th><td>68414</td></tr><tr><th>windows</th><td>{&#x27;title&#x27;: 68414, &#x27;headings&#x27;: 61511, &#x27;body&#x27;: 255445, &#x27;code&#x27;: 91536}</td></tr><tr><th>zone_coverage</th><td>{&#x27;title&#x27;: 68414, &#x27;headings&#x27;: 59579, &#x27;body&#x27;: 67867, &#x27;code&#x27;: 40303}</td></tr><tr><th>zones</th><td>[&#x27;title&#x27;, &#x27;headings&#x27;, &#x27;body&#x27;, &#x27;code&#x27;]</td></tr><tr><th>content_tokens</th><td>496</td></tr><tr><th>overlap</th><td>64</td></tr><tr><th>source_fingerprint</th><td>f15488c8b98dc3f6f7f38152db2226dfef073173cd184609831edea290884f26</td></tr><tr><th>max_tokens</th><td>512</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/windows.png"><figcaption>windows</figcaption></figure><figure><img style="max-width:100%" src="charts/coverage.png"><figcaption>coverage</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

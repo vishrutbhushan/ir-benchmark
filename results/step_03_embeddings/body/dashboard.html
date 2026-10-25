@@ -1,1 +1,27 @@
-<!doctype html><meta charset="utf-8"><title>Body</title><style>body{font:16px system-ui;max-width:1000px;margin:40px auto;background:#f7fafb;color:#18313a}td,th{text-align:left;padding:8px;border-bottom:1px solid #ccd}input{padding:12px;width:95%}</style><h1>Body</h1><label>Filter measurements <input id="filter" type="search"></label><table><tr><th>fingerprint</th><td>5747b8f40f634266f747a1807fdd388b135cfbb11110ae07947fd3fc5fe25109</td></tr><tr><th>input_fingerprint</th><td>59e9e37e51079a9ca0354fde2f77967c97b6d83a6fd7fe8d0b451863dcba0c8a</td></tr><tr><th>documents</th><td>68414</td></tr><tr><th>passages</th><td>255445</td></tr><tr><th>dimension</th><td>1024</td></tr><tr><th>dtype</th><td>float16</td></tr><tr><th>model_revision</th><td>97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3</td></tr><tr><th>all_vectors_finite</th><td>True</td></tr><tr><th>norm_min</th><td>0.9997549653053284</td></tr><tr><th>norm_max</th><td>1.0002442598342896</td></tr><tr><th>vector_bytes</th><td>523151488</td></tr><tr><th>last_session_seconds</th><td>2882.39</td></tr><tr><th>last_session_rows</th><td>157141</td></tr><tr><th>device</th><td>cuda</td></tr><tr><th>final_batch_size</th><td>512</td></tr><tr><th>max_batch_tokens</th><td>100000</td></tr><tr><th>peak_cuda_allocated_bytes</th><td>3877871616</td></tr></table><figure><img style="max-width:100%" src="charts/normalization_bounds.png"><figcaption>normalization_bounds</figcaption></figure><figure><img style="max-width:100%" src="charts/vector_coverage.png"><figcaption>vector_coverage</figcaption></figure><script>document.querySelector("#filter").oninput=e=>document.querySelectorAll("tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(e.target.value.toLowerCase()))</script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Body zone embeddings</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>Body zone embeddings</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>fingerprint</th><td>7c85e982e7b24319158f65b59ca10b1fbecfd7150b597619523e44be9aa76e17</td></tr><tr><th>input_fingerprint</th><td>59e9e37e51079a9ca0354fde2f77967c97b6d83a6fd7fe8d0b451863dcba0c8a</td></tr><tr><th>documents</th><td>68414</td></tr><tr><th>passages</th><td>255445</td></tr><tr><th>dimension</th><td>1024</td></tr><tr><th>dtype</th><td>float16</td></tr><tr><th>model_revision</th><td>97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3</td></tr><tr><th>all_vectors_finite</th><td>True</td></tr><tr><th>norm_min</th><td>0.9997549653053284</td></tr><tr><th>norm_max</th><td>1.0002442598342896</td></tr><tr><th>vector_bytes</th><td>523151488</td></tr><tr><th>last_session_seconds</th><td>2882.39</td></tr><tr><th>last_session_rows</th><td>157141</td></tr><tr><th>device</th><td>cuda</td></tr><tr><th>final_batch_size</th><td>512</td></tr><tr><th>max_batch_tokens</th><td>100000</td></tr><tr><th>peak_cuda_allocated_bytes</th><td>3877871616</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/normalization_bounds.png"><figcaption>normalization_bounds</figcaption></figure><figure><img style="max-width:100%" src="charts/vector_coverage.png"><figcaption>vector_coverage</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

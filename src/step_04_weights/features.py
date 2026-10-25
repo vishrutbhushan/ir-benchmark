@@ -6,7 +6,7 @@ from pathlib import Path
 
 def load_examples(dataset):
     """One self-contained training table; no joins or evidence dependency."""
-    with (Path(dataset) / "training.csv").open(newline="", encoding="utf-8") as stream:
+    with (Path(dataset) / "training.csv").open(newline="", encoding="utf-8-sig") as stream:
         rows = list(csv.DictReader(stream))
     if not rows:
         raise ValueError("Training table contains no examples")

@@ -17,6 +17,25 @@ from src.step_08_search.step_08_search import MODES
 def verify(engine, root):
     root = Path(root)
     started = time.perf_counter()
+    from src.step_07_verification.learning_audit import audit_learning_data
+
+    audit_learning_data(root)
+    assignments = engine.classifier.document_classes
+    if (
+        assignments.shape != (len(engine.documents), 2)
+        or np.any(assignments[:, 0] < 0)
+        or np.any(assignments >= len(engine.classifier.centroids))
+        or np.any(assignments[:, 0] == assignments[:, 1])
+    ):
+        raise RuntimeError("Invalid full-corpus content memberships")
+    for c in range(len(engine.classifier.centroids)):
+        allowed = (assignments == c).any(axis=1)
+        for z in ZONES:
+            expected = np.flatnonzero(allowed[engine.mappings[z]])
+            if not np.array_equal(expected, engine.routing_rows[f"{c}_{z}"]):
+                raise RuntimeError(
+                    "Category row lists do not match document memberships"
+                )
     coverage = audit_zone_coverage(engine.document_db, engine.stores)
     q = engine._query("Python asynchronous task cancellation")
     actual, _, _ = engine.zone_scores(q)
@@ -95,6 +114,8 @@ def verify(engine, root):
     stats = {
         "index_fingerprint": engine.summary["fingerprint"],
         "documents": len(engine.documents),
+        "all_category_row_lists_checked": True,
+        "all_document_memberships_checked": True,
         "windows": sum(len(m) for m in engine.matrices.values()),
         "coverage": coverage,
         "vectors_sha256": hashes,

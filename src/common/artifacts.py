@@ -9,13 +9,16 @@ from pathlib import Path
 import sqlite3
 from string import Template
 
-MODEL_ID = "Qwen/Qwen3-Embedding-0.6B"
-MODEL_REVISION = "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"
+from src.common.config import load_config, default_mode
+
+_SETTINGS = load_config()
+MODEL_ID = _SETTINGS["model_id"]
+MODEL_REVISION = _SETTINGS["model_revision"]
 QUERY_INSTRUCTION = (
     "Given a web search query, retrieve relevant passages that answer the query"
 )
-MAX_TOKENS = 512
-OVERLAP = 64
+MAX_TOKENS = _SETTINGS["max_tokens"]
+OVERLAP = _SETTINGS["overlap"]
 
 
 def records(path):
@@ -122,23 +125,27 @@ def save_configuration(root):
         {
             "model": MODEL_ID,
             "model_revision": MODEL_REVISION,
-            "weight_sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd",
+            "weight_sha256": _SETTINGS["model_weights_sha256"],
             "pooling": "final real token; right padding; omit redundant padding mask for pinned causal Qwen3 decoder",
             "query_instruction": QUERY_INSTRUCTION,
             "max_total_tokens": MAX_TOKENS,
             "zones": ["title", "headings", "body", "code"],
-            "max_content_tokens": 496,
+            "max_content_tokens": MAX_TOKENS - _SETTINGS["reserved_tokens"],
             "max_overlap_tokens": OVERLAP,
-            "dimensions": 1024,
+            "dimensions": json.loads(
+                (root / "step_03_embeddings/model/config.json").read_text()
+            )["hidden_size"]
+            if (root / "step_03_embeddings/model/config.json").exists()
+            else None,
             "window_policy": "independent pure-zone windows; no synthetic context prefixes",
             "inference_dtype": "bfloat16",
             "storage_dtype": "float16",
             "scoring_dtype": "float32",
             "ranking": "hand-coded cosine; max window per zone; deterministic doc-ID tie break",
-            "retrieval_modes": ["dense", "zones", "routed-centroid", "routed-nb"],
-            "default_mode": "routed-centroid",
-            "zone_scoring": "nonnegative learned weighted sum, renormalized over present zones; equal-present fallback when their weights sum to zero",
-            "routing": "validation-selected top classes; candidate-restricted weighted-zone scoring",
+            "retrieval_modes": ["dense", "zones", "routed-centroid"],
+            "default_mode": default_mode(_SETTINGS),
+            "zone_scoring": "fixed nonnegative learned weighted sum; absent zones contribute zero",
+            "routing": "configurable nearest content classes; category row lists restrict scoring",
             "dataset_manifest_sha256": json.loads(
                 (root / "step_01_extraction/summary.json").read_text()
             )["dataset_manifest_sha256"],

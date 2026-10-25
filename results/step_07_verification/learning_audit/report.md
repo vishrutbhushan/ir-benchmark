@@ -1,33 +1,32 @@
-# step 07 verification/learning audit
+# Neural learning-data audit
 
 ```json
 {
   "checks_passed": true,
-  "zone_pairs": 262,
-  "usable_zone_pairs": 262,
-  "development_queries": 44,
+  "zone_pairs": 240,
+  "usable_zone_pairs": 240,
+  "development_queries": 60,
   "query_splits": {
-    "train": 33,
-    "validation": 11
+    "train": 45,
+    "validation": 15
   },
-  "classification_documents": 420,
+  "classification_documents": 168,
   "classes": 14,
   "classification_splits": {
-    "train": 280,
-    "validation": 70,
-    "test": 70
+    "train": 140,
+    "validation": 28
   },
   "query_scope": "Learning queries only; final benchmark queries live on the evaluation branch",
-  "source_text_and_label_mapping_checked": true,
+  "source_text_and_content_labels_checked": true,
   "classification_duplicate_group_leakage": false,
-  "semantic_label_scope": "Binary query-specific development relevance; classification labels describe source domains. Structural checks do not prove judgment correctness.",
-  "zone_training_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc",
-  "classification_training_sha256": "e9ff13c8df76535b2838baa4139264dfe1abd5a37583331bbba731a2409203bf"
+  "semantic_label_scope": "Binary query-specific development relevance; classification labels describe reviewed primary content topics. Structural checks do not prove judgment correctness.",
+  "zone_training_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d",
+  "classification_training_sha256": "eec3f80cecdace1470e4aeee2fbcafb3fc88e5ea62a8ce987c35c971d4b8f1d9"
 }
 ```
 
-![class_counts](charts/class_counts.png)
+![development_query_splits](charts/development_query_splits.png)
 
 ![classification_splits](charts/classification_splits.png)
 
-![development_query_splits](charts/development_query_splits.png)
+![class_counts](charts/class_counts.png)

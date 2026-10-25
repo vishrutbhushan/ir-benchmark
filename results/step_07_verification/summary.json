@@ -1,6 +1,8 @@
 {
-  "index_fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
+  "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
   "documents": 68414,
+  "all_category_row_lists_checked": true,
+  "all_document_memberships_checked": true,
   "windows": 476906,
   "coverage": {
     "documents": 68414,
@@ -49,24 +51,21 @@
     "code": 2.086162567138672e-07
   },
   "query_runs": {
-    "dense": 44,
-    "zones": 44,
-    "routed-centroid": 44,
-    "routed-nb": 44
+    "dense": 60,
+    "zones": 60,
+    "routed-centroid": 60
   },
   "all_vector_document_mappings_checked": true,
   "cached_pagination_checked": true,
-  "development_csv_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc",
+  "development_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d",
   "query_scope": "Development queries for engineering checks; benchmark queries belong to evaluation branch",
-  "seconds": 17.03,
+  "seconds": 17.61,
   "latencies": {
-    "dense_p50_ms": 57.345,
-    "dense_p95_ms": 85.3815,
-    "zones_p50_ms": 37.235,
-    "zones_p95_ms": 41.317,
-    "routed-centroid_p50_ms": 37.825,
-    "routed-centroid_p95_ms": 40.565,
-    "routed-nb_p50_ms": 35.114999999999995,
-    "routed-nb_p95_ms": 38.6155
+    "dense_p50_ms": 59.31,
+    "dense_p95_ms": 87.839,
+    "zones_p50_ms": 31.79,
+    "zones_p95_ms": 35.743,
+    "routed-centroid_p50_ms": 27.455,
+    "routed-centroid_p95_ms": 35.543
   }
 }

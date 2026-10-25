@@ -14,16 +14,19 @@ function renderResult(item) {
   const article = element('article', '', 'result');
   article.dataset.docId = item.doc_id;
   article.append(element('div',
-    `${item.technology} / ${item.category} · #${item.rank} · ${item.score.toFixed(4)}`, 'meta'));
+    `${item.technology} / ${(item.content_categories || []).join(", ")} · #${item.rank} · ${item.score.toFixed(4)}`, 'meta'));
   const heading = element('h2', '');
   const link = element('a', item.title);
-  const target = new URL(item.url);
-  if (item.passage.anchor) target.hash = item.passage.anchor;
-  if (['http:', 'https:'].includes(target.protocol)) link.href = target.href;
+  link.href = item.document_url;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   heading.append(link);
-  article.append(heading, element('div', item.url, 'url'));
+  const original = element('a', item.url, 'url');
+  const target = new URL(item.url);
+  if (['http:', 'https:'].includes(target.protocol)) original.href = target.href;
+  original.target = '_blank';
+  original.rel = 'noopener noreferrer';
+  article.append(heading, original);
   if (item.passage.heading) article.append(element('div', item.passage.heading, 'heading'));
   article.append(element('p', item.passage.text, 'snippet'));
   if (item.zone_contributions) {
@@ -88,7 +91,7 @@ async function loadOptions() {
       byId(name).append(option);
     }
   }
-  const labels = {'dense':'Dense cosine baseline','zones':'Learned zone scoring','routed-centroid':'Centroid category routing','routed-nb':'Naive Bayes category routing'};
+  const labels = {'dense':'Dense cosine baseline','zones':'Learned zone scoring','routed-centroid':'Centroid category routing'};
   for (const mode of options.modes) {
     const option = element('option', labels[mode]);
     option.value = mode;

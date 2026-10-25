@@ -8,7 +8,14 @@ from pathlib import Path
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument("--config", type=Path, default=Path("config.json"))
+    config_args, _ = config_parser.parse_known_args()
+    os.environ["NEURAL_CONFIG"] = str(config_args.config.resolve())
+    from src.common.config import load_config, default_mode
+
+    settings = load_config()
+    parser = argparse.ArgumentParser(description=__doc__, parents=[config_parser])
     parser.add_argument(
         "--step",
         choices=[
@@ -36,14 +43,14 @@ def main():
         type=Path,
         default=Path("data/00_corpus/technical_web_corpus.zip"),
     )
-    parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument("--batch-size", type=int, default=512)
-    parser.add_argument("--device", choices=["cuda", "cpu"], default="cuda")
+    parser.add_argument("--workers", type=int, default=settings["workers"])
+    parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
+    parser.add_argument("--device", choices=["cuda", "cpu"], default=settings["device"])
     parser.add_argument("--query")
     parser.add_argument(
         "--mode",
-        choices=["dense", "zones", "routed-centroid", "routed-nb"],
-        default="routed-centroid",
+        choices=["dense", "zones", "routed-centroid"],
+        default=default_mode(settings),
     )
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--technology", default="")
@@ -110,6 +117,7 @@ def run(args, parser):
         from src.step_03_embeddings.step_03_embeddings import embed_zones
 
         embed_zones(root, args.device, args.batch_size)
+        save_configuration(root)
         if args.step == "03":
             return
     if args.step == "audit":

@@ -1,11 +1,11 @@
-# step 04 weights/features
+# Full-index zone learning features
 
 ```json
 {
-  "pairs": 262,
-  "queries": 44,
-  "index_fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
-  "training_csv_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc"
+  "pairs": 240,
+  "queries": 60,
+  "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
+  "training_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d"
 }
 ```
 

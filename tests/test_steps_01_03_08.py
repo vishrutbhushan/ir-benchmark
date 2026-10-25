@@ -91,7 +91,7 @@ class DurableIndexTests(unittest.TestCase):
                 self.torch = torch
                 self.dimension = 8
 
-            def encode(self, texts):
+            def encode(self, texts, **kwargs):
                 calls.extend(map(int, texts))
                 if self.fail and min(map(int, texts)) >= 2048:
                     raise RuntimeError("simulated process interruption")
@@ -198,6 +198,9 @@ class DurableIndexTests(unittest.TestCase):
 
         engine = SearchEngine.__new__(SearchEngine)
         engine.summary = {"fingerprint": "fixture"}
+        engine.default_mode = "routed-centroid"
+        engine.config = {"ranking_cache_size": 16}
+        engine.classifier = None
         engine.documents = [
             {
                 "doc_index": i,

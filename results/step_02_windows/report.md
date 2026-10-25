@@ -1,8 +1,8 @@
-# Step 02 Windows
+# Complete fixed-zone index preparation
 
 ```json
 {
-  "fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
+  "fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
   "documents": 68414,
   "windows": {
     "title": 68414,
@@ -24,10 +24,11 @@
   ],
   "content_tokens": 496,
   "overlap": 64,
-  "source_fingerprint": "f15488c8b98dc3f6f7f38152db2226dfef073173cd184609831edea290884f26"
+  "source_fingerprint": "f15488c8b98dc3f6f7f38152db2226dfef073173cd184609831edea290884f26",
+  "max_tokens": 512
 }
 ```
 
-![coverage](charts/coverage.png)
-
 ![windows](charts/windows.png)
+
+![coverage](charts/coverage.png)

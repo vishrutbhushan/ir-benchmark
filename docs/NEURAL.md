@@ -1,45 +1,48 @@
 # Neural architecture
 
-The input is the corrected corpus ZIP from `data`. This branch does not collect pages or apply shared corpus filtering.
-
 ```text
-01 Prepared HTML → structured SQLite records
-02 Four fixed zones → overlapping token windows
-03 Pinned Qwen3 encoder → four persistent vector matrices
-04 Relevance labels → learned zone weights
-05 Source-domain labels → NB and neural centroid models
-06 Development queries → validated class-routing depth
-07 Full-index and learning-data verification
-08 Query embedding → cosine → document scores → ranking
-09 Search UI → filters, snippets and cached pagination
+Prepared HTML → four fixed zones → overlapping token windows → stored embeddings
+                                          ├─ relevance pairs → global zone weights
+                                          └─ document vectors + content seeds → centroids
+                                                                 ↓
+                                                      corpus memberships + row lists
+
+Query → embedding → nearest 3 centroids → category window rows → cosine
+      → maximum per document/zone → weighted document score → document links
 ```
 
-## Inputs and representation
+## Representation
 
-The current snapshot has 68,414 documents across 76 technologies. Extracted records retain document IDs, URLs, titles, headings, sections, body, code, date mentions and metadata. Neural text preserves negation, case, punctuation, versions and identifiers. Code keeps indentation and uses the same text encoder. Tables become visible body text. Dates are mentions, not verified publication dates.
+The entire prepared corpus is retained: 68,414 documents and 476,906 windows. Collection, shared repairs and filtering belong to `data`. Neural text preserves case, negation, identifiers, versions and code indentation. Code is embedded as text; tables join body text. No code execution or language-specific parsing is used. Date mentions are not verified publication dates.
 
-Title, headings, body and code are separate zones. Each uses up to 496 content tokens, 64-token overlap and a checked 512-total-token limit. The index has 68,414 title, 61,511 heading, 255,445 body and 91,536 code windows.
+Four independent zones are title, headings, body and code. Default windows allow 496 content tokens with 64-token overlap and a checked 512-total-token limit. Each vector maps to a document, zone and window. Qwen3-Embedding-0.6B uses pinned revision `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`, last-real-token pooling and L2 normalization, producing 1024 dimensions. Queries receive the retrieval instruction; document windows receive no synthetic prefixes.
 
-Qwen3-Embedding-0.6B is pinned to revision `97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3`. Last-real-token pooling and L2 normalization produce 1,024-dimensional vectors. Queries receive the model's retrieval instruction. Documents do not receive synthetic context prefixes. No model fine-tuning is performed.
+SQLite holds text and metadata. FP16 NumPy arrays persist about 0.91 GiB of vectors; hand-coded FP32 cosine renormalizes stored vectors. No vector-search library or vector database handles ranking.
 
-SQLite stores text and metadata. NumPy FP16 matrices persist about 0.91 GiB of vectors. Scoring uses FP32 cosine with renormalization and direct matrix operations, optionally GPU-resident. Completed embedding checkpoints are durable and reusable.
+## Book-style zone weights
 
-## Ranking and learning
+For each query/document pair, each feature is the highest window cosine in that zone. Missing zones contribute zero. The score is `sum(weight[zone] * cosine[zone])`, with nonnegative global weights summing to one. Similarities themselves are not normalized to sum to one.
 
-`dense` takes the highest window cosine per document across all zones. `zones` combines per-zone maximum cosines using learned nonnegative weights, renormalized over present zones. If all present-zone weights are zero, it uses equal weights for those zones. Ties use document ID; winning-window ties use the earliest index.
+Weights minimize squared error against binary relevance judgments using a deterministic simplex grid with step 0.01. This extends the book's Boolean-zone features to continuous cosine; the Boolean counting shortcut does not directly apply. There is no logistic loss, Precision@5 objective, or forced positive weight. Cosine is not a relevance probability, so this remains an approximation.
 
-Weight fitting uses 262 binary relevance pairs across 44 development queries (33 training / 11 validation queries). A deterministic simplex grid with step 0.05 minimizes training squared error. Current title/headings/body/code weights are **0/0/1/0**; this does not demonstrate a benefit from blending zones. Cosines are features; relevance labels remain 0/1.
+The reviewed development table has 240 pairs and 60 formulations across 20 intents: conversational, keywords and Boolean-style. Fifteen intents train weights; five validate them. Paraphrases stay together. Labels include rationales and source evidence offsets. Actual full-index cosine features are generated under `results/step_04_weights/features/`; label CSVs remain unchanged. These are small deliberately selected pools, not representative final evaluation. Consult the current weight report for learned values; a body-only solution is valid and does not demonstrate multi-zone improvement.
 
-Classification uses 14 fixed source-domain classes. The 420-document table contains only doc_id, class_id, class_name and split: 20/5/5 train/validation/test per class. Full text is loaded by ID; duplicate families stay within one split. Readable source files are in each learning folder's documents/ directory.
+## Content classification and pruning
 
-NB uses training-only word counts, vocabulary with df ≥ 2, add-one smoothing and empirical priors. Neural centroids average normalized training-document vectors; document vectors average their window embeddings. Test accuracy is 74.3% for NB and 84.3% for centroids, measuring source-label agreement rather than relevance.
+The 14 named classes are cloud platforms, AI/ML computation, MLOps, programming languages, databases/storage, search engines, messaging/RPC, distributed data processing, application frameworks, containers/orchestration, DevOps/build/release, OS/networking/web, security/identity and observability. Definitions and review decisions accompany the compact seed table.
 
-`routed-nb` and `routed-centroid` select classes before weighted cosine retrieval. Routing chooses the smallest top-k retaining mean 98% of exhaustive weighted top-20 results and at least 90% per validation query. Current k values are 12/14 and 13/14, so pruning benefit is limited. This is supervised source-class routing, not clustering or RAPTOR; the summary hierarchy is removed.
+There are 168 selected seeds: 10 training and 2 validation documents per class. Selection uses recognizable titles/URLs and source content; generic or misleading candidates are replaced. Primary labels describe content, not a technology-to-class mapping. Duplicate URL/content families do not cross splits. The small, deliberately clear validation set is a sanity check, not an estimate of query-routing relevance.
 
-## Checks and branch boundary
+A document vector averages normalized window vectors within each zone, normalizes each available zone mean, then equally averages and normalizes the zone means. Thus longer zones do not gain influence merely through extra windows. Each class centroid averages its training document vectors and is normalized. Validation documents never fit centroids.
 
-Step 07 checks every window's source offsets, vector/document mappings, normalization, GPU/NumPy cosine agreement, development-query ranking, filters and cached pagination. These are engineering checks, not relevance evaluation.
+Every corpus document receives its highest-cosine class; a second is added when within 0.03 of the best score. This configurable margin is a heuristic, not a probability. Centroids stay fixed during assignment. Category lists store row IDs into the existing zone matrices, not duplicate vectors.
 
-Final challenge queries, qrels, NDCG/MAP comparison and failure analysis belong to `evaluation`. Development queries remain here because they are required for learning. The book connections retained in this branch are vector-space cosine, learned weighted zones, Naive Bayes and Rocchio-style classification.
+Queries select the nearest 3 available classes by default. Their window lists are unioned/deduplicated, filtered if requested, and scored. Category selection prunes; zones rank. This is a local partitioned index, not distributed search or RAPTOR. Pruning can exclude relevant documents, and there is no retention guarantee. No NB model or summary hierarchy remains.
 
-Small analytical reports live in numbered results/ folders and may be versioned. Large runtime artifacts stay under ignored outputs/. No vector database or delegated ranking library is used.
+## Search and configuration
+
+Modes are exhaustive `dense` (maximum across all windows), exhaustive `zones`, and `routed-centroid`. Ties use document ID, then earliest winning window. Results are documents with explanatory snippets. Main links open sandboxed saved HTML; secondary links open original websites. Filters and cached pagination remain available. Boolean-looking queries are semantic inputs, not executable Boolean expressions.
+
+`config.json` controls the pinned model/revision/weight checksum, token limits, overlap, device, batch size, workers, weighting/routing switches, routing depth, membership margin and cache limits. Alternate models must satisfy the implemented Qwen3 pooling and single-weight-file contract and provide their own revision/checksum. CLI run options override defaults. Model/window changes require compatible new embeddings; label changes require refitting derived learning artifacts. Existing completed embeddings/checkpoints are preserved when compatible.
+
+Step 07 verifies the full index and development-query retrieval, including cosine agreement, mappings, coverage, filters and pagination. Learning audits check references, evidence offsets, features and split consistency. Final challenge queries, relevance metrics and the classic/neural comparison belong to `evaluation` and are not run here.

@@ -1,1 +1,27 @@
-<!doctype html><meta charset="utf-8"><title>06 Category routing</title><style>body{font:16px system-ui;max-width:1000px;margin:40px auto;background:#f7fafb;color:#18313a}td,th{text-align:left;padding:8px;border-bottom:1px solid #ccd}input{padding:12px;width:95%}</style><h1>06 Category routing</h1><label>Filter measurements <input id="filter" type="search"></label><table><tr><th>weights_sha256</th><td>c95a78664256adfeff41ff2a4bf1891615d94be3f21086ce48d3d11464058f8f</td></tr><tr><th>classifier_csv_sha256</th><td>e9ff13c8df76535b2838baa4139264dfe1abd5a37583331bbba731a2409203bf</td></tr><tr><th>index_fingerprint</th><td>4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790</td></tr><tr><th>top_classes</th><td>{&#x27;nb&#x27;: 12, &#x27;centroid&#x27;: 13}</td></tr><tr><th>validation_queries</th><td>[&#x27;DEV004&#x27;, &#x27;DEV008&#x27;, &#x27;DEV012&#x27;, &#x27;DEV016&#x27;, &#x27;DEV020&#x27;, &#x27;DEV024&#x27;, &#x27;DEV028&#x27;, &#x27;DEV032&#x27;, &#x27;DEV036&#x27;, &#x27;DEV040&#x27;, &#x27;DEV044&#x27;]</td></tr><tr><th>selection_rule</th><td>Smallest top-k classes with mean exact-zone top-20 recall &gt;=0.98 and each query &gt;=0.90</td></tr><tr><th>recall</th><td>{&#x27;nb&#x27;: {&#x27;1&#x27;: 0.5863636363636363, &#x27;2&#x27;: 0.6818181818181818, &#x27;3&#x27;: 0.8545454545454546, &#x27;4&#x27;: 0.8545454545454546, &#x27;5&#x27;: 0.8636363636363636, &#x27;6&#x27;: 0.8636363636363636, &#x27;7&#x27;: 0.8863636363636364, &#x27;8&#x27;: 0.8863636363636364, &#x27;9&#x27;: 0.8863636363636364, &#x27;10&#x27;: 0.890909090909091, &#x27;11&#x27;: 0.890909090909091, &#x27;12&#x27;: 1.0, &#x27;13&#x27;: 1.0, &#x27;14&#x27;: 1.0}, &#x27;centroid&#x27;: {&#x27;1&#x27;: 0.7363636363636363, &#x27;2&#x27;: 0.9454545454545454, &#x27;3&#x27;: 0.9727272727272728, &#x27;4&#x27;: 0.9727272727272728, &#x27;5&#x27;: 0.9818181818181819, &#x27;6&#x27;: 0.9818181818181819, &#x27;7&#x27;: 0.9818181818181819, &#x27;8&#x27;: 0.9818181818181819, &#x27;9&#x27;: 0.9818181818181819, &#x27;10&#x27;: 0.9818181818181819, &#x27;11&#x27;: 0.9818181818181819, &#x27;12&#x27;: 0.9818181818181819, &#x27;13&#x27;: 1.0, &#x27;14&#x27;: 1.0}}</td></tr><tr><th>candidate_fraction</th><td>{&#x27;nb&#x27;: {&#x27;1&#x27;: 0.04583059820291966, &#x27;2&#x27;: 0.10101334920816313, &#x27;3&#x27;: 0.1971871785944929, &#x27;4&#x27;: 0.241544128394773, &#x27;5&#x27;: 0.34849326427073674, &#x27;6&#x27;: 0.4219909800492722, &#x27;7&#x27;: 0.51519093646436, &#x27;8&#x27;: 0.5901848903866035, &#x27;9&#x27;: 0.6644945080353039, &#x27;10&#x27;: 0.7561968974983855, &#x27;11&#x27;: 0.8232671675388079, &#x27;12&#x27;: 0.8789934011379915, &#x27;13&#x27;: 0.9511530069602979, &#x27;14&#x27;: 1.0}, &#x27;centroid&#x27;: {&#x27;1&#x27;: 0.060062135076021116, &#x27;2&#x27;: 0.1411327293456682, &#x27;3&#x27;: 0.20186724142054926, &#x27;4&#x27;: 0.2681335824405956, &#x27;5&#x27;: 0.36580763639552777, &#x27;6&#x27;: 0.4495464777278441, &#x27;7&#x27;: 0.5170100750245165, &#x27;8&#x27;: 0.6001908168716131, &#x27;9&#x27;: 0.6884768402001717, &#x27;10&#x27;: 0.7547710861944791, &#x27;11&#x27;: 0.8318207065539482, &#x27;12&#x27;: 0.8968884624890706, &#x27;13&#x27;: 0.9483598519176032, &#x27;14&#x27;: 1.0}}</td></tr><tr><th>meaning</th><td>Recall of exhaustive weighted-zone top-20, not relevance Recall@20; validation is not a guarantee on new queries</td></tr><tr><th>warm_query_p50_ms</th><td>{&#x27;zones&#x27;: 38.11194500121928, &#x27;routed-nb&#x27;: 34.914556999865454, &#x27;routed-centroid&#x27;: 37.19156099941756}</td></tr></table><figure><img style="max-width:100%" src="charts/selected_top_classes.png"><figcaption>selected_top_classes</figcaption></figure><figure><img style="max-width:100%" src="charts/warm_query_p50_ms.png"><figcaption>warm_query_p50_ms</figcaption></figure><script>document.querySelector("#filter").oninput=e=>document.querySelectorAll("tr").forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(e.target.value.toLowerCase()))</script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Category vector row lists</title>
+  <style>
+    body { font: 16px system-ui; max-width: 1000px; margin: 40px auto;
+           background: #f7fafb; color: #18313a; }
+    td, th { text-align: left; padding: 8px; border-bottom: 1px solid #ccd; }
+    input { padding: 12px; width: 95%; }
+  </style>
+</head>
+<body>
+  <h1>Category vector row lists</h1>
+  <label>Filter measurements <input id="filter" type="search"></label>
+  <table><tr><th>schema</th><td>category-postings-v2</td></tr><tr><th>index_fingerprint</th><td>6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf</td></tr><tr><th>classifier_sha256</th><td>7895b17e9113c09c0a5486e1b0be269445bf2d42fba83c84d940837c3bf3ae33</td></tr><tr><th>default_top_classes</th><td>3</td></tr><tr><th>documents</th><td>68414</td></tr><tr><th>class_documents</th><td>{&#x27;C01&#x27;: 13169, &#x27;C02&#x27;: 6453, &#x27;C03&#x27;: 3317, &#x27;C04&#x27;: 5180, &#x27;C05&#x27;: 13392, &#x27;C06&#x27;: 4098, &#x27;C07&#x27;: 1778, &#x27;C08&#x27;: 4597, &#x27;C09&#x27;: 6175, &#x27;C10&#x27;: 4685, &#x27;C11&#x27;: 9417, &#x27;C12&#x27;: 5971, &#x27;C13&#x27;: 4901, &#x27;C14&#x27;: 5045}</td></tr><tr><th>meaning</th><td>Configurable category pruning; no relevance-retention guarantee</td></tr></table>
+  <figure><img style="max-width:100%" src="charts/class_documents.png"><figcaption>class_documents</figcaption></figure>
+  <script>
+    document.querySelector('#filter').oninput = event => {
+      const query = event.target.value.toLowerCase();
+      document.querySelectorAll('tr').forEach(row => {
+        row.hidden = !row.textContent.toLowerCase().includes(query);
+      });
+    };
+  </script>
+</body>
+</html>

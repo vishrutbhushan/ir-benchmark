@@ -1,7 +1,8 @@
-# 04 Learned zone weights
+# Learned four-zone weights
 
 ```json
 {
+  "schema": "fixed-zone-sse-v2",
   "zones": [
     "title",
     "headings",
@@ -14,18 +15,40 @@
     1.0,
     0.0
   ],
-  "index_fingerprint": "4217438d8fd32410fd22acf441c1c5403837c0fbb26a0f85edbdf1633eae0790",
-  "training_csv_sha256": "e7bfe4179874a20cb35762d3acb723e9172f4dbc8f08da4293e590f5b85341fc",
-  "objective": "training-only squared error to binary relevance; deterministic simplex grid step 0.05",
-  "missing_zone_policy": "renormalize over present zones; equal-present fallback when all present weights are zero",
+  "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
+  "training_csv_sha256": "86c856c863c19dc1c63de31a7063a3f57ef0865afb95d3eb3230cfb7af66e33d",
+  "objective": "training-only squared error to binary relevance; deterministic simplex grid step 0.01",
+  "missing_zone_policy": "absent zones contribute zero; fixed global weights",
   "evaluation": {
     "train": {
-      "mse": 0.15165827282834723,
-      "queries": 33
+      "mse": 0.1096827086071108,
+      "queries": 45
     },
     "validation": {
-      "mse": 0.21046303331293797,
-      "queries": 11
+      "mse": 0.11997245743987367,
+      "queries": 15
+    }
+  },
+  "zone_diagnostics": {
+    "title": {
+      "relevant_mean_cosine": 0.5833160367777778,
+      "irrelevant_mean_cosine": 0.34122188977777784,
+      "training_mse_alone": 0.15712229027746388
+    },
+    "headings": {
+      "relevant_mean_cosine": 0.5155979937777778,
+      "irrelevant_mean_cosine": 0.2766121008888889,
+      "training_mse_alone": 0.1817634509928305
+    },
+    "body": {
+      "relevant_mean_cosine": 0.6881330627777777,
+      "irrelevant_mean_cosine": 0.30871120522222223,
+      "training_mse_alone": 0.10968270864920504
+    },
+    "code": {
+      "relevant_mean_cosine": 0.5340618965555556,
+      "irrelevant_mean_cosine": 0.22581871588888888,
+      "training_mse_alone": 0.167744001402468
     }
   },
   "judgment_scope": "Small judged development pools, not final retrieval evaluation"
