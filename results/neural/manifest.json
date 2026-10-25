@@ -1,0 +1,52 @@
+[
+  {
+    "engine": "neural",
+    "variant": "dense",
+    "mode": "dense",
+    "weights": null,
+    "route_classes": null,
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "dimensions": 1024,
+    "index_fingerprint": "6243a1e92060be87bf31c54ccd305fb375d9d3482a75b317b51886ef24f198cf",
+    "corpus_manifest_sha256": "20cc401c26cf7144238dd0d55826ed39741ff58600f13235c2f7d80237dfe02a",
+    "corpus_documents": 68414,
+    "query_count": 20,
+    "results_per_query": 10,
+    "repetitions": 3,
+    "queries_sha256": "5c72dc2399c201cf3b3d6bab713707e6085f1d5abcfbee41be9480bcacc7866b",
+    "device": "cuda",
+    "python": "3.14.4",
+    "torch": "2.11.0+cu128",
+    "startup_seconds": 6.346629636995203,
+    "retrieval_median_ms": 56.52734850082197,
+    "retrieval_p95_ms": 78.89285160199506,
+    "vector_bytes": 976703488,
+    "vector_and_mapping_file_bytes": 978612136,
+    "timing_scope": "Warm model; uncached query encoding plus ranking and sorting; excludes metadata serialization and startup",
+    "memory_scope": "RSS before/after plus process lifetime high-water mark; CUDA peaks include resident model and index",
+    "query_cache": false,
+    "ranking_cache": false,
+    "generation_batch_variants_sha256": "e59415eae1924a16a3ce36899236c98bfe1c3dc4428981b0e9f3d14867064bfb",
+    "active_variants_sha256": "ddb29683f9e4c7cd3fb210cc2928984af4c5ea822da1ddf317f0f11c40769d19",
+    "generation_note": "Dense baseline retained from the predeclared batch; other runs are archived and excluded from labeling",
+    "index_parameters": {
+      "max_tokens": 512,
+      "reserved_tokens": 16,
+      "overlap": 64,
+      "window_aggregation": "maximum per document",
+      "all_zone_matrices_loaded": true,
+      "all_zones_scored": true
+    },
+    "numpy": "2.5.4",
+    "transformers": "5.20.2",
+    "retrieval_source_sha256": "582f6f40ea2311139f45894c2047784b783bf7e92d0052aaccdca0dd627ef44a",
+    "disk_bytes": {
+      "model": 1207474208,
+      "vectors_and_mappings": 978612136,
+      "document_metadata": 1745735680,
+      "passage_stores": 1478733824
+    },
+    "build_time_seconds": null
+  }
+]

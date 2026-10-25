@@ -1,0 +1,35 @@
+﻿query_id,query_text,selected,reason
+NL_01,How to handle out of memory errors when training large vision transformer models in PyTorch,1,Retained for technical specificity and coverage across query styles
+NL_02,Configuring zero downtime rolling updates in Kubernetes deployments with custom readiness probes,1,Retained for technical specificity and coverage across query styles
+NL_03,Best practices for indexing JSONB documents in PostgreSQL for fast containment lookups,1,Retained for technical specificity and coverage across query styles
+NL_04,How does reference counting interact with generational garbage collection in Python CPython internals,1,Retained for technical specificity and coverage across query styles
+NL_05,Setting up asynchronous background task workers using Redis queue and FastAPI endpoints,0,Combines FastAPI tasks and an unspecified Redis queue worker
+KW_01,docker compose healthcheck interval timeout,1,Retained for technical specificity and coverage across query styles
+KW_02,kafka consumer group rebalance listener,1,Retained for technical specificity and coverage across query styles
+KW_03,redis pub sub message loss pattern,1,Retained for technical specificity and coverage across query styles
+KW_04,prometheus scrape configs tls cert secret,1,Retained for technical specificity and coverage across query styles
+KW_05,rust borrow checker mutable reference lifetimes,1,Retained for technical specificity and coverage across query styles
+BOOL_01,python web framework AND asynchronous NOT asyncio,0,Broad framework exclusion without a specified task
+BOOL_02,kubernetes ingress controller AND SSL passthrough NOT nginx,1,Retained for technical specificity and coverage across query styles
+BOOL_03,database connection pooling AND java NOT hikaricp,1,Retained for technical specificity and coverage across query styles
+BOOL_04,terraform state locking AND (dynamodb OR s3) NOT consul,1,Retained for technical specificity and coverage across query styles
+BOOL_05,docker container networking AND (bridge OR host) NOT overlay,1,Retained for technical specificity and coverage across query styles
+EXACT_01,PostgreSQL JSONB containment operator @>,0,Duplicates an already retained JSONB or container-networking intent
+EXACT_02,Docker multi-stage build caching syntax --mount=type=cache,1,Retained for technical specificity and coverage across query styles
+EXACT_03,PyTorch find_unused_parameters=True DistributedDataParallel,1,Retained for technical specificity and coverage across query styles
+EXACT_04,Resolving org.apache.kafka.common.errors.RetriableException,1,Retained for technical specificity and coverage across query styles
+EXACT_05,FastAPI dependency injection updates in version 0.100,1,Retained for technical specificity and coverage across query styles
+TYPO_01,kubernets deploymnt rediness probe configration,1,Retained for technical specificity and coverage across query styles
+TYPO_02,postgre sql jsonb contanment operater preformance,0,Duplicates an already retained JSONB or container-networking intent
+TYPO_03,pytorh cuda out of memry eror trainig,1,Retained for technical specificity and coverage across query styles
+TYPO_04,dockr contaner netwrking brigde mode,0,Duplicates an already retained JSONB or container-networking intent
+TYPO_05,apche kafak consmer rebalence retriable exceptin,1,Retained for technical specificity and coverage across query styles
+SHORT_KW_01,docker compose,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_KW_02,aws kafka,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_KW_03,pytorch ddp,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_KW_09,grpc tls,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_KW_10,react hooks,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_TYPO_01,dockr compse,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_TYPO_02,aws kafak,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_TYPO_04,pytorh cuda,0,Broad or ambiguous short fragment; prefer a specified technical task
+SHORT_TYPO_05,postgre jsnb,0,Broad or ambiguous short fragment; prefer a specified technical task

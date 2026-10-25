@@ -1,0 +1,57 @@
+[
+  {
+    "engine": "classical",
+    "variant": "bm25",
+    "source_revision": "8d4dfcc1c6d335f89ba29b8c8337541645f4f3f6",
+    "source_files": {
+      "outputs/test_queries_run/bm25_results.json": "80d3ae31757856efd2762cc9a68fddb860d70ee6c2b40f3c21cf6484934a1acc",
+      "outputs/test_queries_run/bm25f_results.json": "b097ba097d86fdb4d100321676fed40d38b226bcba7a50e416e467c9d0b82acd",
+      "outputs/test_queries_run/multilevel_results.json": "df7f4ec5d7e72bd7f916f0ffff86c3c34a779e9db7456e4faeca34241732279b",
+      "run_test_queries.py": "0e1492300e102281d5c083726889dece607c4b3f93409dbad438b4d2c0ca611b"
+    },
+    "corpus_documents": 77565,
+    "corpus_manifest_sha256": null,
+    "category_scope": "Source taxonomy",
+    "parameters_from_source_phase3_summary": {
+      "k1": 1.2,
+      "b": 0.75,
+      "top_k": 20,
+      "hierarchical_boost": 0.25,
+      "zone_weights": {
+        "title": 4.0,
+        "heading": 2.5,
+        "code": 2.0,
+        "body": 1.0
+      }
+    },
+    "query_count": 20,
+    "results_per_query": 10,
+    "performance": {
+      "selected_query_timings_ms": null,
+      "memory_bytes": null,
+      "index_size_bytes": null,
+      "legacy_batch_seconds": 2.72,
+      "legacy_batch_queries": 34,
+      "legacy_batch_top_k": 20
+    },
+    "missing_for_comparison": [
+      "same prepared corpus and manifest hash",
+      "per-query uncached timings for these 20 queries",
+      "model/index startup time",
+      "process RSS baseline and peak",
+      "exact index bytes",
+      "cache policy and software versions"
+    ],
+    "query_coverage_gaps": [
+      "No explicit homonym-disambiguation pair",
+      "Version constraint is present; no before/after temporal query"
+    ],
+    "retrieval_parameters": {
+      "k1": 1.2,
+      "b": 0.75,
+      "source_top_k": 20,
+      "exported_top_k": 10
+    },
+    "reported_index_size_mb": 2078.0
+  }
+]

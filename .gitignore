@@ -19,3 +19,7 @@ __pycache__/
 *.npz
 *.sqlite
 *.safetensors
+/AGENTS.md
+/agents.md
+.ruff_cache/
+*.part

@@ -1,0 +1,14 @@
+{
+  "classical_corpus_documents": 77565,
+  "neural_corpus_documents": 68414,
+  "controlled_comparison": false,
+  "reason": "Classical export uses a different corpus and does not provide its manifest hash",
+  "unique_query_document_pairs": 344,
+  "result_rows": 400,
+  "saved_html_unavailable_unique_documents_by_variant": {
+    "classical/bm25": 18,
+    "neural/dense": 0
+  },
+  "metrics_scope": "Recall, F1, AP and NDCG use the union of all exported top-ten results as the judged pool; full-corpus recall and full MAP are unavailable",
+  "judgment_policy": "Unjudged stays blank. One query/document judgment applies across all variants."
+}
