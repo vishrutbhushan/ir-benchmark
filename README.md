@@ -124,7 +124,36 @@ python run_pipeline.py --phase all
 | **Flat BM25** | Whole Document | Okapi BM25 ($k_1=1.2, b=0.75$) over all terms |
 | **BM25F** | 4 Zones: Title ($w=4.0$), Heading ($w=2.5$), Code ($w=2.0$), Body ($w=1.0$) | Weighted pseudo-frequencies $\tilde{f}(t, D)$ with length normalization per zone |
 | **Multi-Level** | Level 1: Document + Level 2: Section/Passage | Fuses document relevance with highest scoring passage snippet: $\text{Score} = \alpha \cdot \text{BM25F}_{\text{doc}} + (1 - \alpha) \cdot \max(\text{BM25}_{\text{sec}})$ |
-| **Champion Tiering** | Pruning Layer | Pre-screens candidate documents using Tier-1 high-frequency / title matches |
+---
+
+## Taxonomy & Categories
+
+The corpus documents and search queries are structured using a **2-tier hierarchical ontology** defined in [`Category_Labels.txt`](file:///Users/b.ajay/Downloads/ir-benchmark/Category_Labels.txt) and mapped in [`src/utils/taxonomy.py`](file:///Users/b.ajay/Downloads/ir-benchmark/src/utils/taxonomy.py).
+
+The 77,565 documents are partitioned across **13 canonical technical categories** and 5 high-level domains:
+
+| # | Category | Domain | Sample Technologies (76 Total) |
+| :--- | :--- | :--- | :--- |
+| 1 | **Cloud** | Infrastructure | AWS, Azure, Google Cloud, Cloudflare, DigitalOcean |
+| 2 | **AI/ML** | AI & Machine Learning | PyTorch, TensorFlow, Hugging Face, CUDA, Ray |
+| 3 | **Prog Lang** | Software Engineering | Python, Java, Go, Rust, TypeScript, JavaScript, Kotlin |
+| 4 | **DB** | Data Systems | PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch, ClickHouse |
+| 5 | **ML Ops** | AI & Machine Learning | Kubeflow, MLflow |
+| 6 | **Communication/msg passing** | Data Systems | Kafka, Pulsar, RabbitMQ, ZooKeeper, gRPC |
+| 7 | **Containers & Orchestration** | Infrastructure | Docker, Kubernetes, Podman, Helm, Nomad |
+| 8 | **Web Dev** | Software Engineering | React, Vue, Next.js, Django, FastAPI, Tailwind CSS |
+| 9 | **Observability** | Operations & Reliability | Prometheus, Grafana, OpenTelemetry, Jaeger, Datadog |
+| 10 | **Testing** | Software Engineering | Pytest, JUnit, Playwright, Cypress, Selenium |
+| 11 | **Version Control & CI/CD** | Operations & Reliability | Git, GitHub Actions, GitLab CI, ArgoCD, Jenkins |
+| 12 | **Data & Analytics** | Data Systems | Spark, Flink, dbt, Airflow, Snowflake, Presto |
+| 13 | **Security & Identity** | Operations & Reliability | HashiCorp Vault, OWASP, NIST, OpenID Connect |
+
+### How Categories are Used in Retrieval
+1. **Document-Level Category Postings**: Inverted postings are pre-partitioned into `category_postings[category]` so sub-indices can be queried independently without scanning the entire corpus.
+2. **Query Taxonomy Inference**: When a user queries (e.g., *"how to fix cuda out of memory in pytorch"*), `infer_query_taxonomy()` uses word-boundary regex matching across technology aliases to detect target categories (`AI/ML`).
+3. **Category-First Routing & Soft Boost**:
+   - In `routing_mode="hierarchical_first"`, the engine queries the category sub-index first.
+   - In `routing_mode="hybrid"`, documents matching the query's inferred category receive a principled relevance boost ($\times (1 + \text{hierarchical\_boost})$).
 
 ---
 
