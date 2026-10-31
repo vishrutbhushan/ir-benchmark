@@ -19,7 +19,11 @@ def main():
         choices=["all", "validate", "repair", "filter", "pack"],
         default="all",
     )
-    parser.add_argument("--archive", type=Path, default=Path("../data/runtime/original_corpus.zip"))
+    parser.add_argument(
+        "--archive",
+        type=Path,
+        default=Path("../data/00_corpus/technical_web_corpus.zip"),
+    )
     parser.add_argument("--corpus", type=Path, default=Path("../data/00_corpus"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs"))
     parser.add_argument("--logs-dir", type=Path, default=Path("logs"))

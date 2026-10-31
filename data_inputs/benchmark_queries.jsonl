@@ -1,0 +1,10 @@
+{"query_id":"Q01","query_text":"how to resolve cuda out of memory error during pytorch training","query_type":"Troubleshooting","target_tech":"PyTorch"}
+{"query_id":"Q02","query_text":"kubernetes pod readiness probe configuration for zero downtime deployment","query_type":"Configuration","target_tech":"Kubernetes"}
+{"query_id":"Q03","query_text":"postgresql optimize jsonb query performance with gin index","query_type":"Performance","target_tech":"PostgreSQL"}
+{"query_id":"Q04","query_text":"python asyncio run background task without blocking event loop","query_type":"Conceptual","target_tech":"Python"}
+{"query_id":"Q05","query_text":"docker multi stage build cache mount syntax","query_type":"Syntax","target_tech":"Docker"}
+{"query_id":"Q06","query_text":"redis rdb vs aof persistence memory optimization","query_type":"Architecture","target_tech":"Redis"}
+{"query_id":"Q07","query_text":"elasticsearch index lifecycle management rollover policy setup","query_type":"Operational","target_tech":"Elasticsearch"}
+{"query_id":"Q08","query_text":"spring boot configure custom health check in actuator endpoint","query_type":"Integration","target_tech":"Spring Boot"}
+{"query_id":"Q09","query_text":"linux tcp socket buffer size tuning sysctl","query_type":"SysAdmin","target_tech":"Linux Kernel"}
+{"query_id":"Q10","query_text":"envoy proxy configure circuit breaker connection pool limits","query_type":"Networking","target_tech":"Envoy"}

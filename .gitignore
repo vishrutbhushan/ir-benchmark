@@ -10,7 +10,7 @@ neural/outputs/
 neural/logs/
 evaluation/results/
 evaluation/logs/
-evaluation/queries/
+evaluation/queries/*.part
 outputs/
 logs/
 results/

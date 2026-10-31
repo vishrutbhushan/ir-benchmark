@@ -4,6 +4,9 @@ This component owns Common Crawl collection, validation, and repair. It writes
 the working corpus to `data/00_corpus/` and checkpoints to `data/runtime/`.
 Those paths are intentionally ignored by Git.
 
+Place an incoming archive at `data/00_corpus/technical_web_corpus.zip` before
+running validation, or run the collection stage first.
+
 ```bash
 cd data
 python run_collect.py --step collect

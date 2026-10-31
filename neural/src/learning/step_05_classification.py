@@ -8,6 +8,7 @@ from src.common.artifacts import digest_file, report, write_json
 from src.common.config import load_config
 from src.common.learning_metrics import classification_metrics
 from src.common.zones import ZONES
+from src.common.paths import NEURAL_CLASSIFICATION, REPOSITORY_ROOT
 from src.learning.labels import load_training_examples
 
 
@@ -51,9 +52,10 @@ def train_classifiers(root, engine):
     root = Path(root)
     out = root / "step_05_classification"
     out.mkdir(parents=True, exist_ok=True)
-    source = Path("data/step_05_classification/training.csv")
+    source = NEURAL_CLASSIFICATION / "training.csv"
     rows = load_training_examples(root, source)
-    with Path("data/step_05_classification/classes.csv").open() as stream:
+    classes_path = NEURAL_CLASSIFICATION / "classes.csv"
+    with classes_path.open() as stream:
         definitions = list(csv.DictReader(stream))
     classes = sorted(r["class_id"] for r in definitions)
     by_id = {d["doc_id"]: i for i, d in enumerate(engine.documents)}
@@ -86,7 +88,7 @@ def train_classifiers(root, engine):
         for r, p, use in zip(rows, predicted, mask)
         if use
     ]
-    predictions_path = Path("results/step_05_classification/training/predictions.csv")
+    predictions_path = REPOSITORY_ROOT / "neural/results/step_05_classification/training/predictions.csv"
     predictions_path.parent.mkdir(parents=True, exist_ok=True)
     with predictions_path.open("w", newline="", encoding="utf-8-sig") as stream:
         writer = csv.DictWriter(stream, fieldnames=["doc_id", "actual", "predicted"])
@@ -98,7 +100,7 @@ def train_classifiers(root, engine):
         "classes": classes,
         "class_names": {r["class_id"]: r["class_name"] for r in definitions},
         "training_csv_sha256": digest_file(source),
-        "classes_sha256": digest_file("data/step_05_classification/classes.csv"),
+        "classes_sha256": digest_file(classes_path),
         "training_documents": int(train.sum()),
         "validation": result,
         "secondary_margin": settings["secondary_margin"],
@@ -144,8 +146,8 @@ class Classifiers:
         ):
             raise RuntimeError("Run step 05: classifier is stale")
         for key, path in (
-            ("training_csv_sha256", "data/step_05_classification/training.csv"),
-            ("classes_sha256", "data/step_05_classification/classes.csv"),
+            ("training_csv_sha256", source),
+            ("classes_sha256", classes_path),
         ):
             if self.model[key] != digest_file(path):
                 raise RuntimeError(

@@ -55,11 +55,11 @@ def export_results(
     ]
     variants = json.loads(Path(variants_path).read_text())
     if (
-        len(queries) != 20
-        or len({q["query_id"] for q in queries}) != 20
-        or len({q["query_text"] for q in queries}) != 20
+        not queries
+        or len({q["query_id"] for q in queries}) != len(queries)
+        or len({q["query_text"] for q in queries}) != len(queries)
     ):
-        raise ValueError("Export requires exactly 20 distinct queries")
+        raise ValueError("Export requires distinct non-empty queries")
     if len({v["id"] for v in variants}) != len(variants):
         raise ValueError("Duplicate variant ID")
     for variant in variants:
@@ -179,7 +179,7 @@ def export_results(
                     "index_fingerprint": engine.summary["fingerprint"],
                     "corpus_manifest_sha256": source["dataset_manifest_sha256"],
                     "corpus_documents": len(engine.documents),
-                    "query_count": 20,
+                    "query_count": len(queries),
                     "results_per_query": 10,
                     "repetitions": repeats,
                     "queries_sha256": digest_file(query_path),

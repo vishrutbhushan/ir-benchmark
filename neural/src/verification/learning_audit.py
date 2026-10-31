@@ -11,6 +11,7 @@ from src.common.artifacts import connect, digest_file, report
 from src.learning.labels import canonical_family, load_training_examples
 from src.learning.features import load_examples
 from src.common.zones import ZONES
+from src.common.paths import DATA_INPUTS, NEURAL_CLASSIFICATION, NEURAL_WEIGHTS, REPOSITORY_ROOT
 
 
 def read_csv(path):
@@ -21,13 +22,12 @@ def read_csv(path):
 
 def audit_learning_data(root):
     root = Path(root)
-    base = Path("data")
-    relevance = load_examples(base / "step_04_weights")
-    features = read_csv("results/step_04_weights/features/training_features.csv")
+    relevance = load_examples(NEURAL_WEIGHTS)
+    features = read_csv(REPOSITORY_ROOT / "neural/results/step_04_weights/features/training_features.csv")
     feature_map = {(r["query_id"], r["doc_id"]): r for r in features}
-    classes = read_csv(base / "step_05_classification/classes.csv")
+    classes = read_csv(NEURAL_CLASSIFICATION / "classes.csv")
     classified = load_training_examples(
-        root, base / "step_05_classification/training.csv"
+        root, NEURAL_CLASSIFICATION / "training.csv"
     )
     if not classes or not classified:
         raise ValueError("Classification tables must not be empty")
@@ -36,7 +36,7 @@ def audit_learning_data(root):
         raise ValueError("Duplicate class/technology definitions")
     if len(relevance) != len({(r["query_id"], r["doc_id"]) for r in relevance}):
         raise ValueError("Duplicate relevance pairs")
-    query_table = read_csv(base / "step_04_weights/queries.csv")
+    query_table = read_csv(NEURAL_WEIGHTS / "queries.csv")
     intent_splits = {}
     for q in query_table:
         if q["split"] != intent_splits.setdefault(q["intent_id"], q["split"]):
@@ -138,9 +138,9 @@ def audit_learning_data(root):
         "source_text_and_content_labels_checked": True,
         "classification_duplicate_group_leakage": False,
         "semantic_label_scope": "Binary query-specific development relevance; classification labels describe reviewed primary content topics. Structural checks do not prove judgment correctness.",
-        "zone_training_sha256": digest_file(base / "step_04_weights/training.csv"),
+        "zone_training_sha256": digest_file(NEURAL_WEIGHTS / "training.csv"),
         "classification_training_sha256": digest_file(
-            base / "step_05_classification/training.csv"
+            NEURAL_CLASSIFICATION / "training.csv"
         ),
     }
     report(

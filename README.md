@@ -49,6 +49,9 @@ python run_pipeline.py --step all
 
 cd ../evaluation
 python run_evaluation.py --metrics
+
+cd ..
+python run_search_ui.py
 ```
 
 The shared archive is
@@ -59,6 +62,11 @@ shared archive and stores stage outputs under `neural/outputs/`.
 To continue after interruption, rerun the same command. To execute a later
 stage only, use `--phase 2`/`--phase 3` for classical or `--step 01`–`--step 09`
 for neural. Logs are appended under each component's `logs/` directory.
+
+The benchmark suite contains ten natural-language developer queries in
+`evaluation/queries/final_queries.jsonl` and
+`data_inputs/benchmark_queries.jsonl`. Evaluation starts with pending result
+families when exports have not yet been generated.
 
 ## Git and data policy
 

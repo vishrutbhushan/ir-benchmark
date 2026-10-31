@@ -11,6 +11,7 @@ from src.common.zones import ZONES
 from src.verification.integrity import audit_zone_coverage, audit_vector_mapping
 from src.retrieval.scoring import aggregate_documents
 from src.retrieval.step_08_search import MODES
+from src.common.paths import NEURAL_WEIGHTS
 
 
 def verify(engine, root):
@@ -66,7 +67,7 @@ def verify(engine, root):
         errors[zone] = error
         norms[zone] = [low, high]
         hashes[zone] = digest_file(root / f"step_03_embeddings/{zone}/vectors.npy")
-    development_path = Path("data/step_04_weights/training.csv")
+    development_path = NEURAL_WEIGHTS / "training.csv"
     with development_path.open(newline="", encoding="utf-8-sig") as stream:
         by_query = {
             r["query_id"]: {

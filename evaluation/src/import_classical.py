@@ -119,7 +119,7 @@ def import_results(repository, revision):
                 "corpus_manifest_sha256": None,
                 "category_scope": "Source taxonomy",
                 "parameters_from_source_phase3_summary": parameters,
-                "query_count": 20,
+                "query_count": len(queries),
                 "results_per_query": 10,
                 "performance": {
                     "selected_query_timings_ms": None,
@@ -131,7 +131,7 @@ def import_results(repository, revision):
                 },
                 "missing_for_comparison": [
                     "same prepared corpus and manifest hash",
-                    "per-query uncached timings for these 20 queries",
+                    "per-query uncached timings for these benchmark queries",
                     "model/index startup time",
                     "process RSS baseline and peak",
                     "exact index bytes",

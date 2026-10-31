@@ -5,6 +5,10 @@ serves the relevance-labeling UI, and writes pooled metrics. Runtime queries,
 results, and logs are ignored by Git; `data/judgments.csv` is the tracked
 human-label input.
 
+The active benchmark uses ten natural-language queries in
+`queries/final_queries.jsonl`. The store starts successfully when result
+snapshots are missing and reports those engine families as pending.
+
 ```bash
 cd evaluation
 python run_evaluation.py --prepare

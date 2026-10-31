@@ -7,6 +7,7 @@ import re
 from urllib.parse import urlsplit
 
 from src.common.artifacts import connect
+from src.common.paths import NEURAL_CLASSIFICATION
 
 
 def canonical_family(url):
@@ -17,7 +18,7 @@ def canonical_family(url):
 
 
 def load_training_examples(
-    root, source=Path("data/step_05_classification/training.csv")
+    root, source=NEURAL_CLASSIFICATION / "training.csv"
 ):
     """Validate seed labels without copying document text."""
     with Path(source).open(newline="", encoding="utf-8-sig") as stream:

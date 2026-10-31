@@ -18,8 +18,10 @@ class Store:
             for line in (ROOT / "queries/final_queries.jsonl").read_text().splitlines()
             if line.strip()
         ]
-        if len(self.queries) != 20 or len({q["query_id"] for q in self.queries}) != 20:
-            raise ValueError("Need exactly 20 unique queries")
+        if not self.queries or len({q["query_id"] for q in self.queries}) != len(
+            self.queries
+        ):
+            raise ValueError("Need at least one uniquely identified query")
         texts = {q["query_id"]: q["query_text"] for q in self.queries}
         self.runs = {}
         self.documents = {}
@@ -32,8 +34,9 @@ class Store:
                 if not rows:
                     continue
                 variant = rows[0]["variant"]
-                if len(rows) != 200:
-                    raise ValueError(f"{path.name}: need 200 results")
+                expected_rows = len(self.queries) * 10
+                if len(rows) != expected_rows:
+                    raise ValueError(f"{path.name}: need {expected_rows} results")
                 grouped = defaultdict(list)
                 for r in rows:
                     if (
@@ -59,10 +62,10 @@ class Store:
                 ):
                     raise ValueError("Invalid top-ten ordering")
                 self.runs[(engine, variant)] = rows
-        if not all(
-            any(e == engine for e, _ in self.runs) for engine in ("classical", "neural")
-        ):
-            raise ValueError("Both engine families need result snapshots")
+        self.pending_results = {
+            engine: not any(e == engine for e, _ in self.runs)
+            for engine in ("classical", "neural")
+        }
         self.path = ROOT / "data/judgments.csv"
         self.labels = {key: None for key in self.pool}
         self.updated = {}
@@ -90,10 +93,6 @@ class Store:
                                     "Archive and result document URLs differ"
                                 )
                             self.paths[d["doc_id"]] = d["html_path"]
-        if set(self.runs) != {("classical", "bm25"), ("neural", "dense")}:
-            raise ValueError(
-                "Keep only BM25 and dense snapshots in the active results folders"
-            )
         self.save()
 
     def judgment_rows(self):
@@ -176,7 +175,7 @@ class Store:
             return rows, list(rows[0]) if rows else []
         details, summary = calculate(self.runs, self.labels)
         rows = summary if kind == "metrics" else details
-        return rows, list(rows[0])
+        return rows, list(rows[0]) if rows else []
 
     def html(self, doc_id):
         if doc_id not in self.paths:
@@ -187,8 +186,11 @@ class Store:
             )
 
     def comparison_report(self):
-        classical = json.loads((ROOT / "results/classical/manifest.json").read_text())
-        neural = json.loads((ROOT / "results/neural/manifest.json").read_text())
+        manifests = {}
+        for engine in ("classical", "neural"):
+            path = ROOT / f"results/{engine}/manifest.json"
+            if path.exists():
+                manifests[engine] = json.loads(path.read_text())
         missing = {
             f"{engine}/{variant}": len(
                 {r["doc_id"] for r in rows if r["doc_id"] not in self.paths}
@@ -196,8 +198,13 @@ class Store:
             for (engine, variant), rows in self.runs.items()
         }
         report = {
-            "classical_corpus_documents": classical[0]["corpus_documents"],
-            "neural_corpus_documents": neural[0]["corpus_documents"],
+            "classical_corpus_documents": manifests.get("classical", [{}])[0].get(
+                "corpus_documents"
+            ),
+            "neural_corpus_documents": manifests.get("neural", [{}])[0].get(
+                "corpus_documents"
+            ),
+            "pending_results": self.pending_results,
             "controlled_comparison": False,
             "reason": "Classical export uses a different corpus and does not provide its manifest hash",
             "unique_query_document_pairs": len(self.pool),
