@@ -1,0 +1,26 @@
+# Runtime outputs
+outputs/
+logs/
+__pycache__/
+*.pyc
+.venv/
+.cache/
+
+# Neural model and vector artifacts
+*.npy
+*.npz
+*.safetensors
+
+# Database files
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Corpus files
+technical_web_corpus/
+*.zip
+original_corpus.zip
+recovery/
+
+# Windows metadata
+*.Zone.Identifier

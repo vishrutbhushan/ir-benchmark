@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Retrieval judgments</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body><main>
+<h1>Retrieval judgments</h1>
+<div id="comparison" class="notice"></div>
+<div class="toolbar">
+<label>Mode <select id="engine"><option value="classical">Classical (BM25)</option><option value="neural">Neural (dense cosine)</option></select></label>
+
+<a href="/api/export?kind=judgments">Judgments CSV</a>
+<a href="/api/export?kind=results">Results CSV</a>
+<a href="/api/export?kind=metrics">Metrics CSV</a>
+<a href="/api/export?kind=per_query">Per-query CSV</a>
+<a href="/api/export?kind=qrels">Qrels</a>
+<a href="/api/export?kind=timings">Timings CSV</a>
+</div>
+<nav><button id="prev">Previous query</button><span id="position"></span><button id="next">Next query</button></nav>
+<h2 id="query"></h2><div id="query_meta" class="meta"></div><p id="progress"></p>
+<div id="error" role="alert"></div><section id="results"></section>
+</main></body></html>

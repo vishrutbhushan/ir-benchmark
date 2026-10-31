@@ -1,0 +1,15 @@
+class_id,class_name,relationship_to_original_labels,definition
+C01,cloud-platforms,Cloud,"Cloud platforms, provider services and edge/cloud APIs."
+C02,ai-ml-compute,AI/ML,"ML model frameworks, tensor computation, tokenizers and accelerator programming."
+C03,mlops-orchestration,ML Ops,"ML experiment tracking, deployment and distributed ML workflow orchestration."
+C04,programming-languages,Prog Lang,"Programming language syntax, standard libraries and runtime semantics."
+C05,databases-storage,DB,"Database engines, data models, persistence and storage APIs."
+C06,search-engines,DB extension,"Search-engine indexing, query execution and search-cluster administration."
+C07,messaging-rpc,Communication/msg passing,"Message brokers, queues, streaming transports and RPC interfaces."
+C08,distributed-data-processing,Added,"Distributed data processing, analytical engines, table formats and coordination."
+C09,application-frameworks,Added,Web/UI/application frameworks and application server runtimes.
+C10,containers-orchestration,Added,"Containers, workload orchestration, service meshes and chart deployment."
+C11,devops-build-release,Added,"Source control, CI/CD, build tools and infrastructure provisioning."
+C12,os-networking-web,Added,"Operating systems, HTTP/network protocols, proxies and web servers."
+C13,security-identity,Added,"Cryptography, certificates, secret management, authentication and security standards."
+C14,observability,Added,"Metrics, dashboards, traces, instrumentation and telemetry collection."
