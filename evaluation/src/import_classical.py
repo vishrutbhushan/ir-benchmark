@@ -76,8 +76,8 @@ def import_results(repository, revision):
         )
     write_csv(ROOT / "queries/selection.csv", selection, list(selection[0]))
     summary = source("outputs/test_queries_run/test_queries_summary.md").decode()
-    stats = json.loads(source("outputs/phase3/index_stats.json"))
-    parameters = json.loads(source("outputs/phase3/phase3_summary.json"))["parameters"]
+    stats = json.loads(source("outputs/stage_03_retrieval/index_stats.json"))
+    parameters = json.loads(source("outputs/stage_03_retrieval/phase3_summary.json"))["parameters"]
     manifests = []
     for name, data in raw.items():
         rows = []

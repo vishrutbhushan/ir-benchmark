@@ -20,7 +20,7 @@ def unpack_corpus(archive, corpus):
         return
     if not archive.exists():
         raise FileNotFoundError(
-            "Place the corrected corpus ZIP from the data branch in data/00_corpus/"
+            "Place the shared corpus ZIP from filter/outputs/stage_05_archive/"
         )
     temporary = corpus.parent / ".unpacking_corpus"
     if temporary.exists():
@@ -62,7 +62,7 @@ def run_extraction(corpus_root, out, workers=4):
     corpus_root, out = Path(corpus_root), Path(out)
     manifest = corpus_root / "metadata/corpus_manifest.jsonl"
     if not (corpus_root / "metadata/corpus_state.json").exists():
-        raise ValueError("Use the corrected corpus produced by the data branch")
+        raise ValueError("Use the shared corpus produced by the filter stage")
     inputs = sorted(records(manifest), key=lambda row: row["doc_id"])
     if not inputs or len({row["doc_id"] for row in inputs}) != len(inputs):
         raise ValueError("Corpus document IDs must be nonempty and unique")

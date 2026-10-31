@@ -35,12 +35,12 @@ def parse_and_run():
         default="all",
     )
     parser.add_argument(
-        "--corpus-dir", type=Path, default=Path("data/00_corpus/technical_web_corpus")
+        "--corpus-dir", type=Path, default=Path("../data/00_corpus")
     )
     parser.add_argument(
         "--corpus-zip",
         type=Path,
-        default=Path("data/00_corpus/technical_web_corpus.zip"),
+        default=Path("../filter/outputs/stage_05_archive/technical_web_corpus.zip"),
     )
     parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
@@ -56,6 +56,7 @@ def parse_and_run():
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     args = parser.parse_args()
     if args.workers < 1 or args.batch_size < 1:
         parser.error("Workers and batch size must be positive")
@@ -68,12 +69,33 @@ def run(args, parser):
     root = Path("outputs")
     from src.common.logging import run_stage
 
+    markers = {
+        stage: root / f"step_{stage}_{name}" / "stage.done"
+        for stage, name in {
+            "01": "extraction",
+            "02": "windows",
+            "03": "embeddings",
+            "04": "weights",
+            "05": "classification",
+            "06": "routing",
+            "07": "verification",
+        }.items()
+    }
+
+    def run_if_needed(stage, function, *stage_args):
+        if markers[stage].exists() and not args.force:
+            print(f"Stage {stage} already complete; reusing {markers[stage].parent}.")
+            return
+        run_stage(stage, function, *stage_args)
+        markers[stage].parent.mkdir(parents=True, exist_ok=True)
+        markers[stage].write_text("completed\n", encoding="utf-8")
+
     if args.step in {"all", "01", "02", "03"}:
         from src.extraction.step_01_extraction import (
             prepare_extraction,
         )
 
-        run_stage(
+        run_if_needed(
             "01",
             prepare_extraction,
             args.corpus_zip,
@@ -85,12 +107,12 @@ def run(args, parser):
             return
         from src.neural_preprocessing.step_02_windows import prepare_zones
 
-        run_stage("02", prepare_zones, root, args.workers)
+        run_if_needed("02", prepare_zones, root, args.workers)
         if args.step == "02":
             return
         from src.embeddings.step_03_embeddings import embed_zones
 
-        run_stage("03", embed_zones, root, args.device, args.batch_size)
+        run_if_needed("03", embed_zones, root, args.device, args.batch_size)
         if args.step == "03":
             return
     if args.step == "audit":
@@ -101,7 +123,7 @@ def run(args, parser):
     if args.step == "04":
         from src.learning.step_04_weights import configure_weights
 
-        run_stage("04", configure_weights, root)
+        run_if_needed("04", configure_weights, root)
         return
     from src.retrieval.step_08_search import SearchEngine
 
@@ -136,27 +158,27 @@ def run(args, parser):
         if args.step == "all":
             from src.learning.step_04_weights import configure_weights
 
-            run_stage("04", configure_weights, root, engine)
+            run_if_needed("04", configure_weights, root, engine)
         if args.step in {"all", "05"}:
             from src.learning.step_05_classification import (
                 train_classifiers,
                 Classifiers,
             )
 
-            run_stage("05", train_classifiers, root, engine)
+            run_if_needed("05", train_classifiers, root, engine)
             engine.classifier = Classifiers(root)
             if args.step == "05":
                 return
         if args.step in {"all", "06"}:
             from src.learning.step_06_routing import tune_routing
 
-            run_stage("06", tune_routing, root, engine)
+            run_if_needed("06", tune_routing, root, engine)
             if args.step == "06":
                 return
         if args.step in {"all", "07"}:
             from src.verification.step_07_verification import verify
 
-            run_stage("07", verify, engine, root)
+            run_if_needed("07", verify, engine, root)
         elif args.step == "08":
             if not args.query:
                 parser.error("--query is required for step 08")

@@ -34,25 +34,7 @@ def parse_args() -> argparse.Namespace:
         default="2",
         help="Pipeline phase to execute (2=Tokenization, 3=Classic IR BM25, all=both phases).",
     )
-    # Auto-resolve corpus_root and manifest_path if nested inside technical_web_corpus/technical_web_corpus
-    default_root = Path("technical_web_corpus")
-    if not (default_root / "documents").exists() and (default_root / "technical_web_corpus" / "documents").exists():
-        default_root = default_root / "technical_web_corpus"
-
-    default_manifest = default_root / "metadata" / "corpus_manifest.jsonl"
-
-    parser.add_argument(
-        "--corpus-root",
-        type=Path,
-        default=default_root,
-        help="Path to root corpus folder containing documents/ and metadata/.",
-    )
-    parser.add_argument(
-        "--manifest-path",
-        type=Path,
-        default=default_manifest,
-        help="Path to corpus_manifest.jsonl.",
-    )
+    parser.add_argument("--records-path", type=Path, default=Path("../filter/outputs/stage_04_filtering/structured_records.jsonl"), help="Structured records produced by filter.")
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -85,7 +67,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--queries-path",
         type=Path,
-        default=Path("queries.jsonl"),
+        default=Path("../evaluation/data/queries.jsonl"),
         help="Path to queries.jsonl file for retrieval benchmarking.",
     )
     parser.add_argument(
@@ -130,6 +112,7 @@ def parse_args() -> argparse.Namespace:
         default=8,
         help="Number of parallel worker processes for Phase 1 extraction and Phase 2 tokenization (default: 8).",
     )
+    parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     return parser.parse_args()
 
 
@@ -144,12 +127,11 @@ def main() -> None:
 
     # Execute Phase 2
     if phase in ["2", "all"]:
-        phase2_out = args.output_dir / "phase2"
-        phase2_log = args.logs_dir / "phase2" / "tokenization.log"
+        phase2_out = args.output_dir / "stage_02_tokenization"
+        phase2_log = args.logs_dir / "stage_02_tokenization.log"
         logger2 = setup_logger("phase2_tokenization", phase2_log)
 
-        # Phase 2 reads structured_records.jsonl from Phase 1 output
-        records_path = args.output_dir / "phase1" / "structured_records.jsonl"
+        records_path = args.records_path
         if not records_path.exists():
             print(
                 f"ERROR: Phase 1 output not found at {records_path}. "
@@ -157,22 +139,27 @@ def main() -> None:
             )
             sys.exit(1)
 
-        run_tokenization(
-            records_path=records_path,
-            output_dir=phase2_out,
-            logger=logger2,
-            max_documents=args.max_docs,
-            num_workers=args.workers,
-        )
+        marker = phase2_out / "stage.done"
+        if marker.exists() and not args.force:
+            print(f"Tokenization already complete; reusing {phase2_out}. Use --force to rerun.")
+        else:
+            run_tokenization(
+                records_path=records_path,
+                output_dir=phase2_out,
+                logger=logger2,
+                max_documents=args.max_docs,
+                num_workers=args.workers,
+            )
+            marker.write_text("completed\n", encoding="utf-8")
 
     # Execute Phase 3
     if phase in ["3", "all"]:
-        phase3_out = args.output_dir / "phase3"
-        phase3_log = args.logs_dir / "phase3" / "classic_ir.log"
+        phase3_out = args.output_dir / "stage_03_retrieval"
+        phase3_log = args.logs_dir / "stage_03_retrieval.log"
         logger3 = setup_logger("phase3_classic_ir", phase3_log)
 
-        tokenized_path = args.output_dir / "phase2" / "tokenized_corpus.jsonl"
-        structured_path = args.output_dir / "phase1" / "structured_records.jsonl"
+        tokenized_path = args.output_dir / "stage_02_tokenization" / "tokenized_corpus.jsonl"
+        structured_path = args.records_path
 
         if not tokenized_path.exists():
             print(
@@ -187,6 +174,10 @@ def main() -> None:
             )
             sys.exit(1)
 
+        marker = phase3_out / "stage.done"
+        if marker.exists() and not args.force:
+            print(f"Retrieval already complete; reusing {phase3_out}. Use --force to rerun.")
+            return
         run_classic_ir(
             tokenized_path=tokenized_path,
             structured_path=structured_path,
@@ -200,11 +191,12 @@ def main() -> None:
             hierarchical_boost=args.hierarchical_boost,
             routing_mode=args.routing_mode,
         )
+        marker.write_text("completed\n", encoding="utf-8")
 
     # Compile / update visual interactive dashboard
-    p0_json_path = args.output_dir / "phase0" / "audit_report.json"
-    p1_json_path = args.output_dir / "phase1" / "corpus_statistics.json"
-    p2_json_path = args.output_dir / "phase2" / "tokenization_stats.json"
+    p0_json_path = args.output_dir / "stage_00_audit" / "audit_report.json"
+    p1_json_path = args.output_dir / "stage_01_extraction" / "corpus_statistics.json"
+    p2_json_path = args.output_dir / "stage_02_tokenization" / "tokenization_stats.json"
     p0_data = json.loads(p0_json_path.read_text(encoding="utf-8")) if p0_json_path.exists() else None
     p1_data = json.loads(p1_json_path.read_text(encoding="utf-8")) if p1_json_path.exists() else None
     p2_data = json.loads(p2_json_path.read_text(encoding="utf-8")) if p2_json_path.exists() else None

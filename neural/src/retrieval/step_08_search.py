@@ -35,7 +35,7 @@ class SearchEngine:
         self.config = load_config()
         self.default_mode = default_mode(self.config)
         self.corpus_root = Path(
-            corpus_root or "data/00_corpus/technical_web_corpus"
+            corpus_root or "../data/00_corpus"
         ).resolve()
         self.root = Path(root)
         self.summary = json.loads(
@@ -47,7 +47,7 @@ class SearchEngine:
         from src.common.corpus import CorpusSource
 
         self.corpus = CorpusSource(
-            self.corpus_root, corpus_zip or "data/00_corpus/technical_web_corpus.zip"
+            self.corpus_root, corpus_zip or "../filter/outputs/stage_05_archive/technical_web_corpus.zip"
         )
         if self.corpus.manifest_sha256 != source["dataset_manifest_sha256"]:
             raise RuntimeError("Dataset changed; run --step all")

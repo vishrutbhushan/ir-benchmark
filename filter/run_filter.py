@@ -1,44 +1,33 @@
 #!/usr/bin/env python3
-"""Collection and shared filtering; produces the corpus ZIP consumed by IR branches."""
+"""Filter and package the shared corpus consumed by both IR pipelines."""
 
 import argparse
+import json
+import time
 from pathlib import Path
-import subprocess
-import sys
+
+
+def _mark_done(path: Path, **data) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"completed_at": time.time(), **data}, indent=2) + "\n")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--step",
-        choices=["all", "collect", "validate", "repair", "filter", "pack"],
+        choices=["all", "validate", "repair", "filter", "pack"],
         default="all",
     )
-    parser.add_argument("--archive", type=Path, default=Path("original_corpus.zip"))
-    parser.add_argument("--corpus", type=Path, default=Path("technical_web_corpus"))
-    parser.add_argument(
-        "--candidates", type=Path, default=Path("common_crawl_candidates.jsonl")
-    )
+    parser.add_argument("--archive", type=Path, default=Path("../data/runtime/original_corpus.zip"))
+    parser.add_argument("--corpus", type=Path, default=Path("../data/00_corpus"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs"))
+    parser.add_argument("--logs-dir", type=Path, default=Path("logs"))
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     args = parser.parse_args()
     if args.workers < 1:
         parser.error("--workers must be positive")
-    if args.step == "collect":
-        subprocess.run(
-            [
-                sys.executable,
-                "../data/src/collection/collect.py",
-                "--candidates",
-                str(args.candidates),
-                "--output",
-                str(args.corpus),
-                "--workers",
-                str(args.workers),
-            ],
-            check=True,
-        )
-        return
     from src.common.artifacts import records
     from src.common.logging import setup_logger
     from src.fix import (
@@ -51,16 +40,22 @@ def main():
     from src.repair.repair import run_repairs
     from src.filter import run_extraction
 
-    validation = args.output_dir / "step_02_validation"
+    validation = args.output_dir / "stage_02_validation"
     corrected = (args.corpus / "metadata/corpus_state.json").exists()
     if args.step == "pack":
         from src.archive import package_corpus
 
+        archive_path = args.output_dir / "stage_05_archive/technical_web_corpus.zip"
+        marker = archive_path.with_suffix(".done.json")
+        if marker.exists() and not args.force:
+            print(f"Archive already complete; reusing {archive_path}. Use --force to rerun.")
+            return
         package_corpus(
             args.corpus,
-            args.output_dir / "step_05_archive/technical_web_corpus.zip",
+            archive_path,
             args.workers,
         )
+        _mark_done(marker, stage="archive", archive=str(archive_path))
         return
     if corrected:
         apply_exclusions(
@@ -90,7 +85,7 @@ def main():
             args.archive,
             args.corpus,
             validation,
-            setup_logger("data", Path("logs/data.log")),
+            setup_logger("filter", args.logs_dir / "filter.log"),
             args.workers,
         )
         if args.step == "validate":
@@ -100,8 +95,13 @@ def main():
         )
     if args.step in {"validate", "repair"}:
         return
-    extraction = args.output_dir / "step_04_filtering"
-    run_extraction(args.corpus, validation, extraction, repairs, args.workers)
+    extraction = args.output_dir / "stage_04_filtering"
+    marker = extraction / "stage.done.json"
+    if marker.exists() and not args.force:
+        print(f"Filtering already complete; reusing {extraction}. Use --force to rerun.")
+    else:
+        run_extraction(args.corpus, validation, extraction, repairs, args.workers)
+        _mark_done(marker, stage="filtering", output=str(extraction))
     if corrected:
         exclusions = {
             r["doc_id"]: r["reason"]
@@ -115,11 +115,17 @@ def main():
         return
     from src.archive import package_corpus
 
+    archive_path = args.output_dir / "stage_05_archive/technical_web_corpus.zip"
+    archive_marker = archive_path.with_suffix(".done.json")
+    if archive_marker.exists() and not args.force:
+        print(f"Archive already complete; reusing {archive_path}.")
+        return
     package_corpus(
         args.corpus,
-        args.output_dir / "step_05_archive/technical_web_corpus.zip",
+        archive_path,
         args.workers,
     )
+    _mark_done(archive_marker, stage="archive", archive=str(archive_path))
 
 
 if __name__ == "__main__":

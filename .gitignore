@@ -1,6 +1,20 @@
-# Runtime outputs
+# Runtime data and outputs
+data/00_corpus/
+data/runtime/
+data/logs/
+filter/outputs/
+filter/logs/
+classical/outputs/
+classical/logs/
+neural/outputs/
+neural/logs/
+evaluation/results/
+evaluation/logs/
+evaluation/queries/
 outputs/
 logs/
+results/
+runtime/
 __pycache__/
 *.pyc
 .venv/
@@ -18,6 +32,7 @@ __pycache__/
 
 # Corpus files
 technical_web_corpus/
+common_crawl_candidates.jsonl
 *.zip
 original_corpus.zip
 recovery/
