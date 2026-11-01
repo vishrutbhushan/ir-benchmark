@@ -217,6 +217,11 @@ class BM25FScorer:
                     # Category match (medium hierarchical signal)
                     boost_multiplier += (self.hierarchical_boost * 0.5)
 
+                # Prevent non-English localized docs with short ASCII token counts from outranking English docs
+                title_str = meta.get("title", "")
+                if any("\u0600" <= ch <= "\u9fff" or "\uac00" <= ch <= "\ud7af" for ch in title_str):
+                    boost_multiplier *= 0.7
+
             final_score = base_score * boost_multiplier
             final_scores.append((doc_id, final_score, meta))
 
