@@ -1,10 +1,11 @@
 """Package the corrected working corpus for both retrieval engines."""
 
 from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
-from src.common.artifacts import records, report, digest_file
-from src.validation.paths import safe_destination
+from zipfile import ZIP_DEFLATED, ZipFile
+
+from src.common.artifacts import digest_file, records, report
 from src.fix import validate_dataset
+from src.validation.paths import safe_destination
 
 
 def package_corpus(corpus, destination, workers=4):
@@ -23,9 +24,7 @@ def package_corpus(corpus, destination, workers=4):
                 corpus / "metadata" / name, "technical_web_corpus/metadata/" + name
             )
     temporary.replace(destination)
-    stats.update(
-        zip_bytes=destination.stat().st_size, zip_sha256=digest_file(destination)
-    )
+    stats.update(zip_bytes=destination.stat().st_size, zip_sha256=digest_file(destination))
     report(
         destination.parent,
         "Corrected corpus ZIP",

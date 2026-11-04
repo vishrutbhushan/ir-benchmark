@@ -19,6 +19,21 @@ function link(text, url) {
   return node;
 }
 
+function formatCategories(cat) {
+  if (!cat) return '';
+  if (Array.isArray(cat)) return cat.join(', ');
+  if (typeof cat === 'string') {
+    try {
+      const parsed = JSON.parse(cat);
+      if (Array.isArray(parsed)) return parsed.join(', ');
+      return String(parsed);
+    } catch {
+      return cat;
+    }
+  }
+  return String(cat);
+}
+
 function updateProgress(data) {
   byId('progress').textContent = `${data.judged}/10 results labeled in this variant | ${data.pool_judged}/${data.pool_size} labeled in this query's combined pool. Labels carry across variants.`;
 }
@@ -43,7 +58,7 @@ async function loadQuery() {
   const results = data.results.map(row => {
     const article = element('article', '', 'result');
     article.append(element('h3', `${row.rank}. ${row.title}`));
-    article.append(element('div', `${row.doc_id} | ${row.technology} | ${JSON.parse(row.categories).join(', ')} | Score ${Number(row.score).toFixed(4)}`, 'meta'));
+    article.append(element('div', `${row.doc_id} | ${row.technology} | ${formatCategories(row.categories)} | Score ${Number(row.score).toFixed(4)}`, 'meta'));
     const links = element('div', '', 'links');
     links.append(link(row.url, row.url));
     if (row.saved_url) links.append(link('Saved HTML', row.saved_url));

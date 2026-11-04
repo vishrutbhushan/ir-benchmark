@@ -89,7 +89,7 @@ async function loadOptions() {
   if (!response.ok) throw Error('Search service unavailable');
   const options = await response.json();
   byId('corpus').textContent = `${options.documents.toLocaleString()} documents`;
-  const labels = {dense: 'Dense cosine', zones: 'Weighted zones', 'routed-centroid': 'Category routing'};
+  const labels = {dense: 'Dense cosine', zones: 'Weighted zones', 'routed-cluster': 'Cluster routing'};
   for (const mode of options.modes) {
     const option = element('option', labels[mode]);
     option.value = mode;

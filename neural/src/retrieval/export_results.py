@@ -63,7 +63,7 @@ def export_results(
     if len({v["id"] for v in variants}) != len(variants):
         raise ValueError("Duplicate variant ID")
     for variant in variants:
-        if variant["mode"] not in {"dense", "zones", "routed-centroid"}:
+        if variant["mode"] not in {"dense", "zones", "routed-cluster"}:
             raise ValueError("Unsupported variant")
         if variant["weights"] is not None:
             weights = variant["weights"]
@@ -141,13 +141,7 @@ def export_results(
                 for rank, index in enumerate(order, 1):
                     index = int(index)
                     doc = engine.documents[index]
-                    categories = [
-                        engine.classifier.model["class_names"][
-                            engine.classifier.model["classes"][int(c)]
-                        ]
-                        for c in engine.classifier.document_classes[index]
-                        if c >= 0
-                    ]
+                    categories = [str(engine.clusters.labels[index])]
                     rows.append(
                         dict(
                             engine="neural",
@@ -170,8 +164,8 @@ def export_results(
                     "variant": variant["id"],
                     "mode": variant["mode"],
                     "weights": variant["weights"],
-                    "route_classes": engine.config["route_classes"]
-                    if variant["mode"] == "routed-centroid"
+                    "route_clusters": engine.config["route_clusters"]
+                    if variant["mode"] == "routed-cluster"
                     else None,
                     "model_id": MODEL_ID,
                     "model_revision": MODEL_REVISION,

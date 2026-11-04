@@ -9,12 +9,24 @@ from pathlib import Path
 
 def parse_and_run():
     config_parser = argparse.ArgumentParser(add_help=False)
-    config_parser.add_argument("--config", type=Path, default=Path("config.json"))
+    repo_root = Path(__file__).resolve().parents[1]
+    default_config = repo_root / "config/pipeline.json"
+    config_parser.add_argument(
+        "--config", type=Path, default=default_config
+    )
     config_args, _ = config_parser.parse_known_args()
     os.environ["NEURAL_CONFIG"] = str(config_args.config.resolve())
     from src.common.config import load_config, default_mode
 
     settings = load_config()
+    pipeline = json.loads(config_args.config.resolve().read_text(encoding="utf-8"))
+    paths = pipeline.get("paths", {})
+    repository_root = config_args.config.resolve().parents[1]
+
+    def configured_path(key, fallback):
+        value = paths.get(key, fallback)
+        path = Path(value)
+        return path if path.is_absolute() else repository_root / path
     parser = argparse.ArgumentParser(description=__doc__, parents=[config_parser])
     parser.add_argument(
         "--step",
@@ -35,12 +47,23 @@ def parse_and_run():
         default="all",
     )
     parser.add_argument(
-        "--corpus-dir", type=Path, default=Path("../data/00_corpus")
+        "--corpus-dir",
+        type=Path,
+        default=configured_path("corpus_dir", "../data/00_corpus"),
     )
     parser.add_argument(
         "--corpus-zip",
         type=Path,
-        default=Path("../filter/outputs/stage_05_archive/technical_web_corpus.zip"),
+        default=configured_path(
+            "filtered_archive",
+            "../filter/outputs/stage_05_archive/technical_web_corpus.zip",
+        ),
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=configured_path("neural_output_dir", "outputs"),
+        help="Root for this run's numbered outputs and markers.",
     )
     parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
@@ -51,7 +74,7 @@ def parse_and_run():
     parser.add_argument("--export-dir", type=Path)
     parser.add_argument(
         "--mode",
-        choices=["dense", "zones", "routed-centroid"],
+        choices=["dense", "zones", "routed-cluster"],
         default=default_mode(settings),
     )
     parser.add_argument("--host", default="127.0.0.1")
@@ -66,8 +89,10 @@ def parse_and_run():
 
 
 def run(args, parser):
-    root = Path("outputs")
+    root = args.output_dir
     from src.common.logging import run_stage
+    from src.common.artifacts import digest_file
+    from src.common.config import load_config
 
     markers = {
         stage: root / f"step_{stage}_{name}" / "stage.done"
@@ -76,14 +101,57 @@ def run(args, parser):
             "02": "windows",
             "03": "embeddings",
             "04": "weights",
-            "05": "classification",
+            "05": "clustering",
             "06": "routing",
             "07": "verification",
         }.items()
     }
 
     def run_if_needed(stage, function, *stage_args):
-        if markers[stage].exists() and not args.force:
+        complete = markers[stage].exists()
+        if stage == "04":
+            model_path = root / "step_04_weights/model.json"
+            feature_path = Path("results/step_04_weights/features/training_features.csv")
+            complete = complete and model_path.exists() and feature_path.exists()
+            if complete:
+                model = json.loads(model_path.read_text(encoding="utf-8"))
+                repository_root = Path(__file__).resolve().parents[1]
+                settings = load_config()
+                inputs = {
+                    "queries_csv_sha256": repository_root
+                    / settings["weight_queries"],
+                    "judgments_csv_sha256": repository_root
+                    / settings["weight_judgments"],
+                }
+                complete = all(
+                    model.get(key) == digest_file(path)
+                    for key, path in inputs.items()
+                )
+        if stage == "05":
+            model_path = root / "step_05_clustering/model.json"
+            complete = complete and model_path.exists() and (
+                root / "step_05_clustering/zone_vectors.npz"
+            ).exists()
+            if complete:
+                model = json.loads(model_path.read_text())
+                complete = (
+                    model.get("schema") == "unsupervised-zone-kmeans-v1"
+                )
+        if stage == "06":
+            model_path = root / "step_06_routing/model.json"
+            complete = complete and model_path.exists()
+            if complete:
+                complete = json.loads(model_path.read_text()).get(
+                    "schema"
+                ) == "cluster-postings-v1"
+        if stage == "07":
+            report_path = Path("results/step_07_verification/summary.json")
+            complete = complete and report_path.exists()
+            if complete:
+                complete = json.loads(report_path.read_text()).get(
+                    "all_cluster_row_lists_checked", False
+                )
+        if complete and not args.force:
             print(f"Stage {stage} already complete; reusing {markers[stage].parent}.")
             return
         run_stage(stage, function, *stage_args)
@@ -120,14 +188,9 @@ def run(args, parser):
 
         audit_learning_data(root)
         return
-    if args.step == "04":
-        from src.learning.step_04_weights import configure_weights
-
-        run_if_needed("04", configure_weights, root)
-        return
     from src.retrieval.step_08_search import SearchEngine
 
-    learning = args.step in {"all", "05", "06"}
+    learning = args.step in {"all", "04", "05", "06"}
     import time
 
     startup = time.perf_counter()
@@ -159,18 +222,24 @@ def run(args, parser):
             from src.learning.step_04_weights import configure_weights
 
             run_if_needed("04", configure_weights, root, engine)
-        if args.step in {"all", "05"}:
-            from src.learning.step_05_classification import (
-                train_classifiers,
-                Classifiers,
-            )
+        if args.step == "04":
+            from src.learning.step_04_weights import configure_weights
 
-            run_if_needed("05", train_classifiers, root, engine)
-            engine.classifier = Classifiers(root)
+            run_if_needed("04", configure_weights, root, engine)
+            return
+        if args.step in {"all", "05"}:
+            from src.learning.step_05_clustering import train_clusters, Clusters
+
+            run_if_needed("05", train_clusters, root, engine)
+            engine.clusters = Clusters(root)
             if args.step == "05":
                 return
         if args.step in {"all", "06"}:
             from src.learning.step_06_routing import tune_routing
+            if engine.clusters is None:
+                from src.learning.step_05_clustering import Clusters
+
+                engine.clusters = Clusters(root)
 
             run_if_needed("06", tune_routing, root, engine)
             if args.step == "06":

@@ -7,6 +7,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from config import load_pipeline_config, resolve_path
+
 
 def _mark_done(path: Path, **data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -14,13 +17,20 @@ def _mark_done(path: Path, **data) -> None:
 
 
 def main() -> None:
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument("--config", type=Path, default=Path("../config/pipeline.json"))
+    config_args, _ = config_parser.parse_known_args()
+    config = load_pipeline_config(config_args.config)
+    settings = config["data"]
+    paths = config["paths"]
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, default=config_args.config)
     parser.add_argument("--step", choices=["all", "collect", "validate", "repair"], default="all")
-    parser.add_argument("--archive", type=Path, default=Path("runtime/original_corpus.zip"))
-    parser.add_argument("--corpus", type=Path, default=Path("00_corpus"))
+    parser.add_argument("--archive", type=Path, default=resolve_path(settings["archive"]))
+    parser.add_argument("--corpus", type=Path, default=resolve_path(paths["corpus_dir"]))
     parser.add_argument("--candidates", type=Path, default=Path("runtime/common_crawl_candidates.jsonl"))
     parser.add_argument("--output-dir", type=Path, default=Path("runtime/collection"))
-    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--force", action="store_true", help="Re-run completed collection stages.")
     args = parser.parse_args()
     if args.workers < 1:

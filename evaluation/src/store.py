@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import threading
+import random
 from zipfile import ZipFile
 from .common import ROOT, COLUMNS, read_csv, write_csv, write_json
 from .metrics import calculate
@@ -23,6 +24,9 @@ class Store:
         ):
             raise ValueError("Need at least one uniquely identified query")
         texts = {q["query_id"]: q["query_text"] for q in self.queries}
+        self.query_types = {
+            q["query_id"]: q.get("query_type", "unspecified") for q in self.queries
+        }
         self.runs = {}
         self.documents = {}
         self.pool = set()
@@ -173,9 +177,26 @@ class Store:
                 if path.exists():
                     rows.extend(read_csv(path))
             return rows, list(rows[0]) if rows else []
-        details, summary = calculate(self.runs, self.labels)
+        details, summary = calculate(self.runs, self.labels, self.query_types)
         rows = summary if kind == "metrics" else details
         return rows, list(rows[0]) if rows else []
+
+    def apply_synthetic_random(self, seed):
+        rng = random.Random(seed)
+        for key in self.pool:
+            self.labels[key] = rng.randint(0, 1)
+            self.updated[key] = "synthetic_random_relevance"
+        return [
+            {
+                "query_id": query_id,
+                "query_type": self.query_types.get(query_id, "unspecified"),
+                "doc_id": doc_id,
+                "relevant": self.labels[(query_id, doc_id)],
+                "label_source": "synthetic_random_relevance",
+                "seed": seed,
+            }
+            for query_id, doc_id in sorted(self.pool)
+        ]
 
     def html(self, doc_id):
         if doc_id not in self.paths:

@@ -65,7 +65,7 @@ def report(directory, title, stats, distributions):
     if relative is not None:
         if relative.parts[0] not in {
             "step_04_weights",
-            "step_05_classification",
+            "step_05_clustering",
             "step_06_routing",
             "step_07_verification",
         }:

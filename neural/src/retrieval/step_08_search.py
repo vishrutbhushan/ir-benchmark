@@ -17,10 +17,10 @@ from src.common.artifacts import (
 )
 from src.common.config import load_config, default_mode
 from src.common.zones import ZONES
-from src.common.encoder import Encoder
+from src.common.encoder import Encoder, download_model
 from src.retrieval.scoring import aggregate_documents, weighted_zone_scores
 
-MODES = ("dense", "zones", "routed-centroid")
+MODES = ("dense", "zones", "routed-cluster")
 
 
 class SearchEngine:
@@ -69,6 +69,7 @@ class SearchEngine:
         ):
             raise RuntimeError("Window settings changed; run steps 02 and 03")
         self.encoder = Encoder(self.root / "step_03_embeddings/model", device)
+        self.zone_encoder = None
         self.torch, self.device = self.encoder.torch, device
         self.document_db = connect(self.root / "step_01_extraction/corpus.sqlite", True)
         self.documents = [
@@ -115,15 +116,22 @@ class SearchEngine:
         self.weights = np.array(
             [self.config["zone_weights"][z] for z in ZONES], dtype=np.float32
         )
-        self.classifier = None
-        if (self.root / "step_05_classification/model.json").exists():
-            from src.learning.step_05_classification import Classifiers
+        learned_model = self.root / "step_04_weights/model.json"
+        if learned_model.exists():
+            learned = json.loads(learned_model.read_text(encoding="utf-8"))
+            if (
+                learned.get("schema") == "query-balanced-zone-ridge-v1"
+                and learned.get("index_fingerprint") == self.summary["fingerprint"]
+                and learned.get("zones") == list(ZONES)
+            ):
+                values = np.asarray(learned["weights"], dtype=np.float32)
+                if values.shape == (len(ZONES),) and np.isclose(values.sum(), 1):
+                    self.weights = values
+        self.clusters = None
+        if (self.root / "step_05_clustering/model.json").exists():
+            from src.learning.step_05_clustering import Clusters
 
-            try:
-                self.classifier = Classifiers(self.root)
-            except RuntimeError:
-                if require_learning:
-                    raise
+            self.clusters = Clusters(self.root)
         self.routing = (
             json.loads((self.root / "step_06_routing/model.json").read_text())
             if (self.root / "step_06_routing/model.json").exists()
@@ -132,11 +140,10 @@ class SearchEngine:
         self.routing_rows = {}
         if self.routing:
             valid = (
-                self.routing.get("schema") == "category-postings-v2"
+                self.routing.get("schema") == "cluster-postings-v1"
                 and self.routing["index_fingerprint"] == self.summary["fingerprint"]
-                and self.classifier is not None
-                and self.routing.get("classifier_sha256")
-                == digest_file(self.root / "step_05_classification/model.json")
+                and self.clusters is not None
+                and self.routing.get("clusters") == self.clusters.model["clusters"]
             )
             if valid:
                 with np.load(self.root / "step_06_routing/rows.npz") as saved:
@@ -144,7 +151,7 @@ class SearchEngine:
             else:
                 self.routing = None
         if require_learning and (
-            self.weights is None or self.classifier is None or self.routing is None
+            self.weights is None or self.clusters is None or self.routing is None
         ):
             raise RuntimeError("Learning stages are incomplete; run --step all")
         self.lock, self.cache, self.query_cache = (
@@ -152,6 +159,32 @@ class SearchEngine:
             OrderedDict(),
             OrderedDict(),
         )
+
+    def zone_document_vectors(self):
+        """Construct document clustering vectors directly from title and headings passage embeddings."""
+        from src.learning.step_05_clustering import CLUSTERING_ZONES
+        n_docs = len(self.documents)
+        dim = self.encoder.dimension
+        vectors = np.zeros((n_docs, len(CLUSTERING_ZONES), dim), dtype=np.float32)
+        present = np.zeros((n_docs, len(CLUSTERING_ZONES)), dtype=bool)
+
+        for col, zone in enumerate(CLUSTERING_ZONES):
+            if zone not in self.matrices:
+                continue
+            matrix = self.matrices[zone]
+            mapping = self.mappings[zone]
+            counts = np.zeros(n_docs, dtype=np.int32)
+            for p_idx, doc_idx in enumerate(mapping):
+                vectors[doc_idx, col] += matrix[p_idx]
+                counts[doc_idx] += 1
+            has_zone = counts > 0
+            vectors[has_zone, col] /= counts[has_zone, None]
+            norms = np.linalg.norm(vectors[has_zone, col], axis=1, keepdims=True)
+            valid = (norms.squeeze() > 1e-12)
+            vectors[has_zone, col][valid] /= norms[valid]
+            present[has_zone, col] = True
+
+        return vectors, present
 
     def _query(self, query):
         if query not in self.query_cache:
@@ -161,6 +194,9 @@ class SearchEngine:
             if len(self.query_cache) > self.config["query_cache_size"]:
                 self.query_cache.popitem(last=False)
         return self.query_cache[query]
+
+    def _zone_query(self, query):
+        return self._query(query)
 
     def zone_scores(self, vector, allowed=None, selected_rows=None):
         n = len(self.documents)
@@ -220,21 +256,17 @@ class SearchEngine:
         allowed = np.ones(len(self.documents), dtype=bool)
         selected = []
         selected_rows = None
-        if mode == "routed-centroid":
-            if self.classifier is None or self.routing is None:
-                raise RuntimeError("Train centroids and category row lists first")
-            class_scores = self.classifier.query_scores(query, q)
-            k = route_k if route_k is not None else self.config["route_classes"]
-            if not 1 <= k <= len(class_scores):
-                raise ValueError("Category count must be between 1 and the class count")
-            memberships = self.classifier.document_classes
-            possible = set(memberships[allowed].ravel()) - {-1}
+        if mode == "routed-cluster":
+            if self.clusters is None or self.routing is None:
+                raise RuntimeError("Train clusters and cluster row lists first")
+            cluster_scores = self.clusters.query_scores(self._zone_query(query.strip()))
+            k = route_k if route_k is not None else self.config["route_clusters"]
+            if not 1 <= k <= len(cluster_scores):
+                raise ValueError("Cluster count must be between 1 and the cluster count")
             selected = [
-                int(c)
-                for c in np.argsort(-class_scores, kind="stable")
-                if c in possible
+                int(c) for c in np.argsort(-cluster_scores, kind="stable")
             ][:k]
-            allowed &= np.isin(memberships, selected).any(axis=1)
+            allowed &= np.isin(self.clusters.labels, selected)
             selected_rows = {
                 z: np.unique(
                     np.concatenate([self.routing_rows[f"{c}_{z}"] for c in selected])
@@ -250,7 +282,7 @@ class SearchEngine:
         else:
             zones, winners, scanned = self.zone_scores(q, allowed, selected_rows)
         if mode == "dense" or (
-            mode == "routed-centroid" and not self.config["zone_weighting"]
+            mode == "routed-cluster" and not self.config["zone_weighting"]
         ):
             scores = zones.max(axis=1)
             winning_zone = np.argmax(zones, axis=1)
@@ -273,7 +305,7 @@ class SearchEngine:
             "contributions": contributions,
             "scanned_vectors": scanned,
             "candidate_documents": int(allowed.sum()),
-            "selected_classes": selected,
+            "selected_clusters": selected,
         }
 
     def search(
@@ -315,15 +347,11 @@ class SearchEngine:
                             for k, v in self.documents[index].items()
                             if k != "category"
                         },
-                        "content_categories": [
-                            self.classifier.model["class_names"][
-                                self.classifier.model["classes"][int(c)]
-                            ]
-                            for c in self.classifier.document_classes[index]
-                            if c >= 0
-                        ]
-                        if self.classifier is not None
-                        else [],
+                        "cluster": (
+                            int(self.clusters.labels[index])
+                            if self.clusters is not None
+                            else None
+                        ),
                         "document_url": f"/document/{self.documents[index]['doc_id']}",
                         "rank": position + 1,
                         "score": float(ranking["scores"][index]),
@@ -360,7 +388,7 @@ class SearchEngine:
                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
                 "scanned_vectors": ranking["scanned_vectors"],
                 "candidate_documents": ranking["candidate_documents"],
-                "selected_classes": ranking["selected_classes"],
+                "selected_clusters": ranking["selected_clusters"],
             }
 
     def warmup(self):
@@ -375,4 +403,6 @@ class SearchEngine:
             db.close()
         self.cache.clear()
         self.query_cache.clear()
+        if self.zone_encoder is not None:
+            del self.zone_encoder
         self.resident.clear()

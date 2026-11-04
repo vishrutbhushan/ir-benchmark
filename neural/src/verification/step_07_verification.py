@@ -11,7 +11,8 @@ from src.common.zones import ZONES
 from src.verification.integrity import audit_zone_coverage, audit_vector_mapping
 from src.retrieval.scoring import aggregate_documents
 from src.retrieval.step_08_search import MODES
-from src.common.paths import NEURAL_WEIGHTS
+from src.common.config import load_config
+from src.common.paths import REPOSITORY_ROOT
 
 
 def verify(engine, root):
@@ -20,21 +21,19 @@ def verify(engine, root):
     from src.verification.learning_audit import audit_learning_data
 
     audit_learning_data(root)
-    assignments = engine.classifier.document_classes
-    if (
-        assignments.shape != (len(engine.documents), 2)
-        or np.any(assignments[:, 0] < 0)
-        or np.any(assignments >= len(engine.classifier.centroids))
-        or np.any(assignments[:, 0] == assignments[:, 1])
-    ):
-        raise RuntimeError("Invalid full-corpus content memberships")
-    for c in range(len(engine.classifier.centroids)):
-        allowed = (assignments == c).any(axis=1)
+    learning_data_audit = "passed"
+    assignments = engine.clusters.labels
+    if assignments.shape != (len(engine.documents),) or np.any(
+        assignments < 0
+    ) or np.any(assignments >= engine.clusters.model["clusters"]):
+        raise RuntimeError("Invalid full-corpus cluster assignments")
+    for c in range(engine.clusters.model["clusters"]):
+        allowed = assignments == c
         for z in ZONES:
             expected = np.flatnonzero(allowed[engine.mappings[z]])
             if not np.array_equal(expected, engine.routing_rows[f"{c}_{z}"]):
                 raise RuntimeError(
-                    "Category row lists do not match document memberships"
+                    "Cluster row lists do not match document assignments"
                 )
     coverage = audit_zone_coverage(engine.document_db, engine.stores)
     q = engine._query("Python asynchronous task cancellation")
@@ -67,13 +66,15 @@ def verify(engine, root):
         errors[zone] = error
         norms[zone] = [low, high]
         hashes[zone] = digest_file(root / f"step_03_embeddings/{zone}/vectors.npy")
-    development_path = NEURAL_WEIGHTS / "training.csv"
+    settings = load_config()
+    development_path = Path(settings["weight_queries"])
+    if not development_path.is_absolute():
+        development_path = REPOSITORY_ROOT / development_path
     with development_path.open(newline="", encoding="utf-8-sig") as stream:
         by_query = {
             r["query_id"]: {
                 "query_id": r["query_id"],
                 "query_text": r["query_text"],
-                "category": r["query_category"],
             }
             for r in csv.DictReader(stream)
         }
@@ -116,8 +117,8 @@ def verify(engine, root):
     stats = {
         "index_fingerprint": engine.summary["fingerprint"],
         "documents": len(engine.documents),
-        "all_category_row_lists_checked": True,
-        "all_document_memberships_checked": True,
+        "all_cluster_row_lists_checked": True,
+        "all_document_assignments_checked": True,
         "windows": sum(len(m) for m in engine.matrices.values()),
         "coverage": coverage,
         "vectors_sha256": hashes,
@@ -126,6 +127,7 @@ def verify(engine, root):
         "query_runs": counts,
         "all_vector_document_mappings_checked": True,
         "cached_pagination_checked": True,
+        "learning_data_audit": learning_data_audit,
         "development_csv_sha256": digest_file(development_path),
         "query_scope": "Development queries for engineering checks; benchmark queries belong to evaluation branch",
         "seconds": round(time.perf_counter() - started, 2),

@@ -3,8 +3,12 @@
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from config import load_pipeline_config, resolve_path
 
 
 def _mark_done(path: Path, **data) -> None:
@@ -13,7 +17,16 @@ def _mark_done(path: Path, **data) -> None:
 
 
 def main():
+    config_parser = argparse.ArgumentParser(add_help=False)
+    repo_root = Path(__file__).resolve().parents[1]
+    default_config = repo_root / "config/pipeline.json"
+    config_parser.add_argument("--config", type=Path, default=default_config)
+    config_args, _ = config_parser.parse_known_args()
+    config = load_pipeline_config(config_args.config)
+    settings = config["filter"]
+    paths = config["paths"]
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, default=config_args.config)
     parser.add_argument(
         "--step",
         choices=["all", "validate", "repair", "filter", "pack"],
@@ -22,12 +35,12 @@ def main():
     parser.add_argument(
         "--archive",
         type=Path,
-        default=Path("../data/00_corpus/technical_web_corpus.zip"),
+        default=resolve_path(paths["source_archive"]),
     )
-    parser.add_argument("--corpus", type=Path, default=Path("../data/00_corpus"))
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs"))
-    parser.add_argument("--logs-dir", type=Path, default=Path("logs"))
-    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--corpus", type=Path, default=resolve_path(paths["corpus_dir"]))
+    parser.add_argument("--output-dir", type=Path, default=resolve_path(paths["filter_output_dir"]))
+    parser.add_argument("--logs-dir", type=Path, default=resolve_path(paths["filter_logs_dir"]))
+    parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     args = parser.parse_args()
     if args.workers < 1:

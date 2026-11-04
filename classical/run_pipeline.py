@@ -6,8 +6,8 @@ A single CLI entrypoint to trigger any pipeline phase step with hierarchical
 outputs and logging.
 
 Usage examples:
-    python run_pipeline.py --phase 0 --sample-size 1000
-    python run_pipeline.py --phase 1 --max-docs 500
+    python run_pipeline.py --phase 2
+    python run_pipeline.py --phase 3
     python run_pipeline.py --phase all
 """
 
@@ -18,6 +18,9 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from config import load_pipeline_config, resolve_path
+
 from src.classical_preprocessing.tokenization_runner import run_tokenization
 from src.retrieval.classic_ir_runner import run_classic_ir
 from src.utils.logging_utils import setup_logger
@@ -25,6 +28,14 @@ from src.utils.visualizer import generate_interactive_dashboard_html
 
 
 def parse_args() -> argparse.Namespace:
+    config_parser = argparse.ArgumentParser(add_help=False)
+    repo_root = Path(__file__).resolve().parents[1]
+    default_config = repo_root / "config/pipeline.json"
+    config_parser.add_argument("--config", type=Path, default=default_config)
+    config_args, _ = config_parser.parse_known_args()
+    config = load_pipeline_config(config_args.config)
+    settings = config["classical"]
+    paths = config["paths"]
     parser = argparse.ArgumentParser(
         description="Master runner for Information Retrieval Benchmark pipeline phases."
     )
@@ -34,29 +45,30 @@ def parse_args() -> argparse.Namespace:
         default="2",
         help="Pipeline phase to execute (2=Tokenization, 3=Classic IR BM25, all=both phases).",
     )
-    parser.add_argument("--records-path", type=Path, default=Path("../filter/outputs/stage_04_filtering/structured_records.jsonl"), help="Structured records produced by filter.")
+    parser.add_argument("--config", type=Path, default=config_args.config)
+    parser.add_argument("--records-path", type=Path, default=resolve_path(paths["classical_records"]), help="Structured records produced by filter.")
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("outputs"),
+        default=resolve_path(paths["classical_output_dir"]),
         help="Root directory for structured outputs.",
     )
     parser.add_argument(
         "--logs-dir",
         type=Path,
-        default=Path("logs"),
+        default=resolve_path(paths["classical_logs_dir"]),
         help="Root directory for hierarchical logs.",
     )
     parser.add_argument(
         "--max-docs",
         type=int,
-        default=None,
+        default=settings["max_docs"],
         help="Maximum documents to extract in Phase 1 (useful for test runs; omit for full corpus).",
     )
     parser.add_argument(
         "--min-char-length",
         type=int,
-        default=200,
+        default=settings["min_char_length"],
         help="Minimum body text character length threshold.",
     )
     parser.add_argument(
@@ -67,49 +79,49 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--queries-path",
         type=Path,
-        default=Path("../evaluation/data/queries.jsonl"),
+        default=resolve_path(paths["queries"]),
         help="Path to queries.jsonl file for retrieval benchmarking.",
     )
     parser.add_argument(
         "--k1",
         type=float,
-        default=1.2,
+        default=settings["k1"],
         help="BM25 term frequency saturation parameter k1 (default: 1.2).",
     )
     parser.add_argument(
         "--b",
         type=float,
-        default=0.75,
+        default=settings["b"],
         help="BM25 document length normalization parameter b (default: 0.75).",
     )
     parser.add_argument(
         "--top-k",
         type=int,
-        default=20,
+        default=settings["top_k"],
         help="Number of top retrieved results per query (default: 20).",
     )
     parser.add_argument(
         "--scorer",
         choices=["bm25", "bm25f", "both"],
-        default="both",
+        default=settings["scorer"],
         help="Retrieval engine to execute: bm25 (flat), bm25f (zone-weighted hierarchical), or both (default: both).",
     )
     parser.add_argument(
         "--hierarchical-boost",
         type=float,
-        default=0.25,
+        default=settings["hierarchical_boost"],
         help="Taxonomy matching boost factor for BM25F (default: 0.25).",
     )
     parser.add_argument(
         "--routing-mode",
         choices=["hybrid", "hierarchical_first", "tiered"],
-        default="hybrid",
+        default=settings["routing_mode"],
         help="Hierarchical query routing mode: 'hybrid' (soft boost), 'hierarchical_first' (category sub-index routing), or 'tiered' (champion list candidate pruning).",
     )
     parser.add_argument(
         "--workers",
         type=int,
-        default=8,
+        default=settings["workers"],
         help="Number of parallel worker processes for Phase 1 extraction and Phase 2 tokenization (default: 8).",
     )
     parser.add_argument("--force", action="store_true", help="Re-run completed stages.")

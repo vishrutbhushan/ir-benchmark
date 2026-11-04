@@ -4,6 +4,8 @@
 import argparse
 import html
 import json
+import logging
+import os
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -14,41 +16,69 @@ ROOT = Path(__file__).resolve().parent
 
 
 class SearchRuntime:
-    def __init__(self):
+    def __init__(self, neural_output, corpus_dir, corpus_zip):
         self.classical = {}
         self.neural = None
+        self.neural_output = neural_output
+        self.corpus_dir = corpus_dir
+        self.corpus_zip = corpus_zip
 
     def _load_classical(self):
         if self.classical:
             return
         classical = ROOT / "classical"
-        sys.path.insert(0, str(classical))
-        from src.retrieval.bm25_scorer import BM25FScorer, BM25Scorer
-        from src.retrieval.inverted_index import InvertedIndex
-        from src.retrieval.query_processor import QueryProcessor
+        # Temporarily clear any conflicting src modules
+        saved_src = {k: v for k, v in sys.modules.items() if k == "src" or k.startswith("src.")}
+        for k in list(saved_src.keys()):
+            del sys.modules[k]
+        if str(classical) not in sys.path:
+            sys.path.insert(0, str(classical))
+        try:
+            from src.retrieval.bm25_scorer import BM25Scorer
+            from src.retrieval.bm25f_scorer import BM25FScorer
+            from src.retrieval.inverted_index import InvertedIndex
+            from src.retrieval.query_processor import QueryProcessor
 
-        index_path = classical / "outputs/stage_03_retrieval/inverted_index.json"
-        if not index_path.exists():
-            raise RuntimeError("Classical index is unavailable; run classical/run_pipeline.py first")
-        index = InvertedIndex.load(index_path)
-        self.classical = {
-            "bm25": QueryProcessor(index, BM25Scorer(index)),
-            "bm25f": QueryProcessor(index, BM25FScorer(index)),
-        }
+            index_path = classical / "outputs/stage_03_retrieval/inverted_index.json"
+            if not index_path.exists():
+                raise RuntimeError("Classical index is unavailable; run classical/run_pipeline.py first")
+            index = InvertedIndex.load(index_path)
+            self.classical = {
+                "bm25": QueryProcessor(index, BM25Scorer(index)),
+                "bm25f": QueryProcessor(index, BM25FScorer(index)),
+            }
+        finally:
+            if str(classical) in sys.path:
+                sys.path.remove(str(classical))
+            for k in list(sys.modules.keys()):
+                if k == "src" or k.startswith("src."):
+                    del sys.modules[k]
+            sys.modules.update(saved_src)
 
     def _load_neural(self):
         if self.neural is not None:
             return
         neural = ROOT / "neural"
-        sys.path.insert(0, str(neural))
-        from src.retrieval.step_08_search import SearchEngine
+        saved_src = {k: v for k, v in sys.modules.items() if k == "src" or k.startswith("src.")}
+        for k in list(saved_src.keys()):
+            del sys.modules[k]
+        if str(neural) not in sys.path:
+            sys.path.insert(0, str(neural))
+        try:
+            os.environ.setdefault("NEURAL_CONFIG", str(ROOT / "config/pipeline.json"))
+            import torch
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            from src.retrieval.step_08_search import SearchEngine
 
-        self.neural = SearchEngine(
-            neural / "outputs",
-            "cpu",
-            ROOT / "data/00_corpus",
-            corpus_zip=ROOT / "filter/outputs/stage_05_archive/technical_web_corpus.zip",
-        )
+            self.neural = SearchEngine(
+                self.neural_output,
+                device,
+                self.corpus_dir,
+                corpus_zip=self.corpus_zip,
+            )
+        finally:
+            # Keep neural in sys.path/sys.modules for SearchEngine operations
+            pass
 
     def search(self, method, query):
         started = time.perf_counter()
@@ -58,8 +88,8 @@ class SearchRuntime:
             rows = payload["results"]
         else:
             self._load_neural()
-            mode = "routed-centroid" if method == "neural-routed" else "dense"
-            rows = self.neural.search(query, mode=mode)["results"]
+            mode = "routed-cluster" if method == "neural-routed" else "dense"
+            rows = self.neural.search(query, mode=mode, page_size=10)["results"]
         return {
             "method": method,
             "query": query,
@@ -81,26 +111,45 @@ class SearchRuntime:
         }
 
 
-def serve(host, port):
-    runtime = SearchRuntime()
+def serve(host, port, neural_output, corpus_dir, corpus_zip):
+    print("Preloading search engines into memory...", flush=True)
+    runtime = SearchRuntime(neural_output, corpus_dir, corpus_zip)
+    print("  [1/2] Loading Classical inverted index into memory...", flush=True)
+    runtime._load_classical()
+    print("  [2/2] Loading Neural search engine & model weights into memory...", flush=True)
+    runtime._load_neural()
+    print("  Warming up search caches...", flush=True)
+    if runtime.neural is not None:
+        runtime.neural.warmup()
+    print("Ready! All search engines are resident in memory.\n", flush=True)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             print(f"[search-ui] {fmt % args}", flush=True)
 
         def respond(self, payload, status=200, content_type="application/json"):
-            body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
-            self.send_response(status)
-            self.send_header("Content-Type", content_type + "; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.send_header("X-Content-Type-Options", "nosniff")
-            self.end_headers()
-            self.wfile.write(body)
+            try:
+                body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
+                self.send_response(status)
+                self.send_header("Content-Type", content_type + "; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("X-Content-Type-Options", "nosniff")
+                self.end_headers()
+                self.wfile.write(body)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
         def do_GET(self):
             parsed = urlsplit(self.path)
             if parsed.path == "/":
                 self.respond(UI.encode(), content_type="text/html")
+                return
+            if parsed.path == "/favicon.ico":
+                try:
+                    self.send_response(204)
+                    self.end_headers()
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
                 return
             if parsed.path == "/api/search":
                 values = parse_qs(parsed.query)
@@ -112,6 +161,7 @@ def serve(host, port):
                 try:
                     self.respond(runtime.search(method, query))
                 except (RuntimeError, ValueError, FileNotFoundError) as error:
+                    logging.exception("Search request failed")
                     self.respond({"error": str(error)}, 503)
                 return
             self.send_error(404)
@@ -141,7 +191,7 @@ article{border-top:1px solid #ddd;padding:16px 0}small{color:#5d6d7e}a{color:#1f
 <select id="method"><option value="bm25">Classical: Flat BM25</option>
 <option value="bm25f">Classical: Hierarchical BM25F</option>
 <option value="neural-dense">Neural: Dense Cosine</option>
-<option value="neural-routed">Neural: Routed-Centroid</option></select>
+<option value="neural-routed">Neural: Routed Cluster</option></select>
 <button>Search</button></form><p id="status"></p><main id="results"></main>
 <script>
 form.onsubmit=async e=>{e.preventDefault();status.textContent="Searching...";results.innerHTML="";
@@ -159,5 +209,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--neural-output", type=Path, default=ROOT / "neural/outputs")
+    parser.add_argument("--corpus-dir", type=Path, default=ROOT / "data/00_corpus")
+    parser.add_argument(
+        "--corpus-zip",
+        type=Path,
+        default=ROOT / "filter/outputs/stage_05_archive/technical_web_corpus.zip",
+    )
     args = parser.parse_args()
-    serve(args.host, args.port)
+    serve(args.host, args.port, args.neural_output, args.corpus_dir, args.corpus_zip)

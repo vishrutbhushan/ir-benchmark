@@ -23,7 +23,8 @@ def compute_ndcg(relevances, k=None):
     return dcg / ideal_dcg if ideal_dcg else 0.0
 
 
-def calculate(runs, labels):
+def calculate(runs, labels, query_types=None):
+    query_types = query_types or {}
     pools = defaultdict(set)
     for rows in runs.values():
         for row in rows:
@@ -44,6 +45,7 @@ def calculate(runs, labels):
                 engine=engine,
                 variant=variant,
                 query_id=qid,
+                query_type=query_types.get(qid, "unspecified"),
                 pool_size=len(pool),
                 pool_judged=sum(v is not None for v in pool_values),
                 pool_relevant=relevant if complete else None,
@@ -102,6 +104,7 @@ def calculate(runs, labels):
         result = dict(
             engine=engine,
             variant=variant,
+            query_type="all",
             queries=len(rows),
             complete_pools=sum(r["pool_complete"] for r in rows),
         )
@@ -118,4 +121,34 @@ def calculate(runs, labels):
                 else None
             )
         summary.append(result)
+    for engine, variant in runs:
+        for query_type in sorted(set(query_types.values())):
+            rows = [
+                r for r in details
+                if r["engine"] == engine
+                and r["variant"] == variant
+                and r["query_type"] == query_type
+            ]
+            if not rows:
+                continue
+            result = dict(
+                engine=engine,
+                variant=variant,
+                query_type=query_type,
+                queries=len(rows),
+                complete_pools=sum(r["pool_complete"] for r in rows),
+            )
+            for name in METRICS:
+                values = [r[name] for r in rows]
+                output = (
+                    "pooled_MAP@10"
+                    if name == "pooled_ap@10"
+                    else ("MRR@10" if name == "rr@10" else name)
+                )
+                result[output] = (
+                    sum(values) / len(values)
+                    if values and all(v is not None for v in values)
+                    else None
+                )
+            summary.append(result)
     return details, summary

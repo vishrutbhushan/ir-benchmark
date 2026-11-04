@@ -52,6 +52,12 @@ python run_evaluation.py --metrics
 
 cd ..
 python run_search_ui.py
+
+# For any alternate corpus, point the UI at that run's outputs and corpus:
+python run_search_ui.py \
+  --neural-output /path/to/run/neural/outputs \
+  --corpus-dir /path/to/run/corpus \
+  --corpus-zip /path/to/run/corpus.zip
 ```
 
 The shared archive is
@@ -68,9 +74,17 @@ The benchmark suite contains ten natural-language developer queries in
 `data_inputs/benchmark_queries.jsonl`. Evaluation starts with pending result
 families when exports have not yet been generated.
 
+## Configuration and architecture
+
+Shared pipeline parameters live in [`config/pipeline.json`](config/pipeline.json);
+machine-specific overrides can start from [`.env.example`](.env.example).
+The concise system diagram and stage responsibilities are in
+[`ARCHITECTURE.md`](ARCHITECTURE.md). Neural embedding defaults to CUDA; use
+`--device cpu` only for an intentional CPU run.
+
 ## Git and data policy
 
 `data/00_corpus/`, runtime queries, archives, outputs, indexes, databases,
 vectors, model files, logs, and evaluation exports are ignored by Git. Do not
 force-add them. Only source code, documentation, configuration, judgments, and
-small training inputs belong in commits.
+focused zone-weight inputs belong in commits.

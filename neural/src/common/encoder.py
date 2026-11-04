@@ -4,16 +4,18 @@ from __future__ import annotations
 from src.common.artifacts import MODEL_ID, MODEL_REVISION, QUERY_INSTRUCTION
 
 
-def download_model(path):
+def download_model(path, model_id=None, revision=None, expected_sha256=None):
     from pathlib import Path
     import json
-    from src.common.artifacts import digest_file, write_json
+    from src.common.artifacts import digest_file, write_json, MODEL_ID, MODEL_REVISION
+    model_id = model_id or MODEL_ID
+    revision = revision or MODEL_REVISION
 
     path = Path(path)
     manifest = path / "verified_files.json"
     if manifest.exists():
         saved = json.loads(manifest.read_text())
-        if saved.get("revision") == MODEL_REVISION and all(
+        if saved.get("model") == model_id and saved.get("revision") == revision and all(
             (path / name).exists() and digest_file(path / name) == sha
             for name, sha in saved["files"].items()
         ):
@@ -21,16 +23,18 @@ def download_model(path):
     from huggingface_hub import snapshot_download
 
     snapshot_download(
-        MODEL_ID,
-        revision=MODEL_REVISION,
+        model_id,
+        revision=revision,
         allow_patterns=["*.json", "*.txt", "*.safetensors"],
         local_dir=path,
         max_workers=8,
     )
     from src.common.config import load_config
 
-    expected = load_config()["model_weights_sha256"]
-    if digest_file(path / "model.safetensors") != expected:
+    expected = expected_sha256
+    if expected is None and model_id == MODEL_ID and revision == MODEL_REVISION:
+        expected = load_config()["model_weights_sha256"]
+    if expected and digest_file(path / "model.safetensors") != expected:
         raise RuntimeError("Pinned model weight SHA-256 mismatch")
     files = {
         str(p.relative_to(path)): digest_file(p)
@@ -38,7 +42,7 @@ def download_model(path):
         if p.is_file() and ".cache" not in p.parts and p.name != "verified_files.json"
     }
     write_json(
-        manifest, {"model": MODEL_ID, "revision": MODEL_REVISION, "files": files}
+        manifest, {"model": model_id, "revision": revision, "files": files}
     )
 
 

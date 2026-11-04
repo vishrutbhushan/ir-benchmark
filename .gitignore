@@ -1,5 +1,6 @@
 # Runtime data and outputs
 data/00_corpus/
+data/*_corpus/
 data/runtime/
 data/logs/
 filter/outputs/
@@ -19,6 +20,7 @@ __pycache__/
 *.pyc
 .venv/
 .cache/
+.env
 
 # Neural model and vector artifacts
 *.npy
@@ -39,3 +41,13 @@ recovery/
 
 # Windows metadata
 *.Zone.Identifier
+*.log
+
+# Course material and agent documents
+course material/
+ARCHITECTURE.md
+HANDOFF.md
+agent.md
+AGENT.md
+*_backup.csv
+candidates.json
