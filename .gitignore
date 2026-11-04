@@ -9,12 +9,17 @@ classical/outputs/
 classical/logs/
 neural/outputs/
 neural/logs/
-evaluation/results/
+neural/results/
+# evaluation/results/ is tracked for metrics, snapshots, and charts
+evaluation/results/archive/
+evaluation/results/synthetic_random_*.csv
+evaluation/results/*.part
+evaluation/results/.metrics.done.json
 evaluation/logs/
 evaluation/queries/*.part
 outputs/
 logs/
-results/
+/results/
 runtime/
 __pycache__/
 *.pyc
