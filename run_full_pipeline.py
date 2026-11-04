@@ -101,43 +101,67 @@ def prepare_neural_outputs():
 
 
 def main():
-    log("Starting IR Benchmark Master Pipeline Execution on Full Corpus")
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--stage",
+        choices=["all", "up-to-engine", "filter", "classical", "neural", "evaluation"],
+        default="all",
+        help="Pipeline stages to run ('up-to-engine' runs filter, classical, and neural, stopping before evaluation)"
+    )
+    args = parser.parse_args()
+
+    log(f"Starting IR Benchmark Master Pipeline Execution (target: {args.stage})")
     source_archive = REPO_ROOT / "data/00_corpus/technical_web_corpus.zip"
     if not source_archive.exists():
-        log(f"FATAL: Source archive not found at {source_archive}")
-        sys.exit(1)
+        alt = REPO_ROOT / "technical_web_corpus.zip"
+        if alt.exists():
+            source_archive.parent.mkdir(parents=True, exist_ok=True)
+            log(f"Found source archive at root: linking to {source_archive}")
+            try:
+                os.link(str(alt), str(source_archive))
+            except OSError:
+                shutil.copy2(str(alt), str(source_archive))
+        else:
+            log(f"FATAL: Source archive not found at {source_archive} or {alt}")
+            log("Please place 'technical_web_corpus.zip' in 'data/00_corpus/' before running.")
+            sys.exit(1)
 
     timings = {}
     master_start = time.perf_counter()
 
     # 1. Filter Stage
-    timings["filter"] = run_stage(
-        "filter",
-        [PYTHON, "filter/run_filter.py", "--config", "config/pipeline.json", "--step", "all"]
-    )
+    if args.stage in {"all", "up-to-engine", "filter"}:
+        timings["filter"] = run_stage(
+            "filter",
+            [PYTHON, "filter/run_filter.py", "--config", "config/pipeline.json", "--step", "all"]
+        )
 
     # 2. Classical Stage
-    timings["classical"] = run_stage(
-        "classical",
-        [PYTHON, "classical/run_pipeline.py", "--config", "config/pipeline.json", "--phase", "all"]
-    )
+    if args.stage in {"all", "up-to-engine", "classical"}:
+        timings["classical"] = run_stage(
+            "classical",
+            [PYTHON, "classical/run_pipeline.py", "--config", "config/pipeline.json", "--phase", "all"]
+        )
 
     # 3. Neural Stage
-    prepare_neural_outputs()
-    timings["neural"] = run_stage(
-        "neural",
-        [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "all"]
-    )
+    if args.stage in {"all", "up-to-engine", "neural"}:
+        prepare_neural_outputs()
+        timings["neural"] = run_stage(
+            "neural",
+            [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "all"]
+        )
 
     # 4. Evaluation Stage
-    timings["evaluation_prepare"] = run_stage(
-        "evaluation_prepare",
-        [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--prepare"]
-    )
-    timings["evaluation_metrics"] = run_stage(
-        "evaluation_metrics",
-        [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--metrics", "--force"]
-    )
+    if args.stage in {"all", "evaluation"}:
+        timings["evaluation_prepare"] = run_stage(
+            "evaluation_prepare",
+            [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--prepare"]
+        )
+        timings["evaluation_metrics"] = run_stage(
+            "evaluation_metrics",
+            [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--metrics", "--force"]
+        )
 
     total_time = time.perf_counter() - master_start
     log("==================================================")
