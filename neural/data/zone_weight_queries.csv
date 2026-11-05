@@ -1,0 +1,9 @@
+query_id,query_text
+CAL01,how do I fix a merge conflict when rebasing in git
+CAL02,why does mongodb trigger an election when a secondary restarts
+CAL03,how to set up ssl certificates on an nginx reverse proxy
+CAL04,kafka consumers stuck in constant rebalancing loop
+CAL05,how to wait for multiple goroutines to finish in go
+CAL06,preventing concurrent runs with terraform remote state lock
+CAL07,ansible handler not triggering after configuration file change
+CAL08,why are reads failing when using local quorum in cassandra

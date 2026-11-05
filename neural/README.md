@@ -23,7 +23,7 @@ Set `--device cpu` when CUDA is unavailable.
 
 Step 04 does not use the configured zone weights as its result. It writes
 `results/step_04_weights/features/training_features.csv` from the focused,
-graded judgments in `data_inputs/neural_weights/zone_weight_judgments.csv`,
+graded judgments in `neural/data/zone_weight_judgments.csv`,
 fits query-balanced constrained weights, and writes the presentation-friendly
 `weights.csv` and `outputs/step_04_weights/model.json`. Relevance labels are binary `0` or `1`; the fitted weights are continuous
 positive values and are not labels. Corpus size is controlled by the same runner

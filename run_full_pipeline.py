@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent
-PYTHON = str(REPO_ROOT / ".venv/bin/python")
+PYTHON = sys.executable or str(REPO_ROOT / ".venv/bin/python")
 
 
 def log(msg: str) -> None:

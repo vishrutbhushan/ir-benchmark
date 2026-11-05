@@ -3,12 +3,10 @@
 ## Start here
 
 - [Repository quickstart](../README.md)
-- [Architecture and data flow](../ARCHITECTURE.md)
 - [Shared configuration](../config/pipeline.json)
 - [Neural pipeline](../neural/README.md)
 - [Classical pipeline](../classical/README.md)
 - [Evaluation](../evaluation/README.md)
-- [Tracked inputs](../data_inputs/README.md)
 
 ## Recommended execution order
 

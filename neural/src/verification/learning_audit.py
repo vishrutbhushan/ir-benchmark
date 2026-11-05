@@ -27,7 +27,7 @@ def audit_learning_data(root):
     root = Path(root)
     settings = load_config()
     queries_path = _configured_input(
-        settings.get("weight_queries", "data_inputs/neural_weights/zone_weight_queries.csv")
+        settings.get("weight_queries", "neural/data/zone_weight_queries.csv")
     )
     judgments_path = _configured_input(
         settings.get(
