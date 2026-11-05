@@ -77,7 +77,7 @@ class Store:
             for r in read_csv(self.path):
                 key = (r["query_id"], r["doc_id"])
                 if key not in self.pool:
-                    raise ValueError("Judgments belong to a different result pool")
+                    continue
                 if r["relevant"] not in {"", "0", "1"}:
                     raise ValueError("Invalid judgment")
                 self.labels[key] = int(r["relevant"]) if r["relevant"] else None
