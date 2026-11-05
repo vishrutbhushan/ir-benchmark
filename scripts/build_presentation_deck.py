@@ -536,7 +536,7 @@ def create_deck():
     slide7 = prs.slides.add_slide(blank_layout)
     add_header(slide7, "6. Cluster Pruning: Sub-Linear Search & 12.5x Latency Speedup")
 
-    c_cp1 = slide7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.3))
+    c_cp1 = slide7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.5), Inches(5.3))
     c_cp1.fill.solid()
     c_cp1.fill.fore_color.rgb = C_CARD_BG
     c_cp1.line.color.rgb = C_BORDER
@@ -552,9 +552,10 @@ def create_deck():
 
     pts_cp1 = [
         ("Problem Statement", "Computing cosine similarity between query vector q and all N=45,881 documents takes 248 ms, failing SLAs."),
-        ("Preprocessing Phase", "Partition corpus into k=8 clusters using K-Means++. Store centroid vectors (only 70 KB)."),
+        ("Preprocessing Phase", "Partition corpus into k=8 clusters using K-Means++. Store centroid vectors (only 70 KB metadata)."),
         ("Query Phase (Centroid Routing)", "1. Compute similarity between q and 8 centroids.\n2. Select top-b closest clusters (b=2).\n3. Restrict passage scan strictly to documents in selected clusters."),
-        ("Search Space Pruning", "Prunes 75% of documents (scans ~11,470 passages instead of 45,881)."),
+        ("Search Space Pruning", "Prunes 75% of candidate passages (evaluates ~11,470 passages instead of 45,881)."),
+        ("Latency Drop", "Full Scan (248.0 ms) -> Cluster Routed (19.8 ms)."),
     ]
     for t, d in pts_cp1:
         pt = tf_cp1.add_paragraph()
@@ -569,7 +570,13 @@ def create_deck():
         pd.font.size = Pt(10)
         pd.font.color.rgb = C_MUTED
 
-    c_cp2 = slide7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.3))
+    # Embed Pareto chart on top right of Slide 7
+    chart7 = CHARTS_DIR / "latency_throughput_pareto.png"
+    if chart7.exists():
+        slide7.shapes.add_picture(str(chart7), Inches(6.6), Inches(1.5), width=Inches(5.9))
+
+    # Add compact speedup summary card below chart
+    c_cp2 = slide7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.6), Inches(4.8), Inches(5.9), Inches(2.0))
     c_cp2.fill.solid()
     c_cp2.fill.fore_color.rgb = C_CARD_BG
     c_cp2.line.color.rgb = C_BORDER
@@ -577,32 +584,23 @@ def create_deck():
     tf_cp2.word_wrap = True
 
     p = tf_cp2.paragraphs[0]
-    p.text = "Measured Routing Latency & Throughput Gains"
+    p.text = "Empirical Cluster Routing Performance Gains:"
     p.font.name = "Calibri"
-    p.font.size = Pt(14)
+    p.font.size = Pt(11.5)
     p.font.bold = True
     p.font.color.rgb = C_NAVY
 
     pts_cp2 = [
-        ("Full Dense Scan Latency", "248.0 ms per query (Throughput: 4.0 queries/sec)."),
-        ("Cluster Routed Latency", "19.8 ms per query (Throughput: 50.5 queries/sec)."),
-        ("Speedup Factor", "12.5× wall-clock acceleration achieved directly through cluster pruning!"),
+        ("12.5× Wall-Clock Speedup", "Query latency drops from 248.0 ms to 19.8 ms (Throughput: 4.0 -> 50.5 QPS)."),
         ("Centroid Routing Overhead", "< 0.4 ms to evaluate query against all 8 cluster centroids."),
-        ("Top-Rank Precision Retention", "Maintains P@1 = 0.8000 and MRR = 0.9000 while cutting search compute by 4x."),
-        ("Production Significance", "Enables real-time interactive search on modest hardware without GPU clusters."),
+        ("Top-Rank Precision Retention", "Maintains P@1 = 0.8000 and MRR = 0.9000 while cutting compute by 75%."),
     ]
     for t, d in pts_cp2:
         pt = tf_cp2.add_paragraph()
-        pt.text = f"•  {t}:"
+        pt.text = f"✔ {t}: {d}"
         pt.font.name = "Calibri"
-        pt.font.size = Pt(11)
-        pt.font.bold = True
-        pt.font.color.rgb = C_CRIMSON
-        pd = tf_cp2.add_paragraph()
-        pd.text = f"    {d}"
-        pd.font.name = "Calibri"
-        pd.font.size = Pt(10)
-        pd.font.color.rgb = C_MUTED
+        pt.font.size = Pt(9.5)
+        pt.font.color.rgb = C_SLATE
 
     # =========================================================================
     # SLIDE 8: Two-Tier Query Caching Architecture
@@ -726,13 +724,14 @@ def create_deck():
     slide10 = prs.slides.add_slide(blank_layout)
     add_header(slide10, "9. Comparative Benchmark Results Across 5 Paradigms")
 
-    # Embed the comprehensive 7-metric chart across top
+    # Embed the comprehensive 7-metric chart scaled to avoid ANY overlap
     chart10 = CHARTS_DIR / "overall_effectiveness_hybrid.png"
     if chart10.exists():
-        slide10.shapes.add_picture(str(chart10), Inches(0.8), Inches(1.35), width=Inches(11.73))
+        # Chart aspect ratio is 13.0:5.8. Height = 3.8 inches -> Width = 8.52 inches
+        slide10.shapes.add_picture(str(chart10), Inches(2.4), Inches(1.35), height=Inches(3.8))
 
-    # Add a summary metrics banner card at the bottom
-    c_sum = slide10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(5.65), Inches(11.73), Inches(1.35))
+    # Add a summary metrics banner card at the bottom with 0.25" clear margin
+    c_sum = slide10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(5.35), Inches(11.73), Inches(1.65))
     c_sum.fill.solid()
     c_sum.fill.fore_color.rgb = C_CARD_BG
     c_sum.line.color.rgb = C_BORDER
@@ -742,15 +741,15 @@ def create_deck():
     p = tf_sum.paragraphs[0]
     p.text = "Key Benchmark Metrics Summary Across Paradigms:"
     p.font.name = "Calibri"
-    p.font.size = Pt(11.5)
+    p.font.size = Pt(11)
     p.font.bold = True
     p.font.color.rgb = C_NAVY
 
     p_tab = tf_sum.add_paragraph()
-    p_tab.text = "• Flat BM25: P@1=0.7333, P@5=0.7067, NDCG@5=0.7188, NDCG@10=0.6727, MAP@10=0.3978, MRR@10=0.8667\n" \
-                 "• BM25F (Fields): P@1=0.8000, P@5=0.7333, NDCG@5=0.7503, NDCG@10=0.7089 (+5.4%), MAP@10=0.4124, MRR@10=0.8889\n" \
-                 "• Dense Neural: P@1=0.9333, P@5=0.8133, NDCG@5=0.8420, NDCG@10=0.8036, MAP@10=0.4634, MRR@10=0.9667\n" \
-                 "• ★ Hybrid RRF: P@1=1.0000, P@5=0.8533, NDCG@5=0.8931, NDCG@10=0.8235, MAP@10=0.4864, MRR@10=1.0000"
+    p_tab.text = "• Flat BM25:      P@1=0.7333  |  P@5=0.7067  |  NDCG@5=0.7188  |  NDCG@10=0.6727  |  MAP@10=0.3978  |  MRR@10=0.8667\n" \
+                 "• BM25F (Fields): P@1=0.8000  |  P@5=0.7333  |  NDCG@5=0.7503  |  NDCG@10=0.7089  |  MAP@10=0.4124  |  MRR@10=0.8889\n" \
+                 "• Dense Neural:   P@1=0.9333  |  P@5=0.8133  |  NDCG@5=0.8420  |  NDCG@10=0.8036  |  MAP@10=0.4634  |  MRR@10=0.9667\n" \
+                 "• ★ Hybrid RRF:   P@1=1.0000  |  P@5=0.8533  |  NDCG@5=0.8931  |  NDCG@10=0.8235  |  MAP@10=0.4864  |  MRR@10=1.0000"
     p_tab.font.name = "Consolas"
     p_tab.font.size = Pt(9.5)
     p_tab.font.color.rgb = C_SLATE
@@ -918,13 +917,18 @@ def create_deck():
     slide13 = prs.slides.add_slide(blank_layout)
     add_header(slide13, "12. Architectural Trade-Offs, Guidelines & Conclusion")
 
-    # Embed the updated two-panel storage chart on the left
+    # Embed the updated two-panel storage chart on the top left
     chart13 = CHARTS_DIR / "index_size_breakdown.png"
     if chart13.exists():
-        slide13.shapes.add_picture(str(chart13), Inches(0.8), Inches(1.5), width=Inches(6.0))
+        slide13.shapes.add_picture(str(chart13), Inches(0.8), Inches(1.4), width=Inches(6.0))
+
+    # Embed the precision depth curve on bottom left
+    chart13b = CHARTS_DIR / "precision_depth_curve.png"
+    if chart13b.exists():
+        slide13.shapes.add_picture(str(chart13b), Inches(0.8), Inches(4.2), width=Inches(6.0))
 
     # Right: Practical Guidelines & Takeaways
-    c_end = slide13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.1), Inches(1.5), Inches(5.4), Inches(5.3))
+    c_end = slide13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.1), Inches(1.4), Inches(5.4), Inches(5.4))
     c_end.fill.solid()
     c_end.fill.fore_color.rgb = C_CARD_BG
     c_end.line.color.rgb = C_BORDER
