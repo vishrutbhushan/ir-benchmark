@@ -49,7 +49,7 @@ recovery/
 *Zone.Identifier*
 *.log
 
-# Temporary presentation & metadata files
+# Presentation working/template files
 SamplePPT.ppt
 extracted_template/
 IR_Benchmark_Mermaid_Diagrams_Fixed.pptx
@@ -58,17 +58,16 @@ IR_Benchmark_Mermaid_VSCode.zip
 IR_Benchmark_Template_Formatted*.pptx
 *.tmp
 
-# Judgment, labeling, and intermediate scratch scripts
-scripts/run_nemotron_labeling.py
-scripts/run_gemma_crosscheck.py
-scripts/build_zone_weight_data.py
-scripts/run_rrf_evaluation.py
-scripts/plot_evaluation_charts.py
-scripts/build_presentation_deck.py
-scripts/run_isolated_zone_weight_learning.py
-scripts/recalibrate_neural_zone_weights.py
-scripts/fix_presentation_polish.py
-scripts/apply_final_presentation_fixes.py
+# Ignore all scratch/utility scripts
+scripts/
+
+# Ignore legacy and seed data inputs
+data_inputs/
+
+# Ignore intermediate judge outputs and legacy metrics
+evaluation/data/judgments_*.csv
+evaluation/results/metrics.csv
+evaluation/results/per_query.csv
 
 # Course material and agent documents
 course material/
