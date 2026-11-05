@@ -59,7 +59,7 @@ def plot_overall_metrics():
     ax.set_title("Overall Retrieval Effectiveness Comparison across 4 Paradigms", fontsize=14, fontweight="bold", pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels([title for _, title in metric_keys], fontsize=11, fontweight="bold")
-    ax.set_ylim(0, 0.85)
+    ax.set_ylim(0, 1.05)
     ax.grid(axis="y", linestyle="--", alpha=0.5)
     ax.legend(frameon=True, facecolor="white", edgecolor="#ccc", fontsize=11, loc="upper right")
     plt.tight_layout()
@@ -111,24 +111,29 @@ def plot_per_query_comparison():
 
 
 def plot_latency_effectiveness_tradeoff():
+    # Read NDCG@10 from metrics.csv
+    ndcg_by_key = {}
+    with METRICS_CSV.open(encoding="utf-8-sig") as f:
+        for r in csv.DictReader(f):
+            if r.get("query_type") == "all":
+                ndcg_by_key[(r["engine"], r["variant"])] = float(r.get("pooled_ndcg@10", 0.0))
+
     # Measured latencies from production runtime
     systems = [
-        ("Flat BM25", 0.5298, 5.3, "#2b5c8f", "o"),
-        ("Hierarchical BM25F", 0.5410, 8.2, "#4b9cd3", "s"),
-        ("Dense Neural (Full Scan)", 0.5375, 248.0, "#d95f02", "^"),
-        ("Neural Routed-Cluster", 0.4015, 19.8, "#7570b3", "D"),
+        ("Flat BM25", ndcg_by_key.get(("classical", "bm25"), 0.7974), 5.3, "#2b5c8f", "o"),
+        ("Hierarchical BM25F", ndcg_by_key.get(("classical", "bm25f"), 0.7987), 8.2, "#4b9cd3", "s"),
+        ("Dense Neural (Full Scan)", ndcg_by_key.get(("neural", "dense"), 0.7521), 248.0, "#d95f02", "^"),
+        ("Neural Routed-Cluster", ndcg_by_key.get(("neural", "zones"), 0.5859), 19.8, "#7570b3", "D"),
     ]
 
     fig, ax = plt.subplots(figsize=(9, 6))
     for name, ndcg, lat, color, marker in systems:
         ax.scatter([lat], [ndcg], color=color, s=250, label=name, marker=marker, edgecolor="black", linewidth=1.5, zorder=5)
-        offset_y = 0.008 if "BM25F" in name else (-0.012 if "Dense" in name else 0.008)
-        offset_x = 1.15
         ax.annotate(
             f"{name}\n(NDCG: {ndcg:.3f}, {lat:.1f}ms)",
             (lat, ndcg),
             textcoords="offset points",
-            xytext=(10, -5 if "Routed" in name else 5),
+            xytext=(10, -15 if "Routed" in name else 5),
             fontweight="bold",
             fontsize=10,
         )
@@ -137,7 +142,7 @@ def plot_latency_effectiveness_tradeoff():
     ax.set_xlabel("Query Latency (ms) [Log Scale]", fontsize=12, fontweight="bold")
     ax.set_ylabel("NDCG@10", fontsize=12, fontweight="bold")
     ax.set_title("Efficiency vs. Effectiveness Pareto Frontier", fontsize=14, fontweight="bold", pad=15)
-    ax.set_ylim(0.35, 0.60)
+    ax.set_ylim(0.50, 0.90)
     ax.set_xlim(2, 500)
     ax.grid(True, linestyle="--", alpha=0.5, which="both")
     ax.legend(frameon=True, facecolor="white", edgecolor="#ccc", fontsize=10, loc="lower right")
@@ -153,3 +158,4 @@ if __name__ == "__main__":
     plot_per_query_comparison()
     plot_latency_effectiveness_tradeoff()
     print("All charts successfully generated!")
+
