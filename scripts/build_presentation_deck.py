@@ -222,7 +222,7 @@ def create_deck():
     p.font.color.rgb = C_NAVY
 
     points2 = [
-        ("RQ1 — Classical Lexical vs. Dense Neural", "Quantify exact trade-offs between inverted index BM25/BM25F and bi-encoder MiniLM embeddings on a production-scale corpus."),
+        ("RQ1 — Classical Lexical vs. Dense Neural", "Quantify exact trade-offs between inverted index BM25/BM25F and bi-encoder Qwen3-Embedding (1024-dim) on a production-scale corpus."),
         ("RQ2 — Sub-Linear Search via Cluster Pruning", "Implement unsupervised K-Means++ document clustering (Manning Ch. 7.1.6) to prune candidate passages by 75% and evaluate latency."),
         ("RQ3 — Hybrid Fusion via RRF", "Overcome score distribution mismatch using Reciprocal Rank Fusion (SIGIR 2009) to deliver superior ranking across both syntax and conceptual queries."),
         ("RQ4 — Query Caching Architecture", "Deploy a generic two-tier LRU query cache (Manning Ch. 19) to achieve sub-millisecond repeat latency."),
@@ -247,11 +247,11 @@ def create_deck():
     add_header(slide3, "2. Corpus Acquisition & 5-Stage Preprocessing Pipeline")
 
     stages = [
-        ("Stage 1", "Raw Web Crawl", "18.6 GB (~20 GB)\n79,275 Raw Files\nCommon Crawl WARC"),
+        ("Stage 1", "Raw Web Crawl", "18.6 GB (~19 GB)\n79,268 Raw Files\nCommon Crawl WARC"),
         ("Stage 2", "Boilerplate Strip", "Trafilatura & JusText\nStrip nav, footer, ads\nPreserve code & tags"),
         ("Stage 3", "Zone Extraction", "Structured Split:\nTitle, Headings,\nBody, Code Blocks"),
         ("Stage 4", "Quality Filter", "Deduplication, min words,\nEnglish language detect,\nMalformed HTML prune"),
-        ("Stage 5", "Final Clean DB", "45,881 Pristine Docs\n1.12 GB SQLite DB\nFull schema indexed"),
+        ("Stage 5", "Filtered Corpus", "11.0 GB HTML Corpus\n45,881 Pristine Docs\n1.08 GB Clean DB"),
     ]
 
     for idx, (st, name, desc) in enumerate(stages):
@@ -303,9 +303,9 @@ def create_deck():
     p.font.color.rgb = C_NAVY
 
     facts1 = [
-        "Initial Raw Crawl: 18.6 GB uncompressed across 79,275 HTML files.",
-        "Local Extracted Disk Footprint: 11.0 GB in data/00_corpus/documents/.",
-        "Filtered Production Corpus: 45,881 unique documents in 1.12 GB SQLite DB.",
+        "Initial Raw Crawl: 18.6 GB uncompressed across 79,268 raw HTML files.",
+        "Filtered Production Corpus: 11.0 GB across 45,881 HTML files (42.1% excluded as noise/stubs).",
+        "Clean Zone Text Database: 1.08 GB in SQLite after stripping HTML boilerplate.",
         "27 Engineering Ecosystems: PyTorch, Kubernetes, PostgreSQL, Linux Kernel, Envoy, AWS, GitHub, etc.",
         "Vocabulary Size: 280,000 unique terms after domain-aware tokenization.",
     ]
@@ -462,7 +462,7 @@ def create_deck():
     # SLIDE 6: Neural Passage Extraction & Dense Vector Architecture
     # =========================================================================
     slide6 = prs.slides.add_slide(blank_layout)
-    add_header(slide6, "5. Dense Neural Retrieval: Bi-Encoder Embeddings")
+    add_header(slide6, "5. Dense Neural Retrieval: Representation & Scoring Pipeline")
 
     c_neu1 = slide6.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.3))
     c_neu1.fill.solid()
@@ -472,17 +472,17 @@ def create_deck():
     tf_n1.word_wrap = True
 
     p = tf_n1.paragraphs[0]
-    p.text = "Dense Bi-Encoder Architecture & Representation"
+    p.text = "Qwen3 Causal Architecture & Zone Scoring"
     p.font.name = "Calibri"
     p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = C_NAVY
 
     pts_neu1 = [
-        ("Semantic Passage Windowing", "HTML documents chunked via sliding window (256 tokens, 64 overlap) across Title, Headings, Body, Code."),
-        ("Transformer Backbone", "all-MiniLM-L6-v2 produces 384-dimensional dense vectors normalized to unit hypersphere."),
-        ("True Neural Pipeline Footprint (2.89 GB)", "• Vector Arrays (.npy across 4 zones): 615 MB\n• Transformer Model Weights: 1.20 GB\n• Passage Windows SQLite DB: 919 MB\n• Cluster Representation: 157 MB"),
-        ("Hardware Requirements", "Requires ~2.1 GB resident VRAM during inference (2.5× higher memory footprint than Classical)."),
+        ("Causal Embedding Model", "Qwen/Qwen3-Embedding-0.6B generates 1024-dimensional normalized dense vectors (Model weights: 1.20 GB)."),
+        ("Passage Extraction Across 4 Zones", "HTML documents partitioned into discrete passage windows across Title, Headings, Body, Code."),
+        ("Zone Scoring & Document Max-Pooling", "1. Query encoded to 1024-dim vector q.\n2. Cosine similarity computed against all passage vectors in zone z.\n3. Max-pooling across passages: zone_score(d, z) = max_{p in z} cos(p, q)."),
+        ("Final Document Score Combination", "• dense mode: doc_score(d) = max_{z} zone_score(d, z) (single best matching zone dominates).\n• zones mode: doc_score(d) = sum_z w_z * zone_score(d, z) (learned global weights)."),
     ]
     for t, d in pts_neu1:
         pt = tf_n1.add_paragraph()
@@ -505,7 +505,7 @@ def create_deck():
     tf_n2.word_wrap = True
 
     p = tf_n2.paragraphs[0]
-    p.text = "Strengths & The Dense Scalability Bottleneck"
+    p.text = "Effectiveness vs. Scalability & Memory Trade-Offs"
     p.font.name = "Calibri"
     p.font.size = Pt(14)
     p.font.bold = True
@@ -515,7 +515,8 @@ def create_deck():
         ("High Semantic Effectiveness", "Achieves NDCG@10 = 0.8036 and P@5 = 0.8133 on full corpus scan, dramatically outperforming BM25 on conversational queries."),
         ("Resolves Vocabulary Mismatch", "Maps symptom phrases ('high latency under load') to technical causes ('connection pooling', 'TCP keepalive') without keyword overlap."),
         ("The O(N) Compute Wall", "Exhaustive dot-product scan across 45,881 vectors takes 248.0 ms per query (only 4.0 QPS throughput)."),
-        ("The Engineering Need", "Full dense scan is too slow for production search engines, necessitating cluster pruning and routing."),
+        ("True Storage Footprint (2.89 GB Total)", "• Qwen3 Model Weights: 1.20 GB\n• Passage Windows SQLite: 919 MB\n• Vector Arrays (.npy across 4 zones): 615 MB\n• Cluster Representation: 157 MB"),
+        ("Hardware Requirements", "Requires ~2.1 GB resident VRAM during inference (2.5× higher memory footprint than Classical RAM)."),
     ]
     for t, d in pts_neu2:
         pt = tf_n2.add_paragraph()
@@ -606,45 +607,76 @@ def create_deck():
     # SLIDE 8: Two-Tier Query Caching Architecture
     # =========================================================================
     slide8 = prs.slides.add_slide(blank_layout)
-    add_header(slide8, "7. Query Result Caching: Sub-Millisecond Repeat Latency")
+    add_header(slide8, "7. Query Result Caching: Two-Tier Sub-Millisecond Architecture")
 
-    c_cac = slide8.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.4), Inches(5.3))
-    c_cac.fill.solid()
-    c_cac.fill.fore_color.rgb = C_CARD_BG
-    c_cac.line.color.rgb = C_BORDER
-    tf_cac = c_cac.text_frame
-    tf_cac.word_wrap = True
+    # Card 1: Architecture & Internal Data Structures
+    c_cac1 = slide8.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.3))
+    c_cac1.fill.solid()
+    c_cac1.fill.fore_color.rgb = C_CARD_BG
+    c_cac1.line.color.rgb = C_BORDER
+    tf_cac1 = c_cac1.text_frame
+    tf_cac1.word_wrap = True
 
-    p = tf_cac.paragraphs[0]
-    p.text = "Search Engine Caching Architecture (Manning Ch. 19)"
+    p = tf_cac1.paragraphs[0]
+    p.text = "Two-Tier Caching Architecture (Manning Ch. 19)"
     p.font.name = "Calibri"
     p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = C_NAVY
 
-    pts_cac = [
-        ("Two-Tier Caching Design", "1. Tier-1 LRU Query Result Cache: Stores normalized query string -> top-k document IDs and scores.\n2. Tier-2 Query Embedding Cache: Caches dense semantic vectors to avoid transformer forward pass."),
-        ("Thread-Safe Implementation", "LRUQueryCache in query_processor.py using collections.OrderedDict protected by a re-entrant mutex lock."),
-        ("Cold Miss Latencies", "BM25 (5.3 ms), BM25F (8.2 ms), Routed (19.8 ms), Dense (248.0 ms)."),
-        ("Cache Hit Response Time", "< 0.05 ms across all engines (Throughput: >25,000 QPS)."),
-        ("Speedup Range", "132× to 6,200× latency reduction on repeated and warm queries."),
+    pts_cac1 = [
+        ("Tier-1: Query Result Cache (LRU)", "Maps normalized query string and top_k directly to the pre-computed ranked document list and scores, bypassing index evaluation completely."),
+        ("Tier-2: Query Embedding Cache", "Caches dense semantic vectors generated by Qwen3 to avoid running the transformer forward-pass on repeated semantic queries."),
+        ("Thread-Safe Implementation", "Implemented in LRUQueryCache in query_processor.py using collections.OrderedDict protected by a re-entrant mutex lock."),
+        ("Eviction & Memory Management", "Configurable capacity (maxsize=1024 queries); enforces strict O(1) Least-Recently-Used eviction when full."),
     ]
-    for t, d in pts_cac:
-        pt = tf_cac.add_paragraph()
+    for t, d in pts_cac1:
+        pt = tf_cac1.add_paragraph()
         pt.text = f"•  {t}:"
         pt.font.name = "Calibri"
         pt.font.size = Pt(11)
         pt.font.bold = True
         pt.font.color.rgb = C_SLATE
-        pd = tf_cac.add_paragraph()
+        pd = tf_cac1.add_paragraph()
         pd.text = f"    {d}"
         pd.font.name = "Calibri"
         pd.font.size = Pt(10)
         pd.font.color.rgb = C_MUTED
 
-    chart8 = CHARTS_DIR / "cache_latency_speedup.png"
-    if chart8.exists():
-        slide8.shapes.add_picture(str(chart8), Inches(6.5), Inches(1.5), width=Inches(6.0))
+    # Card 2: Measured Latency Speedup & Production SLAs
+    c_cac2 = slide8.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.3))
+    c_cac2.fill.solid()
+    c_cac2.fill.fore_color.rgb = C_CARD_BG
+    c_cac2.line.color.rgb = C_BORDER
+    tf_cac2 = c_cac2.text_frame
+    tf_cac2.word_wrap = True
+
+    p = tf_cac2.paragraphs[0]
+    p.text = "Measured Acceleration & Production SLAs"
+    p.font.name = "Calibri"
+    p.font.size = Pt(14)
+    p.font.bold = True
+    p.font.color.rgb = C_NAVY
+
+    pts_cac2 = [
+        ("Cold Miss Execution Latencies", "• Flat BM25: 5.3 ms (188.7 QPS)\n• BM25F Multi-Field: 8.2 ms (122.0 QPS)\n• Cluster Routed Neural: 19.8 ms (50.5 QPS)\n• Hybrid RRF: 24.5 ms (40.8 QPS)\n• Qwen3 Dense Full Scan: 248.0 ms (4.0 QPS)"),
+        ("Warm LRU Cache Hit Response Time", "< 0.05 ms across all retrieval paradigms (instantaneous in-memory retrieval)."),
+        ("Empirical Acceleration Factor", "132× to 6,200× latency reduction on repeated and warm queries."),
+        ("Throughput Scaling", "Sustains > 25,000 queries/second per server node for hot technical queries."),
+        ("Production Significance", "Absorbs traffic spikes for popular troubleshooting documentation (e.g., Docker/K8s setup) with zero CPU/GPU overhead."),
+    ]
+    for t, d in pts_cac2:
+        pt = tf_cac2.add_paragraph()
+        pt.text = f"•  {t}:"
+        pt.font.name = "Calibri"
+        pt.font.size = Pt(11)
+        pt.font.bold = True
+        pt.font.color.rgb = C_GOLD
+        pd = tf_cac2.add_paragraph()
+        pd.text = f"    {d}"
+        pd.font.name = "Calibri"
+        pd.font.size = Pt(10)
+        pd.font.color.rgb = C_MUTED
 
     # =========================================================================
     # SLIDE 9: Evaluation Methodology: Dual-LLM Judges & Graded Consensus
@@ -943,9 +975,9 @@ def create_deck():
     p.font.color.rgb = C_NAVY
 
     guidelines = [
-        ("Corpus Filtering (18.6 GB -> 1.12 GB)", "Filtering boilerplate and non-technical noise reduced 79k raw files to 45.8k high-signal documents, preserving critical code blocks."),
+        ("Corpus Filtering (18.6 GB -> 11.0 GB HTML)", "Excluding 42.1% low-quality/stub pages reduced 79k raw files to 45.8k high-signal HTML documents (11.0 GB on disk)."),
         ("Classical Index Serialization Reality", "Uncompressed plaintext JSON takes 1.11 GB; standard production binary compression (VByte/Lucene) achieves < 95 MB."),
-        ("Neural Pipeline Requires 2.6x More Disk & 2.5x RAM", "The full neural system requires 2.89 GB on disk and 2.1 GB VRAM, but cluster pruning cuts evaluation latency by 12.5x (19.8 ms)."),
+        ("Neural Pipeline Requires 2.6x More Disk & 2.5x RAM", "The full Qwen3 system requires 2.89 GB on disk and 2.1 GB VRAM, but cluster pruning cuts evaluation latency by 12.5x (19.8 ms)."),
         ("Deploy Weighted RRF for State-of-the-Art Quality", "Combining BM25F and Dense rankings via Weighted RRF achieves MRR = 1.0000 and NDCG@10 = 0.8235, strictly beating all individual models."),
         ("Multi-Tier Caching Eliminates SLA Bottlenecks", "LRU query result and embedding caching delivers <0.05 ms latency for repeated queries, supporting >25,000 QPS."),
     ]
