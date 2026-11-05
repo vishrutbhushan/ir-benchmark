@@ -7,8 +7,8 @@
   },
   "controlled_comparison": false,
   "reason": "Classical export uses a different corpus and does not provide its manifest hash",
-  "unique_query_document_pairs": 237,
-  "result_rows": 400,
+  "unique_query_document_pairs": 384,
+  "result_rows": 600,
   "saved_html_unavailable_unique_documents_by_variant": {
     "classical/bm25": 0,
     "classical/bm25f": 0,

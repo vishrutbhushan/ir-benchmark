@@ -126,7 +126,7 @@ Candidate Document:
 Respond ONLY in valid JSON format:
 {{"relevant": 1 or 0, "rationale": "one sentence explanation"}}"""
 
-        for attempt in range(2):
+        for attempt in range(4):
             try:
                 raw_resp = call_gemma(prompt)
                 start = raw_resp.find("{")
@@ -152,10 +152,10 @@ Respond ONLY in valid JSON format:
                     )
                 return True
             except Exception as err:
-                if attempt == 1:
+                if attempt == 3:
                     print(f"Error judging ({qid}, {doc_id}): {err}", flush=True)
                     return False
-                time.sleep(1)
+                time.sleep(2)
 
     if candidates_to_process:
         with ThreadPoolExecutor(max_workers=workers) as executor:

@@ -8,3 +8,8 @@
 {"query_id":"Q08","query_text":"spring boot custom health check actuator endpoint","query_type":"Integration","target_tech":"Spring Boot"}
 {"query_id":"Q09","query_text":"linux sysctl tcp socket buffer size","query_type":"SysAdmin","target_tech":"Linux Kernel"}
 {"query_id":"Q10","query_text":"envoy proxy circuit breaker connection pool limits","query_type":"Networking","target_tech":"Envoy"}
+{"query_id":"Q11","query_text":"Can you help me setup springboot within 10 minutes without any issues?","query_type":"Conversational-Setup","target_tech":"Spring Boot"}
+{"query_id":"Q12","query_text":"I am facing a very big problem while trying to connect to one of my sql databases","query_type":"Conversational-Troubleshooting","target_tech":"MySQL"}
+{"query_id":"Q13","query_text":"my application keeps crashing repeatedly after deploying and I dont know why","query_type":"Conversational-Troubleshooting","target_tech":"Kubernetes"}
+{"query_id":"Q14","query_text":"why is my docker container building so ridiculously slow on every run","query_type":"Conversational-Performance","target_tech":"Docker"}
+{"query_id":"Q15","query_text":"how can I stop my service from running out of ram and dying under heavy load","query_type":"Conversational-Performance","target_tech":"Redis"}
