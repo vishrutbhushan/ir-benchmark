@@ -16,8 +16,9 @@ The benchmark evaluates five distinct retrieval paradigms on complex technical d
 
 ---
 
-## Setup & Environment
+## Setup & Input Files
 
+### 1. Environment Setup
 Requires Python 3.11+:
 
 ```bash
@@ -29,21 +30,55 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### 2. Input Files Checklist
+
+To run the pipeline from scratch, only **one external file** is needed — all other judgment and query files are already tracked in the repository:
+
+| Input Component | Required Path | Status in Repository |
+|---|---|---|
+| **Raw Crawl Corpus** | `data/00_corpus/technical_web_corpus.zip` | Place external archive here (or at repository root) |
+| **Evaluation Queries** | `evaluation/queries/final_queries.jsonl` | Tracked (15 technical benchmark queries) |
+| **Ground-Truth Judgments** | `evaluation/data/judgments.csv` | Tracked (353 pairs with consensus grades 0, 1, 2) |
+| **Zone Weight Training Data** | `neural/data/zone_weight_judgments.csv` | Tracked (32 Manning zone training examples) |
+| **Zone Weight Queries** | `neural/data/zone_weight_queries.csv` | Tracked (8 calibration query seeds) |
+
 ---
 
 ## Running the Pipeline
 
-Each pipeline stage can be executed independently or run end-to-end:
+You do not have to run the entire pipeline in one go. You can execute modular stages or run end-to-end:
+
+### Option A: Master Runner (`run_full_pipeline.py`)
 
 ```bash
-# 1. Full Pipeline Execution
+# Run all stages end-to-end (Filter -> Classical -> Neural -> Evaluation)
 python run_full_pipeline.py
 
-# 2. Classical Pipeline Only (Tokenization, BM25, and BM25F)
+# Or run specific stages individually:
+python run_full_pipeline.py --stage filter        # Validation, filtering, deduplication, archive
+python run_full_pipeline.py --stage classical     # Tokenization, inverted index, BM25 & BM25F
+python run_full_pipeline.py --stage neural        # Windows, embeddings, zone weights, clustering, routing
+python run_full_pipeline.py --stage evaluation    # Preparation & metrics computation
+python run_full_pipeline.py --stage up-to-engine  # Runs filter, classical, and neural
+```
+
+### Option B: Standalone Component Runners
+
+Each subsystem can also be run independently:
+
+```bash
+# 1. Content Filtering & Corpus Packaging
+python filter/run_filter.py --step all
+
+# 2. Classical BM25 & BM25F Indexing & Retrieval
 python classical/run_pipeline.py --phase all
 
-# 3. Neural Pipeline Only (Extraction, Windows, Embeddings, Clustering, Routing)
+# 3. Neural Pipeline (Extraction, Embeddings, Clustering, Routing)
 python neural/run_pipeline.py --step all
+
+# 4. Evaluation Preparation & Metrics Export
+python evaluation/run_evaluation.py --prepare
+python evaluation/run_evaluation.py --metrics --force
 ```
 
 ---
