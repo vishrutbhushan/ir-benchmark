@@ -64,7 +64,7 @@
     "minimum_zone_weight": 0.01,
     "weight_regularization": 0.05,
     "weight_queries": "data_inputs/neural_weights/zone_weight_queries.csv",
-    "weight_judgments": "data_inputs/neural_weights/zone_weight_judgments.csv",
+    "weight_judgments": "neural/data/zone_weight_judgments.csv",
     "zone_weights": {
       "title": 0.15,
       "headings": 0.15,

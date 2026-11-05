@@ -60,10 +60,10 @@ def configure_weights(root, engine=None):
     root = Path(root)
     settings = load_config()
     judgments_path = REPOSITORY_ROOT / settings.get(
-        "weight_judgments", "data_inputs/neural_weights/manning_zone_judgments.csv"
+        "weight_judgments", "neural/data/zone_weight_judgments.csv"
     )
     if not judgments_path.exists():
-        judgments_path = REPOSITORY_ROOT / "data_inputs/neural_weights/manning_zone_judgments.csv"
+        judgments_path = REPOSITORY_ROOT / "neural/data/zone_weight_judgments.csv"
 
     with open(judgments_path, mode="r", encoding="utf-8") as f:
         reader = csv.DictReader(f)

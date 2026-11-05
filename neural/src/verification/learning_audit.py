@@ -32,7 +32,7 @@ def audit_learning_data(root):
     judgments_path = _configured_input(
         settings.get(
             "weight_judgments",
-            "data_inputs/neural_weights/zone_weight_judgments.csv",
+            "neural/data/zone_weight_judgments.csv",
         )
     )
     relevance, queries = load_examples(queries_path, judgments_path)
