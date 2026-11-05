@@ -78,7 +78,7 @@ class Store:
                 key = (r["query_id"], r["doc_id"])
                 if key not in self.pool:
                     continue
-                if r["relevant"] not in {"", "0", "1"}:
+                if r["relevant"] not in {"", "0", "1", "2"}:
                     raise ValueError("Invalid judgment")
                 self.labels[key] = int(r["relevant"]) if r["relevant"] else None
                 self.updated[key] = r.get("updated_at", "")
@@ -120,7 +120,7 @@ class Store:
     def judge(self, qid, doc_id, value):
         key = qid, doc_id
         if key not in self.pool or not (
-            value is None or (type(value) is int and value in (0, 1))
+            value is None or (type(value) is int and value in (0, 1, 2))
         ):
             raise ValueError("Unknown pair or invalid label")
         with self.lock:

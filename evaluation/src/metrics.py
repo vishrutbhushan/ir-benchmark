@@ -39,7 +39,7 @@ def calculate(runs, labels, query_types=None):
             pool = pools[qid]
             pool_values = [labels.get((qid, id)) for id in pool]
             complete = all(v is not None for v in pool_values)
-            relevant = sum(v == 1 for v in pool_values)
+            relevant = sum(v >= 1 for v in pool_values if v is not None)
             values = [labels.get((qid, r["doc_id"])) for r in results]
             row = dict(
                 engine=engine,
@@ -54,7 +54,7 @@ def calculate(runs, labels, query_types=None):
             )
             for k in CUTOFFS:
                 judged = all(v is not None for v in values[:k])
-                hits = sum(v == 1 for v in values[:k])
+                hits = sum(v >= 1 for v in values[:k] if v is not None)
                 precision = hits / k if judged else None
                 recall = (
                     hits / relevant
@@ -73,7 +73,7 @@ def calculate(runs, labels, query_types=None):
                     else None
                 )
                 dcg = sum(
-                    (v == 1) / math.log2(rank + 1)
+                    (1 if v and v >= 1 else 0) / math.log2(rank + 1)
                     for rank, v in enumerate(values[:k], 1)
                 )
                 ideal = sum(
@@ -84,14 +84,14 @@ def calculate(runs, labels, query_types=None):
                 )
             if all(v is not None for v in values):
                 row["rr@10"] = next(
-                    (1 / i for i, v in enumerate(values, 1) if v == 1), 0.0
+                    (1 / i for i, v in enumerate(values, 1) if v and v >= 1), 0.0
                 )
             else:
                 row["rr@10"] = None
             hits = 0
             score = 0.0
             for i, v in enumerate(values, 1):
-                if v == 1:
+                if v and v >= 1:
                     hits += 1
                     score += hits / i
             row["pooled_ap@10"] = (
