@@ -1,61 +1,33 @@
-query_id,doc_id,relevance_grade,evidence_zone,evidence_text,rationale
-ZW01,document_010117,1.00,body,"Progress from a bare compose.yaml through health checks, live development","The document explicitly mentions 'health checks' within the context of using Docker Compose, directly addressing the query."
-ZW01,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL data types, which is unrelated to Docker Compose healthchecks."
-ZW01,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Docker Compose healthchecks."
-ZW02,document_002550,0.00,title,enum — Support for enumerations,"The document discusses Python enumerations, not the specific TypeError related to unhashable lists."
-ZW02,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL database types, which is unrelated to the Python TypeError query."
-ZW02,document_021487,0.00,body,PostgreSQL Prev Chapter 5. Functions Next SQL92 defines string functions,"The document discusses PostgreSQL SQL string functions, which is unrelated to the Python TypeError query."
-ZW03,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL SQL string functions, which is completely unrelated to PyTorch tensor operations or CUDA."
-ZW04,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL data types, which is unrelated to Kubernetes crashloopbackoff debugging."
-ZW05,document_021487,0.00,body,char_length(string) int4 length of string,"The document focuses on PostgreSQL string functions, not JSONB indexing."
-ZW06,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL data types, not Redis persistence mechanisms like RDB or AOF."
-ZW06,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Redis RDB and AOF persistence mechanisms."
-ZW07,document_010670,0.00,title,Kubelet Configuration (v1beta1) | Kubernetes,"The document discusses Kubernetes configuration, which is unrelated to Golang HTTP server graceful shutdown."
-ZW07,document_011603,0.00,title,kubectl replace | Kubernetes,"The document describes using kubectl to replace Kubernetes resources, which is unrelated to implementing graceful shutdown in a Golang HTTP server."
-ZW07,document_010689,0.00,title,kubectl replace | Kubernetes,"The document discusses Kubernetes resource replacement using kubectl, which is unrelated to Go programming or graceful HTTP server shutdown."
-ZW07,document_010873,0.00,title,kubectl replace | Kubernetes,"The document describes Kubernetes resource replacement using kubectl, which is unrelated to Go programming or graceful HTTP server shutdown."
-ZW07,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL type systems, which is unrelated to Go programming or graceful HTTP server shutdown."
-ZW07,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Go programming or HTTP server graceful shutdown."
-ZW08,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL data types, which is unrelated to Nginx reverse proxy configuration or WebSocket protocols."
-ZW08,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Nginx reverse proxy configuration or WebSockets."
-ZW09,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Rust's borrow checker or data race prevention."
-ZW10,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The query concerns a Git error, while the document discusses the PostgreSQL type system, making them unrelated topics."
-ZW10,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to the Git merge error query."
-ZW01,document_010350,1.00,code,"healthcheck: test: [""CMD-SHELL"", ""pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}""]",The code excerpt provides a direct example of defining and using the healthcheck feature within a Docker Compose service.
-ZW01,document_010261,0.00,title,PHP language-specific guide | Docker Docs,"The document focuses specifically on containerizing PHP applications, not the general Docker Compose healthcheck feature requested in the query."
-ZW01,document_010225,0.00,body,Learn how to efficiently set up Laravel development and production environments using Docker Compose.,"The document focuses on setting up Laravel applications using Docker Compose, not the specific feature of healthchecks."
-ZW02,document_002587,0.00,body,"unsafe_hash=False, frozen=False",The document discusses how dataclasses control hashability but does not explain why a list is fundamentally an unhashable type.
-ZW02,document_002631,0.00,title,6. Expressions — Python 3.14.7 documentation,"The document discusses Python expressions and syntax, not the specific runtime TypeError: unhashable type: 'list'."
-ZW02,document_002484,0.00,body,Objects are Python’s abstraction for data.,The document provides a general overview of Python data models and types but does not specifically address the 'TypeError: unhashable type: 'list'' error.
-ZW03,document_075415,0.00,code,NCCL Diagnostic Script for Multi-Node GPU Serving,"The document focuses on troubleshooting multi-node GPU serving infrastructure using KubeRay, not on the specific PyTorch method for checking a tensor's device."
-ZW03,document_075914,0.00,code,NCCL Diagnostic Script for Multi-Node GPU Serving,"The document focuses on troubleshooting multi-node GPU serving infrastructure using KubeRay, not on PyTorch tensor device checks."
-ZW03,document_073937,0.00,title,CUDAGraph Trees — PyTorch 2.14 documentation,"The document focuses on CUDA Graphs for performance optimization, not the specific method for checking a tensor's device property in PyTorch."
-ZW03,document_073765,0.00,body,Force collects GPU memory after it has been released by CUDA IPC.,The document describes a memory collection utility (ipc_collect) rather than a method for checking a specific tensor's device location.
-ZW03,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL database types, which is completely unrelated to PyTorch tensors or CUDA device checking."
-ZW04,document_010801,1.00,code,Reason: CrashLoopBackOff,"The code excerpt shows how to identify a container in CrashLoopBackOff status using kubectl describe, directly addressing the query."
-ZW04,document_011516,1.00,code,Reason: CrashLoopBackOff,"The code excerpt shows how to identify a container in CrashLoopBackOff status using kubectl describe, directly addressing the query."
-ZW04,document_010994,1.00,code,Reason: CrashLoopBackOff,The document provides a concrete example using kubectl describe pod showing how to identify and debug the CrashLoopBackOff status.
-ZW04,document_041138,0.00,body,This article provides troubleshooting guides for issues with Azure Arc-enabled Kubernetes connectivity...,"The document focuses on Azure Arc platform connectivity and agent issues, not the specific Kubernetes error 'crashloopbackoff' debugging."
-ZW04,document_021487,0.00,title,PostgreSQL: Documentation: 6.5: String Functions,"The document discusses PostgreSQL string functions, which is unrelated to Kubernetes crashloopbackoff debugging."
-ZW05,document_019683,1.00,body,PostgreSQL offers two types for storing JSON data: json and jsonb.,"The document discusses the jsonb data type in PostgreSQL and mentions its use for implementing efficient query mechanisms, which relates directly to indexing."
-ZW05,document_021373,1.00,body,PostgreSQL offers two types for storing JSON data: json and jsonb.,"The document discusses PostgreSQL's jsonb data type and its use for efficient query mechanisms, directly addressing the core components of the search query."
-ZW05,document_048177,0.00,title,Supported PostgreSQL Extensions | DigitalOcean Documentation,"The document focuses on PostgreSQL extensions, not on how to create or utilize JSONB indexes."
-ZW05,document_019362,0.00,body,Table 9-40 shows the operators that are available for use with the two JSON data types,"The document describes JSON operators and functions for jsonb, but does not provide information on how to create or use indexes on jsonb."
-ZW05,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses the general PostgreSQL Type System, not the specific implementation or indexing of the jsonb data type."
-ZW06,document_027326,1.00,body,RDB persistence performs point-in-time snapshots... AOF persistence logs every write operation,The document explicitly defines and contrasts RDB (snapshots) and AOF (write logging) to answer the query.
-ZW06,document_027210,0.00,code,"rdb_load = MyTypeRDBLoad, .rdb_save = MyTypeRDBSave, .aof_rewrite = MyTypeAOFRewrite","The document describes how to implement RDB and AOF hooks within a Redis module, not the functional difference between the two persistence mechanisms."
-ZW06,document_027408,1.00,body,persistence: RDB and AOF related information,"The document mentions RDB and AOF under the persistence section, indicating where related information can be found."
-ZW06,document_028539,0.00,body,Advice for configuring and managing Redis in production,"The document focuses on Linux OS configuration for Redis administration, not the technical difference between RDB and AOF persistence methods."
-ZW08,document_068553,1.00,code,proxy_set_header Upgrade $http_upgrade;,The code excerpt contains Nginx directives specifically configuring a reverse proxy to handle WebSocket upgrades.
-ZW08,document_069813,1.00,code,proxy_set_header Upgrade $http_upgrade;,The code excerpt provides the specific Nginx directives required to configure a reverse proxy for WebSocket connections.
-ZW08,document_068833,1.00,code,proxy_set_header Upgrade $http_upgrade;,The code excerpt contains the specific Nginx configuration required to handle WebSocket upgrades for a reverse proxy.
-ZW08,document_054216,0.00,headings,Step 2: Add the NGINX reverse proxy,The document discusses NGINX reverse proxy within a GitLab integration context but does not mention WebSocket configuration.
-ZW09,document_002978,0.00,headings,The Borrow Checker,The document focuses on how the borrow checker ensures reference validity (lifetimes) rather than how it prevents concurrent data races (Send/Sync traits).
-ZW09,document_003008,0.00,title,Behavior considered undefined - The Rust Reference,"The document focuses on undefined behavior and unsafe code, not the specific mechanism by which the borrow checker prevents data races."
-ZW09,document_061927,0.00,headings,Trait Drop | §Examples | §You cannot call Drop::drop yourself,"The document discusses the Drop trait and destructors, not the borrow checker or how it prevents data races."
-ZW09,document_062333,0.00,title,Page in kernel::page - Rust,"The document discusses kernel memory management (kernel::page), not the Rust language borrow checker or its mechanisms for preventing data races."
-ZW09,document_021490,0.00,title,PostgreSQL: Documentation: 18: 36.2. The PostgreSQL Type System,"The document discusses PostgreSQL database types, not the Rust programming language or its borrow checker."
-ZW10,document_049592,1.00,code,[--[no-]allow-unrelated-histories],"The code excerpt shows the git merge command syntax, including the --allow-unrelated-histories flag needed to resolve the specific error in the query."
-ZW10,document_050411,1.00,code,[--[no-]allow-unrelated-histories],"The code excerpt shows the git merge syntax including the --allow-unrelated-histories flag, which directly addresses the error mentioned in the query."
-ZW10,document_050503,0.00,code,git pull [<options>] [<repository> [<refspec>…>],The document describes the git pull command syntax but does not contain information about the specific 'refusing to merge unrelated histories' fatal error or its resolution.
-ZW10,document_050114,0.00,headings,Branching and Merging,"The document focuses on git-checkout documentation, while the query concerns a specific error related to git merge unrelated histories."
+query_id,query_text,doc_id,doc_title,s_T,s_H,s_B,s_C,relevant_r
+CAL01,how do I fix a merge conflict when rebasing in git,document_051364,Resolving merge conflicts after a Git rebase - GitHub Help,1,1,1,1,1
+CAL01,how do I fix a merge conflict when rebasing in git,document_011363,Opening a pull request | Kubernetes,0,1,1,1,0
+CAL01,how do I fix a merge conflict when rebasing in git,document_051302,Merge conflicts - GitHub Enterprise Server 3.17 Docs,1,1,1,1,1
+CAL01,how do I fix a merge conflict when rebasing in git,document_034925,Functions for working with nullable values - ClickHouse Documentation,0,0,0,0,0
+CAL02,why does mongodb trigger an election when a secondary restarts,document_023992,Replica Set Elections - Database Manual - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,1,0,0,1
+CAL02,why does mongodb trigger an election when a secondary restarts,document_025734,Replication - Database Manual v7.0 - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,1,0,0,1
+CAL02,why does mongodb trigger an election when a secondary restarts,document_026329,atlas api clusters restartPrimaries - Atlas CLI v1.57 - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,0,0,0,0
+CAL02,why does mongodb trigger an election when a secondary restarts,document_060609,_mm256_sra_epi64 in core::arch::x86 - Rust,0,0,0,0,0
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_056312,SPIFFE - auth methods | Vault | HashiCorp Developer,0,1,0,1,1
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_053599,Configure SSL for a Linux package installation | GitLab Docs,1,1,1,1,1
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_046099,Per-hostname authenticated origin pulls · Cloudflare SSL/TLS docs,0,0,1,1,0
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_018128,ServerCnxnHelper (Apache ZooKeeper - Server 3.8.4 API),0,0,0,0,0
+CAL04,kafka consumers stuck in constant rebalancing loop,document_030789,Kafka input plugin v12.0.0 | Logstash Plugins,1,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_029188,Kafka input plugin v10.5.2 | Logstash Plugins,1,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_041198,Event Hubs features and terminology - Azure Event Hubs | Microsoft Learn,0,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_068592,BigValueColorMode | Grafana documentation,0,0,0,0,0
+CAL05,how to wait for multiple goroutines to finish in go,document_002805,Effective Go - The Go Programming Language,1,1,1,1,1
+CAL05,how to wait for multiple goroutines to finish in go,document_002795,Documentation - The Go Programming Language,1,1,1,0,1
+CAL05,how to wait for multiple goroutines to finish in go,document_003251,async function - JavaScript | MDN MDN MDN Mozilla,0,0,0,0,0
+CAL05,how to wait for multiple goroutines to finish in go,document_047214,Math functions · Cloudflare Pipelines Docs,0,0,0,0,0
+CAL06,preventing concurrent runs with terraform remote state lock,document_055603,Manage Terraform versions | Terraform | HashiCorp Developer,0,0,0,1,0
+CAL06,preventing concurrent runs with terraform remote state lock,document_055699,Version remote state with the HCP Terraform API | Terraform | HashiCorp Developer,1,1,1,0,1
+CAL06,preventing concurrent runs with terraform remote state lock,document_055767,Upgrading to Terraform v1.10 | Terraform | HashiCorp Developer,0,1,1,1,1
+CAL06,preventing concurrent runs with terraform remote state lock,document_035670,estimateCompressionRatio - ClickHouse Documentation,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_069474,eventhandler_config next | Grafana Agent documentation,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_026128,Send Trigger Events to AWS EventBridge - Atlas - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_032208,Ansible playbook - OpenSearch Documentation Ansible playbook | OpenSearch Documentation Link Search Menu Expand Document Documentation Menu,1,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_074408,VaultGemma · Hugging Face,0,0,0,0,0
+CAL08,why are reads failing when using local quorum in cassandra,document_017832,Dynamo | Apache Cassandra Documentation,1,1,1,1,1
+CAL08,why are reads failing when using local quorum in cassandra,document_017844,Dynamo | Apache Cassandra Documentation,1,1,1,1,1
+CAL08,why are reads failing when using local quorum in cassandra,document_018693,Deploying a multi-cluster on bare metal | Apache Pulsar,0,0,0,0,0
+CAL08,why are reads failing when using local quorum in cassandra,document_029519,Terminate After | Java API [6.8] | Elastic,0,0,0,0,0

@@ -42,7 +42,7 @@ plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial", "Helvetica"]
 
 def plot_storage_footprint():
     """1. Corpus Reduction & Index Footprint Comparison."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.5, 5.2), dpi=300, gridspec_kw={"width_ratios": [1.0, 1.3]})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.5, 5.0), dpi=300, gridspec_kw={"width_ratios": [1.0, 1.3]})
     fig.patch.set_facecolor("white")
     ax1.set_facecolor("#FCFCFD")
     ax2.set_facecolor("#FCFCFD")
@@ -68,12 +68,12 @@ def plot_storage_footprint():
             textcoords="offset points",
             ha="center",
             va="bottom",
-            fontsize=10.0,
+            fontsize=9.5,
             fontweight="bold",
             color="#2D3748",
         )
-    ax1.set_title("Corpus Filtering Scale (GB & Document Count)", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
-    ax1.set_ylabel("Storage on Disk (GB)", fontsize=10, fontweight="bold", color=SLATE)
+    ax1.set_title("Corpus Filtering Scale (GB & Document Count)", fontsize=11.0, fontweight="bold", color=NAVY, pad=10)
+    ax1.set_ylabel("Storage on Disk (GB)", fontsize=9.5, fontweight="bold", color=SLATE)
     ax1.set_ylim(0, 23)
     ax1.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
     ax1.spines["top"].set_visible(False)
@@ -99,12 +99,12 @@ def plot_storage_footprint():
             textcoords="offset points",
             ha="center",
             va="bottom",
-            fontsize=9.5,
+            fontsize=9.0,
             fontweight="bold",
             color="#2D3748",
         )
-    ax2.set_title("Artifact Footprint (45.8k Docs: JSON vs. Packed vs. Neural)", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
-    ax2.set_ylabel("Storage Footprint (MB)", fontsize=10, fontweight="bold", color=SLATE)
+    ax2.set_title("Artifact Footprint (45.8k Docs: JSON vs. Packed vs. Neural)", fontsize=11.0, fontweight="bold", color=NAVY, pad=10)
+    ax2.set_ylabel("Storage Footprint (MB)", fontsize=9.5, fontweight="bold", color=SLATE)
     ax2.set_ylim(0, 3500)
     ax2.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
     ax2.spines["top"].set_visible(False)
@@ -118,19 +118,19 @@ def plot_storage_footprint():
 
 
 def plot_overall_effectiveness():
-    """2. Complete Multi-Metric Benchmark Comparison Across 5 Paradigms."""
-    fig, ax = plt.subplots(figsize=(13.0, 5.8), dpi=300)
+    """2. Multi-Metric Benchmark Comparison Across 5 Paradigms (Compact for Slide 12)."""
+    fig, ax = plt.subplots(figsize=(12.0, 3.4), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
 
-    metrics = ["NDCG@5", "NDCG@10", "P@5", "P@10", "Recall@10", "MAP@10", "MRR@10"]
+    metrics = ["Graded NDCG@5", "Graded NDCG@10", "P@5", "P@10", "Recall@10", "MRR@10", "Binary NDCG"]
 
     data = {
-        "Flat BM25": [0.7188, 0.6727, 0.7067, 0.6400, 0.4643, 0.3978, 0.8667],
-        "BM25F (Fields)": [0.7503, 0.7089, 0.7333, 0.6800, 0.4870, 0.4124, 0.8889],
-        "Neural Routed (k=8)": [0.7181, 0.6335, 0.6800, 0.5733, 0.3800, 0.3142, 0.9000],
-        "Qwen3 Dense (Full Scan)": [0.8420, 0.8036, 0.8133, 0.7667, 0.5226, 0.4634, 0.9667],
-        "★ Hybrid RRF (k=20)": [0.8931, 0.8235, 0.8533, 0.7667, 0.5226, 0.4864, 1.0000],
+        "Flat BM25": [0.7212, 0.8600, 0.7867, 0.7000, 0.5176, 0.9333, 0.9255],
+        "BM25F": [0.7406, 0.8748, 0.7333, 0.6800, 0.5010, 0.9556, 0.9237],
+        "Cluster-Routed Neural": [0.8042, 0.9088, 0.8667, 0.6867, 0.4987, 0.9667, 0.9446],
+        "Qwen3 Dense": [0.7252, 0.8639, 0.8133, 0.7333, 0.5214, 0.9222, 0.9253],
+        "Hybrid RRF": [0.7690, 0.9104, 0.8133, 0.7333, 0.5380, 1.0000, 0.9547],
     }
 
     colors = [SLATE, SKY_BLUE, CRIMSON, GOLD, PURPLE]
@@ -148,23 +148,25 @@ def plot_overall_effectiveness():
             color=colors[i],
             alpha=0.92,
             edgecolor="black",
-            linewidth=0.6,
+            linewidth=0.5,
         )
 
-    ax.set_title("Comprehensive Retrieval Effectiveness Across 5 Architectures (All Primary Metrics)", fontsize=13, fontweight="bold", color=NAVY, pad=25)
-    ax.set_ylabel("Score (0.0 – 1.0)", fontsize=11, fontweight="bold", color=SLATE)
+    ax.set_ylabel("Score (0.0 – 1.0)", fontsize=9.5, fontweight="bold", color=SLATE)
     ax.set_xticks(x)
-    ax.set_xticklabels(metrics, fontsize=10.5, fontweight="bold")
-    ax.set_ylim(0, 1.28)
+    ax.set_xticklabels(metrics, fontsize=9.0, fontweight="bold")
+    ax.set_ylim(0, 1.18)
+
+    # Legend positioned cleanly below title with 70+ px gap (zero overlap)
     ax.legend(
         frameon=True,
         facecolor="white",
         edgecolor="#CBD5E0",
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.06),
+        bbox_to_anchor=(0.5, 1.05),
         ncol=5,
-        fontsize=9.5,
+        fontsize=8.5,
     )
+    ax.set_title("Retrieval Effectiveness Across 15 Benchmark Queries", fontsize=11.5, fontweight="bold", color=NAVY, pad=26)
     ax.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -178,7 +180,7 @@ def plot_overall_effectiveness():
 
 def plot_precision_depth_curve():
     """3. Precision Decay Across Rank Depth (P@1, P@3, P@5, P@10)."""
-    fig, ax = plt.subplots(figsize=(9.5, 4.8), dpi=300)
+    fig, ax = plt.subplots(figsize=(9.5, 4.6), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
 
@@ -186,25 +188,25 @@ def plot_precision_depth_curve():
     x = np.arange(len(depths))
 
     curves = {
-        "Flat BM25": ([0.7333, 0.7333, 0.7067, 0.6400], SLATE, "o-"),
-        "BM25F (Fields)": ([0.8000, 0.8000, 0.7333, 0.6800], SKY_BLUE, "s-"),
-        "Neural Routed": ([0.8000, 0.7556, 0.6800, 0.5733], CRIMSON, "^-"),
-        "Qwen3 Full Scan": ([0.9333, 0.8667, 0.8133, 0.7667], GOLD, "D-"),
-        "★ Hybrid RRF": ([1.0000, 0.9333, 0.8533, 0.7667], PURPLE, "*-"),
+        "Flat BM25": ([0.8667, 0.8222, 0.7867, 0.7000], SLATE, "o-"),
+        "BM25F": ([0.9333, 0.8000, 0.7333, 0.6800], SKY_BLUE, "s-"),
+        "Cluster-Routed Neural": ([0.9333, 0.8667, 0.8667, 0.6867], CRIMSON, "^-"),
+        "Qwen3 Dense": ([0.8667, 0.8667, 0.8133, 0.7333], GOLD, "D-"),
+        "Hybrid RRF": ([1.0000, 0.8889, 0.8133, 0.7333], PURPLE, "P-"),
     }
 
     for name, (vals, color, fmt) in curves.items():
-        linewidth = 2.5 if "★" in name else 1.8
-        markersize = 10 if "★" in name else 7
+        linewidth = 2.2 if name == "Hybrid RRF" else 1.6
+        markersize = 9 if name == "Hybrid RRF" else 6
         ax.plot(x, vals, fmt, label=name, color=color, linewidth=linewidth, markersize=markersize, zorder=5)
 
-    ax.set_title("Precision Retention Across Rank Cutoffs (P@1 → P@10)", fontsize=13, fontweight="bold", color=NAVY, pad=15)
-    ax.set_ylabel("Precision Score", fontsize=10.5, fontweight="bold", color=SLATE)
+    ax.set_title("Precision Retention Across Rank Cutoffs (P@1 → P@10)", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
+    ax.set_ylabel("Precision Score", fontsize=9.5, fontweight="bold", color=SLATE)
     ax.set_xticks(x)
-    ax.set_xticklabels(depths, fontsize=10.5, fontweight="bold")
-    ax.set_ylim(0.50, 1.05)
+    ax.set_xticklabels(depths, fontsize=9.5, fontweight="bold")
+    ax.set_ylim(0.60, 1.05)
     ax.grid(True, linestyle="--", alpha=0.35, color="#A0AEC0")
-    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="lower left", fontsize=9.5)
+    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="lower left", fontsize=8.5)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -216,41 +218,38 @@ def plot_precision_depth_curve():
 
 
 def plot_latency_pareto():
-    """4. Latency vs. Effectiveness Pareto Frontier."""
-    fig, ax = plt.subplots(figsize=(9.5, 5.0), dpi=300)
+    """4. Latency vs. Graded NDCG@10 (Simplified title, both latency & NDCG on points, spacious legend)."""
+    fig, ax = plt.subplots(figsize=(9.2, 4.8), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
 
     points = [
-        ("Flat BM25", 5.3, 0.6727, NAVY, "o"),
-        ("Hierarchical BM25F", 8.2, 0.7089, SKY_BLUE, "s"),
-        ("Cluster Routed Neural", 19.8, 0.6335, CRIMSON, "^"),
-        ("Qwen3 Dense Full Scan", 248.0, 0.8036, GOLD, "D"),
-        ("Hybrid RRF (Qwen3+BM25F)", 24.5, 0.8235, PURPLE, "*"),
+        ("Flat BM25", 31.0, 0.8600, NAVY, "o"),
+        ("BM25F", 43.5, 0.8748, SKY_BLUE, "s"),
+        ("Cluster-Routed", 23.3, 0.9088, CRIMSON, "^"),
+        ("Qwen3 Dense", 53.7, 0.8639, GOLD, "D"),
+        ("Hybrid RRF", 66.8, 0.9104, PURPLE, "P"),
     ]
 
     for name, lat, ndcg, color, marker in points:
-        size = 280 if marker == "*" else 160
-        ax.scatter(lat, ndcg, color=color, s=size, marker=marker, edgecolors="black", linewidth=1.2, zorder=5, label=name)
+        ax.scatter(lat, ndcg, color=color, s=140, marker=marker, edgecolors="black", linewidth=1.0, zorder=5, label=name)
 
-    ax.annotate("Flat BM25\n(5.3 ms)", (5.3, 0.6727), xytext=(5, -18), textcoords="offset points", fontsize=8.5, fontweight="bold")
-    ax.annotate("Hierarchical BM25F\n(8.2 ms)", (8.2, 0.7089), xytext=(8, 10), textcoords="offset points", fontsize=8.5, fontweight="bold")
-    ax.annotate("Cluster Routed\n(19.8 ms)", (19.8, 0.6335), xytext=(10, -15), textcoords="offset points", fontsize=8.5, fontweight="bold")
-    ax.annotate("Qwen3 Full Scan\n(248.0 ms)", (248.0, 0.8036), xytext=(-90, 10), textcoords="offset points", fontsize=8.5, fontweight="bold")
-    ax.annotate("★ Hybrid RRF (k=20)\n(Best Quality: 0.8235)", (24.5, 0.8235), xytext=(-35, 12), textcoords="offset points", fontsize=9.5, fontweight="bold", color=PURPLE)
-
-    pareto_x = [5.3, 8.2, 24.5]
-    pareto_y = [0.6727, 0.7089, 0.8235]
-    ax.plot(pareto_x, pareto_y, linestyle=":", color=PURPLE, alpha=0.7, linewidth=1.8, label="Empirical Pareto Frontier")
+    # Point labels with BOTH latency and NDCG (No stars, clean text)
+    ax.annotate("Flat BM25\n(31.0 ms, 0.8600)", (31.0, 0.8600), xytext=(8, -16), textcoords="offset points", fontsize=8.0, fontweight="bold", color=SLATE)
+    ax.annotate("BM25F\n(43.5 ms, 0.8748)", (43.5, 0.8748), xytext=(8, -16), textcoords="offset points", fontsize=8.0, fontweight="bold", color=SLATE)
+    ax.annotate("Cluster-Routed\n(23.3 ms, 0.9088)", (23.3, 0.9088), xytext=(-95, 10), textcoords="offset points", fontsize=8.0, fontweight="bold", color=CRIMSON)
+    ax.annotate("Qwen3 Dense\n(53.7 ms, 0.8639)", (53.7, 0.8639), xytext=(8, -16), textcoords="offset points", fontsize=8.0, fontweight="bold", color=SLATE)
+    ax.annotate("Hybrid RRF\n(66.8 ms, 0.9104)", (66.8, 0.9104), xytext=(-85, 10), textcoords="offset points", fontsize=8.0, fontweight="bold", color=PURPLE)
 
     ax.set_xscale("log")
-    ax.set_xlim(3, 400)
-    ax.set_ylim(0.58, 0.88)
-    ax.set_title("Retrieval Latency vs. Effectiveness (NDCG@10)", fontsize=13, fontweight="bold", color=NAVY, pad=15)
-    ax.set_xlabel("Query Latency (ms) — Logarithmic Scale", fontsize=10.5, fontweight="bold", color=SLATE)
-    ax.set_ylabel("Effectiveness (NDCG@10)", fontsize=10.5, fontweight="bold", color=SLATE)
+    ax.set_xlim(14, 130)
+    ax.set_ylim(0.835, 0.935)
+    ax.set_title("Cluster-Routed gives highest efficiency (23.3 ms), followed by Hybrid RRF (0.9104)", fontsize=10.5, fontweight="bold", color=NAVY, pad=12)
+    ax.set_xlabel("Query Latency (ms) — Logarithmic Scale", fontsize=9.0, fontweight="bold", color=SLATE)
+    ax.set_ylabel("Graded NDCG@10", fontsize=9.0, fontweight="bold", color=SLATE)
     ax.grid(True, linestyle="--", alpha=0.35, color="#A0AEC0", which="both")
-    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="lower right", fontsize=8.5)
+    # Legend at center left so it is far away from points and ticks
+    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="center left", bbox_to_anchor=(0.02, 0.45), fontsize=8.0)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
@@ -262,7 +261,7 @@ def plot_latency_pareto():
 
 
 def plot_cluster_category_alignment():
-    """5. Unsupervised Neural Clustering vs. Engineering Domains (Zero clipping)."""
+    """5. K-Means++ Domain Clusters with Soft Multi-Membership Expansion (Stacked Horizontal Bar)."""
     fig, ax = plt.subplots(figsize=(10.5, 5.2), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
@@ -278,33 +277,38 @@ def plot_cluster_category_alignment():
         "C1: Cloud Infra & Search\n(Azure, Oracle, Elastic)",
     ]
 
-    doc_counts = [3439, 5156, 6575, 5318, 5499, 5121, 4010, 10763]
+    primary_docs = np.array([3501, 5207, 6579, 5376, 5282, 5008, 4010, 10918])
+    secondary_docs = np.array([502, 773, 1545, 1720, 2767, 1363, 6, 3816])
+    total_docs = primary_docs + secondary_docs
     dominant_share = [93.4, 81.2, 74.8, 68.5, 62.1, 58.7, 52.3, 46.2]
-    colors = [NAVY, GOLD, CRIMSON, SKY_BLUE, TEAL, PURPLE, SLATE, "#D69E2E"]
 
     y = np.arange(len(clusters))
-    bars = ax.barh(y, doc_counts, color=colors, height=0.6, edgecolor="black", linewidth=0.7, alpha=0.9)
 
-    for bar, count, share in zip(bars, doc_counts, dominant_share):
-        xval = bar.get_width()
+    # Stacked horizontal bar: Primary (Navy) + Secondary Expansion (Gold with hatch)
+    b1 = ax.barh(y, primary_docs, color=NAVY, height=0.58, edgecolor="black", linewidth=0.7, alpha=0.92, label="Primary Cluster Documents")
+    b2 = ax.barh(y, secondary_docs, left=primary_docs, color=GOLD, height=0.58, edgecolor="black", linewidth=0.7, hatch="//", alpha=0.92, label="Secondary Boundary Documents (Δ ≤ 0.03)")
+
+    for idx, (p_count, s_count, tot, share) in enumerate(zip(primary_docs, secondary_docs, total_docs, dominant_share)):
+        pct_inc = (s_count / p_count) * 100
         ax.annotate(
-            f"{count:,} docs  ({share}% domain purity)",
-            xy=(xval, bar.get_y() + bar.get_height() / 2),
+            f"{tot:,} docs (+{pct_inc:.1f}% secondary)  ·  {share}% domain purity",
+            xy=(tot, idx),
             xytext=(6, 0),
             textcoords="offset points",
             va="center",
             ha="left",
-            fontsize=8.5,
+            fontsize=8.0,
             fontweight="bold",
             color=SLATE,
         )
 
-    ax.set_title("Unsupervised K-Means++ (k=8) Discovers Ground-Truth Engineering Domains", fontsize=13, fontweight="bold", color=NAVY, pad=15)
-    ax.set_xlabel("Number of Indexed Documents in Cluster", fontsize=10.5, fontweight="bold", color=SLATE)
+    ax.set_title("K-Means++ (k=8) Domain Clustering & Soft Multi-Membership Expansion (Δ ≤ 0.03)", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
+    ax.set_xlabel("Number of Indexed Documents in Cluster", fontsize=9.5, fontweight="bold", color=SLATE)
     ax.set_yticks(y)
-    ax.set_yticklabels(clusters, fontsize=9.0, fontweight="bold")
-    ax.set_xlim(0, 16000)
+    ax.set_yticklabels(clusters, fontsize=8.5, fontweight="bold")
+    ax.set_xlim(0, 19000)
     ax.grid(axis="x", linestyle="--", alpha=0.35, color="#A0AEC0")
+    ax.legend(loc="lower right", frameon=True, facecolor="white", edgecolor="#CBD5E0", fontsize=8.5)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 

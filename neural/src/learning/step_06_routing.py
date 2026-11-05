@@ -15,7 +15,10 @@ def tune_routing(root, engine):
     clusters = engine.clusters
     arrays, counts = {}, {}
     for cluster in range(clusters.model["clusters"]):
-        allowed = clusters.labels == cluster
+        if hasattr(clusters, "memberships"):
+            allowed = np.any(clusters.memberships == cluster, axis=1)
+        else:
+            allowed = clusters.labels == cluster
         counts[str(cluster)] = int(allowed.sum())
         for zone in ZONES:
             arrays[f"{cluster}_{zone}"] = np.flatnonzero(

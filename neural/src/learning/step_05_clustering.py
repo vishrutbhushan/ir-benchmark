@@ -98,6 +98,24 @@ def train_clusters(root, engine):
     labels, centers, inertia = _kmeans(
         features, k, settings["cluster_seed"], settings["cluster_iterations"]
     )
+
+    # Multi-membership assignment with secondary_margin
+    c_norms = np.linalg.norm(centers, axis=1, keepdims=True)
+    c_normed = centers / np.maximum(c_norms, 1e-12)
+    sims = features @ c_normed.T
+    sorted_clusters = np.argsort(-sims, axis=1)
+    primary = sorted_clusters[:, 0]
+    max_sims = np.max(sims, axis=1)
+
+    secondary_margin = float(settings.get("secondary_margin", 0.03))
+    second_cluster = sorted_clusters[:, 1]
+    second_sims = sims[np.arange(len(sims)), second_cluster]
+    has_secondary = second_sims >= (max_sims - secondary_margin)
+
+    memberships = np.full((len(labels), 2), -1, dtype=np.int32)
+    memberships[:, 0] = primary
+    memberships[has_secondary, 1] = second_cluster[has_secondary]
+
     np.savez_compressed(
         out / "zone_vectors.npz",
         vectors=vectors.astype(np.float16),
@@ -105,10 +123,12 @@ def train_clusters(root, engine):
     )
     np.savez_compressed(
         out / "model.npz",
-        labels=labels.astype(np.int32),
+        labels=primary.astype(np.int32),
+        memberships=memberships.astype(np.int32),
         centers=centers.astype(np.float32),
     )
-    counts = {str(c): int((labels == c).sum()) for c in range(k)}
+    counts = {str(c): int((primary == c).sum()) for c in range(k)}
+    multi_counts = {str(c): int((np.any(memberships == c, axis=1)).sum()) for c in range(k)}
     raw_weights = [weights.get(z, 0.5) if isinstance(weights, dict) else 0.5 for z in CLUSTERING_ZONES]
     total_w = sum(raw_weights)
     model = {
@@ -119,6 +139,9 @@ def train_clusters(root, engine):
         "iterations": settings["cluster_iterations"],
         "inertia": inertia,
         "cluster_documents": counts,
+        "multi_membership_documents": multi_counts,
+        "secondary_margin": secondary_margin,
+        "secondary_assignments": int(has_secondary.sum()),
         "representation": "Title and Headings embeddings from Qwen3-Embedding-0.6B with k-means++ initialization",
         "zone_embedding_dimension": int(vectors.shape[2]),
         "zone_vectors": "zone_vectors.npz",
@@ -147,6 +170,11 @@ class Clusters:
         with np.load(directory / "model.npz") as saved:
             self.labels = saved["labels"]
             self.centers = saved["centers"]
+            self.memberships = (
+                saved["memberships"]
+                if "memberships" in saved
+                else np.column_stack((self.labels, np.full_like(self.labels, -1)))
+            )
             if "zone_vectors" not in self.model:
                 self.zone_vectors = saved["zone_vectors"].astype(np.float32)
                 self.zone_present = saved["zone_present"]

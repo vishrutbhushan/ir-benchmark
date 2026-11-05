@@ -1,77 +1,54 @@
-"""Learn reproducible global zone weights from reviewed relevance examples."""
+"""Learn reproducible global zone weights using Manning Chapter 6 weighted zone scoring."""
 
 import csv
 import json
-from collections import defaultdict
 from pathlib import Path
-
 import numpy as np
 
 from src.common.artifacts import digest_file, write_json
 from src.common.paths import REPOSITORY_ROOT
 from src.common.config import load_config
 from src.common.zones import ZONES
-from src.learning.features import load_examples
 
 
-def _configured_input(path):
-    value = Path(path)
-    return value if value.is_absolute() else REPOSITORY_ROOT / value
+def project_simplex(v, minimum=0.0):
+    """Project onto a probability simplex with an optional minimum floor per component."""
+    k = len(v)
+    residual = 1.0 - k * minimum
+    if residual <= 0:
+        return np.full(k, 1.0 / k, dtype=np.float64)
+    shifted = np.asarray(v, dtype=np.float64) - minimum
+    u = np.sort(shifted)[::-1]
+    cssv = np.cumsum(u)
+    rho = np.nonzero(u * np.arange(1, k + 1) > (cssv - residual))[0][-1]
+    theta = (cssv[rho] - residual) / (rho + 1)
+    projected = np.maximum(shifted - theta, 0.0) + minimum
+    return projected / np.sum(projected)
 
 
-def _project_with_floor(values, minimum):
-    """Project onto a simplex while guaranteeing every zone has a floor."""
-    if not 0 <= minimum < 1 / len(values):
-        raise ValueError("minimum zone weight must be below the uniform weight")
-    residual = 1 - minimum * len(values)
-    shifted = np.asarray(values, dtype=np.float64) - minimum
-    shifted = np.maximum(shifted, 0)
-    if shifted.sum() == 0:
-        return np.full(len(values), 1 / len(values), dtype=np.float64)
-    shifted *= residual / shifted.sum()
-    return shifted + minimum
+def fit_manning_weights(X, y, minimum=0.05):
+    """
+    Solve constrained least-squares:
+    min ||X w - y||^2 subject to sum(w) = 1, w_i >= minimum.
+    Pure NumPy implementation of projected gradient descent.
+    """
+    X = np.asarray(X, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+    w = np.full(X.shape[1], 1.0 / X.shape[1], dtype=np.float64)
+    
+    XtX = X.T @ X
+    Xty = X.T @ y
+    eigenvalues = np.linalg.eigvalsh(XtX)
+    L = float(np.max(eigenvalues)) if float(np.max(eigenvalues)) > 1e-6 else 1.0
+    step = 1.0 / L
 
-
-def _fit_weights(features, labels, query_ids, minimum, regularization):
-    matrix = np.asarray(features, dtype=np.float64)
-    target = np.asarray(labels, dtype=np.float64)
-    counts = defaultdict(int)
-    for query_id in query_ids:
-        counts[query_id] += 1
-    sample_weights = np.asarray(
-        [1 / counts[query_id] for query_id in query_ids], dtype=np.float64
-    )
-    sample_weights /= sample_weights.sum()
-    weights = np.full(matrix.shape[1], 1 / matrix.shape[1], dtype=np.float64)
-    center = weights.copy()
-    for _ in range(2500):
-        residual = matrix @ weights - target
-        gradient = 2 * (
-            matrix.T @ (sample_weights * residual)
-            + regularization * (weights - center)
-        )
-        updated = _project_with_floor(weights - 0.08 * gradient, minimum)
-        if np.max(np.abs(updated - weights)) < 1e-10:
+    for _ in range(1000):
+        grad = XtX @ w - Xty
+        w_next = project_simplex(w - step * grad, minimum=minimum)
+        if np.max(np.abs(w_next - w)) < 1e-12:
             break
-        weights = updated
-    return weights
-
-
-def _write_features(path, rows):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fields = [
-        "query_id",
-        "doc_id",
-        "query_text",
-        "relevance_grade",
-        "split",
-        "focus_zone",
-        *sum(([f"has_{z}", f"{z}_cosine"] for z in ZONES), []),
-    ]
-    with path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
+        w = w_next
+    return w
 
 
 def configure_weights(root, engine=None):
@@ -82,113 +59,73 @@ def configure_weights(root, engine=None):
         )
     root = Path(root)
     settings = load_config()
-    queries_path = _configured_input(
-        settings.get("weight_queries", "data_inputs/neural_weights/zone_weight_queries.csv")
+    judgments_path = REPOSITORY_ROOT / settings.get(
+        "weight_judgments", "data_inputs/neural_weights/manning_zone_judgments.csv"
     )
-    judgments_path = _configured_input(
-        settings.get(
-            "weight_judgments",
-            "data_inputs/neural_weights/zone_weight_judgments.csv",
-        )
-    )
-    labels, queries = load_examples(queries_path, judgments_path)
-    doc_indices = {doc["doc_id"]: i for i, doc in enumerate(engine.documents)}
-    grouped = defaultdict(list)
-    for row in labels:
-        grouped[row["query_id"]].append(row)
+    if not judgments_path.exists():
+        judgments_path = REPOSITORY_ROOT / "data_inputs/neural_weights/manning_zone_judgments.csv"
 
-    feature_rows = []
-    feature_matrix, targets, query_ids, splits = [], [], [], []
-    for query_id, query_rows in grouped.items():
-        query = query_rows[0]["query_text"]
-        scores, _, _ = engine.zone_scores(engine._query(query))
-        for row in query_rows:
-            if row["doc_id"] not in doc_indices:
-                raise ValueError(f"Unknown weight-learning document: {row['doc_id']}")
-            index = doc_indices[row["doc_id"]]
-            vector, output = [], {
-                "query_id": query_id,
-                "doc_id": row["doc_id"],
-                "query_text": query,
-                "relevance_grade": row["relevance_grade"],
-                "split": row["split"],
-                "focus_zone": row["focus_zone"],
-            }
-            for column, zone in enumerate(ZONES):
-                score = float(scores[index, column])
-                present = int(np.isfinite(score))
-                output[f"has_{zone}"] = str(present)
-                output[f"{zone}_cosine"] = f"{score:.9f}" if present else ""
-                vector.append(score if present else 0.0)
-            feature_rows.append(output)
-            if row["split"] in {"train", "validation"}:
-                feature_matrix.append(vector)
-                targets.append(float(row["relevance_grade"]))
-                query_ids.append(query_id)
-                splits.append(row["split"])
+    with open(judgments_path, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
 
-    features_path = REPOSITORY_ROOT / "neural/results/step_04_weights/features/training_features.csv"
-    _write_features(features_path, feature_rows)
-    minimum = float(settings.get("minimum_zone_weight", 0.01))
-    regularization = float(settings.get("weight_regularization", 0.05))
-    train_mask = [split == "train" for split in splits]
-    train_matrix = np.asarray(feature_matrix)[train_mask]
-    train_target = np.asarray(targets)[train_mask]
-    unrestricted, _, _, _ = np.linalg.lstsq(train_matrix, train_target, rcond=None)
-    weights = _fit_weights(
-        train_matrix,
-        train_target,
-        [query_id for query_id, selected in zip(query_ids, train_mask) if selected],
-        minimum,
-        regularization,
-    )
-    matrix = np.asarray(feature_matrix, dtype=np.float64)
-    target = np.asarray(targets, dtype=np.float64)
-    predictions = matrix @ weights
-    metrics = {}
-    for split in ("train", "validation"):
-        selected = np.asarray([value == split for value in splits])
-        metrics[split] = {
-            "examples": int(selected.sum()),
-            "mse": float(np.mean((predictions[selected] - target[selected]) ** 2)),
-            "mean_prediction_high_grade": float(
-                np.mean(predictions[selected & (target >= 0.75)])
-            ),
-            "mean_prediction_low_grade": float(
-                np.mean(predictions[selected & (target <= 0.25)])
-            ),
-        }
+    X_list = []
+    y_list = []
+    for r in rows:
+        # Zones order: title, headings, body, code
+        s_T = float(r["s_T"])
+        s_H = float(r["s_H"])
+        s_B = float(r["s_B"])
+        s_C = float(r["s_C"])
+        rel = float(r["relevant_r"])
+        X_list.append([s_T, s_H, s_B, s_C])
+        y_list.append(rel)
+
+    X = np.array(X_list, dtype=np.float64)
+    y = np.array(y_list, dtype=np.float64)
+
+    # Solve unconstrained and constrained least-squares
+    unrestricted, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    # Fit Manning weights with minimum 5% floor
+    minimum_floor = float(settings.get("minimum_zone_weight", 0.05))
+    weights = fit_manning_weights(X, y, minimum=minimum_floor)
+
+    # Calculate correlation with relevance
     separation = {}
-    for column, zone in enumerate(ZONES):
-        relevant = matrix[target >= 0.75, column]
-        non_relevant = matrix[target <= 0.25, column]
+    for idx, zone in enumerate(ZONES):
+        col = X[:, idx]
+        corr = float(np.corrcoef(col, y)[0, 1]) if np.std(col) > 0 and np.std(y) > 0 else 0.0
         separation[zone] = {
-            "relevant_mean": float(np.mean(relevant)),
-            "non_relevant_mean": float(np.mean(non_relevant)),
-            "difference": float(np.mean(relevant) - np.mean(non_relevant)),
+            "correlation_with_relevance": corr,
+            "mean_relevant": float(np.mean(col[y == 1])) if np.sum(y == 1) > 0 else 0.0,
+            "mean_non_relevant": float(np.mean(col[y == 0])) if np.sum(y == 0) > 0 else 0.0,
         }
+
     configured = np.asarray([settings["zone_weights"][z] for z in ZONES], dtype=float)
+    predictions = X @ weights
+    mse = float(np.mean((predictions - y) ** 2))
+
     model = {
         "schema": "query-balanced-zone-ridge-v1",
+        "method": "Manning Chapter 6 Section 6.1 Weighted Zone Scoring",
         "zones": list(ZONES),
         "weights": weights.tolist(),
         "unrestricted_least_squares_weights": unrestricted.tolist(),
         "configured_weights": configured.tolist(),
         "index_fingerprint": engine.summary["fingerprint"],
-        "queries_csv_sha256": digest_file(queries_path),
+        "judgments_csv": str(judgments_path.relative_to(REPOSITORY_ROOT)),
         "judgments_csv_sha256": digest_file(judgments_path),
-        "features_csv": str(features_path.relative_to(REPOSITORY_ROOT)),
-        "objective": "Query-balanced squared binary relevance error with uniform-weight regularization",
-        "minimum_zone_weight": minimum,
-        "weight_regularization": regularization,
-        "examples": len(feature_rows),
-        "eligible_examples": len(labels),
-        "eligible_queries": len(queries),
-        "relevance_labels": [0, 1],
-        "missing_zone_policy": "Absent zones contribute zero; learned global weights",
-        "metrics": metrics,
-        "per_zone_separation": separation,
+        "minimum_zone_weight": minimum_floor,
+        "examples": len(rows),
+        "mse": mse,
+        "per_zone_correlation": separation,
     }
+
+    out_dir = root / "step_04_weights"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    write_json(out_dir / "model.json", model)
+    engine.weights = weights.astype(np.float32)
+
     weights_csv = REPOSITORY_ROOT / "neural/results/step_04_weights/weights.csv"
     weights_csv.parent.mkdir(parents=True, exist_ok=True)
     with weights_csv.open("w", newline="", encoding="utf-8") as stream:
@@ -200,14 +137,12 @@ def configure_weights(root, engine=None):
         writer.writerows(
             {
                 "zone": zone,
-                "learned_weight": f"{learned:.9f}",
-                "configured_weight": f"{configured_value:.9f}",
-                "minimum_weight": f"{minimum:.9f}",
+                "learned_weight": f"{w:.4f}",
+                "configured_weight": f"{c:.4f}",
+                "minimum_weight": f"{minimum_floor:.4f}",
             }
-            for zone, learned, configured_value in zip(ZONES, weights, configured)
+            for zone, w, c in zip(ZONES, weights, configured)
         )
-    model["weights_csv"] = str(weights_csv.relative_to(REPOSITORY_ROOT))
-    write_json(root / "step_04_weights/model.json", model)
-    engine.weights = weights.astype(np.float32)
+
     print(json.dumps(model, indent=2), flush=True)
     return model

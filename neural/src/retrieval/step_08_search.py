@@ -266,7 +266,10 @@ class SearchEngine:
             selected = [
                 int(c) for c in np.argsort(-cluster_scores, kind="stable")
             ][:k]
-            allowed &= np.isin(self.clusters.labels, selected)
+            if hasattr(self.clusters, "memberships"):
+                allowed &= np.any(np.isin(self.clusters.memberships, selected), axis=1)
+            else:
+                allowed &= np.isin(self.clusters.labels, selected)
             selected_rows = {
                 z: np.unique(
                     np.concatenate([self.routing_rows[f"{c}_{z}"] for c in selected])

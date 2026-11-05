@@ -46,7 +46,13 @@ recovery/
 
 # Windows metadata
 *.Zone.Identifier
+*Zone.Identifier*
 *.log
+
+# Temporary presentation & metadata files
+*- Copy.pptx
+IR_Benchmark_Template_Formatted*.pptx
+*.tmp
 
 # Course material and agent documents
 course material/
