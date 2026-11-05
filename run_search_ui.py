@@ -506,7 +506,7 @@ form.onsubmit = async (e) => {
       return;
     }
 
-    statusContainer.innerHTML = `<span class="status-chip">⚡ <b>${data.results.length} results</b> retrieved in <b>${data.elapsed_ms} ms</b> · Method: <b>${escapeHtml(data.method_name)}</b></span>`;
+    statusContainer.innerHTML = `<span class="status-chip"> <b>${data.results.length} results</b> retrieved in <b>${data.elapsed_ms} ms</b> · Method: <b>${escapeHtml(data.method_name)}</b></span>`;
 
     if (data.results.length === 0) {
       resultsContainer.innerHTML = '<p style="color:#5f6368">No matching technical documents found for this query.</p>';
