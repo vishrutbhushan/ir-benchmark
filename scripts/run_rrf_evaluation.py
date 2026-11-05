@@ -158,3 +158,4 @@ if __name__ == "__main__":
     out_d = base_dir / "evaluation" / "results" / "hybrid"
 
     run_rrf(bm25f_p, dense_p, judg_p, out_d, k=20, w_dense=0.7, w_bm25f=0.3)
+

@@ -41,34 +41,26 @@ plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial", "Helvetica"]
 
 
 def plot_storage_footprint():
-    """1. Index Storage & Disk Breakdown."""
-    fig, ax = plt.subplots(figsize=(9, 4.8), dpi=300)
+    """1. Comprehensive Storage & Footprint Comparison."""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5.2), dpi=300, gridspec_kw={"width_ratios": [1.1, 1.3]})
     fig.patch.set_facecolor("white")
-    ax.set_facecolor("#FCFCFD")
+    ax1.set_facecolor("#FCFCFD")
+    ax2.set_facecolor("#FCFCFD")
 
-    components = [
-        "Raw HTML Corpus\n(WARC Extracted)",
-        "Processed Corpus\n(Clean SQLite)",
-        "Classical Index\n(BM25 Inverted JSON)",
-        "Dense Vectors\n(4-Zone MiniLM)",
-        "Cluster Centroids\n& Metadata",
+    # Left: Corpus Progression (GB)
+    corpus_stages = [
+        "Raw Web Crawl\n(79k HTML Files)",
+        "Extracted HTML\n(data/00_corpus)",
+        "Filtered DB\n(Clean SQLite)",
     ]
-    sizes_mb = [1530.0, 1120.0, 1114.0, 615.0, 0.07]
-    colors = [SLATE, NAVY, SKY_BLUE, GOLD, CRIMSON]
+    corpus_gb = [18.6, 11.0, 1.12]
+    colors1 = [SLATE, NAVY, SKY_BLUE]
 
-    bars = ax.bar(components, sizes_mb, color=colors, width=0.55, edgecolor="#1A202C", linewidth=0.8, alpha=0.92)
-
-    for bar, size in zip(bars, sizes_mb):
-        yval = bar.get_height()
-        if size >= 1000:
-            txt = f"{size/1024:.2f} GB\n({int(size)} MB)"
-        elif size >= 1:
-            txt = f"{int(size)} MB"
-        else:
-            txt = f"{size*1024:.0f} KB"
-        ax.annotate(
-            txt,
-            xy=(bar.get_x() + bar.get_width() / 2, yval),
+    bars1 = ax1.bar(corpus_stages, corpus_gb, color=colors1, width=0.55, edgecolor="#1A202C", linewidth=0.8, alpha=0.92)
+    for bar, val in zip(bars1, corpus_gb):
+        ax1.annotate(
+            f"{val:.2f} GB" if val < 10 else f"{val:.1f} GB",
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
             xytext=(0, 5),
             textcoords="offset points",
             ha="center",
@@ -77,13 +69,43 @@ def plot_storage_footprint():
             fontweight="bold",
             color="#2D3748",
         )
+    ax1.set_title("Corpus Filtering & Ingestion Scale", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
+    ax1.set_ylabel("Storage Footprint (GB)", fontsize=10, fontweight="bold", color=SLATE)
+    ax1.set_ylim(0, 22)
+    ax1.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
 
-    ax.set_title("Storage Footprint Across Pipeline Artifacts (45,881 Documents)", fontsize=13, fontweight="bold", color=NAVY, pad=15)
-    ax.set_ylabel("Storage Footprint (MB)", fontsize=10.5, fontweight="bold", color=SLATE)
-    ax.set_ylim(0, 1850)
-    ax.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
+    # Right: Classical vs Neural Pipeline Footprint (MB / GB)
+    sys_components = [
+        "Classical Index\n(Uncompressed JSON)",
+        "Classical Index\n(Standard VByte/Lucene Est.)",
+        "Neural Vectors Only\n(4 Zones .npy)",
+        "Total Neural Pipeline\n(Model+Windows+Vectors+Clusters)",
+    ]
+    sys_mb = [1140.0, 95.0, 615.0, 2890.0]
+    colors2 = [CRIMSON, TEAL, GOLD, PURPLE]
+
+    bars2 = ax2.bar(sys_components, sys_mb, color=colors2, width=0.55, edgecolor="#1A202C", linewidth=0.8, alpha=0.92)
+    for bar, val in zip(bars2, sys_mb):
+        txt = f"{val/1024:.2f} GB" if val >= 1000 else f"{int(val)} MB"
+        ax2.annotate(
+            txt,
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            xytext=(0, 5),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=9.5,
+            fontweight="bold",
+            color="#2D3748",
+        )
+    ax2.set_title("Classical vs. Neural Artifact Footprint (45.8k Docs)", fontsize=11.5, fontweight="bold", color=NAVY, pad=12)
+    ax2.set_ylabel("Storage Footprint (MB)", fontsize=10, fontweight="bold", color=SLATE)
+    ax2.set_ylim(0, 3400)
+    ax2.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
 
     plt.tight_layout()
     p = OUTPUT_DIR / "index_size_breakdown.png"
@@ -92,8 +114,99 @@ def plot_storage_footprint():
     print(f"Saved: {p}")
 
 
+def plot_overall_effectiveness():
+    """2. Complete Multi-Metric Benchmark Comparison Across 5 Paradigms."""
+    fig, ax = plt.subplots(figsize=(13.0, 5.8), dpi=300)
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#FCFCFD")
+
+    metrics = ["NDCG@5", "NDCG@10", "P@5", "P@10", "Recall@10", "MAP@10", "MRR@10"]
+
+    # Values for the 5 systems across all 7 metrics
+    data = {
+        "Flat BM25": [0.7188, 0.6727, 0.7067, 0.6400, 0.4643, 0.3978, 0.8667],
+        "BM25F (Hierarchical)": [0.7503, 0.7089, 0.7333, 0.6800, 0.4870, 0.4124, 0.8889],
+        "Neural Routed (k=8)": [0.7181, 0.6335, 0.6800, 0.5733, 0.3800, 0.3142, 0.9000],
+        "Dense (Full Scan)": [0.8420, 0.8036, 0.8133, 0.7667, 0.5226, 0.4634, 0.9667],
+        "★ Hybrid RRF (k=20)": [0.8931, 0.8235, 0.8533, 0.7667, 0.5226, 0.4864, 1.0000],
+    }
+
+    colors = [SLATE, SKY_BLUE, CRIMSON, GOLD, PURPLE]
+    x = np.arange(len(metrics))
+    num_systems = len(data)
+    width = 0.15
+
+    for i, (name, values) in enumerate(data.items()):
+        offset = (i - (num_systems - 1) / 2) * width
+        rects = ax.bar(
+            x + offset,
+            values,
+            width,
+            label=name,
+            color=colors[i],
+            alpha=0.92,
+            edgecolor="black",
+            linewidth=0.6,
+        )
+
+    ax.set_title("Comprehensive Retrieval Effectiveness Across 5 Architectures (All Primary Metrics)", fontsize=13, fontweight="bold", color=NAVY, pad=15)
+    ax.set_ylabel("Score (0.0 – 1.0)", fontsize=11, fontweight="bold", color=SLATE)
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics, fontsize=10.5, fontweight="bold")
+    ax.set_ylim(0, 1.15)
+    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="upper right", fontsize=9.5, ncol=3)
+    ax.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    p = OUTPUT_DIR / "overall_effectiveness_hybrid.png"
+    plt.savefig(p, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {p}")
+
+
+def plot_precision_depth_curve():
+    """3. Precision Decay Across Rank Depth (P@1, P@3, P@5, P@10)."""
+    fig, ax = plt.subplots(figsize=(9.5, 4.8), dpi=300)
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("#FCFCFD")
+
+    depths = ["P@1", "P@3", "P@5", "P@10"]
+    x = np.arange(len(depths))
+
+    curves = {
+        "Flat BM25": ([0.7333, 0.7333, 0.7067, 0.6400], SLATE, "o-"),
+        "BM25F (Fields)": ([0.8000, 0.8000, 0.7333, 0.6800], SKY_BLUE, "s-"),
+        "Neural Routed": ([0.8000, 0.7556, 0.6800, 0.5733], CRIMSON, "^-"),
+        "Dense Full Scan": ([0.9333, 0.8667, 0.8133, 0.7667], GOLD, "D-"),
+        "★ Hybrid RRF": ([1.0000, 0.9333, 0.8533, 0.7667], PURPLE, "*-"),
+    }
+
+    for name, (vals, color, fmt) in curves.items():
+        linewidth = 2.5 if "★" in name else 1.8
+        markersize = 10 if "★" in name else 7
+        ax.plot(x, vals, fmt, label=name, color=color, linewidth=linewidth, markersize=markersize, zorder=5)
+
+    ax.set_title("Precision Retention Across Rank Cutoffs (P@1 → P@10)", fontsize=13, fontweight="bold", color=NAVY, pad=15)
+    ax.set_ylabel("Precision Score", fontsize=10.5, fontweight="bold", color=SLATE)
+    ax.set_xticks(x)
+    ax.set_xticklabels(depths, fontsize=10.5, fontweight="bold")
+    ax.set_ylim(0.50, 1.05)
+    ax.grid(True, linestyle="--", alpha=0.35, color="#A0AEC0")
+    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="lower left", fontsize=9.5)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    p = OUTPUT_DIR / "precision_depth_curve.png"
+    plt.savefig(p, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {p}")
+
+
 def plot_latency_pareto():
-    """2. Latency vs. Effectiveness Pareto Frontier."""
+    """4. Latency vs. Effectiveness Pareto Frontier."""
     fig, ax = plt.subplots(figsize=(9.5, 5.0), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
@@ -110,17 +223,15 @@ def plot_latency_pareto():
         size = 280 if marker == "*" else 160
         ax.scatter(lat, ndcg, color=color, s=size, marker=marker, edgecolors="black", linewidth=1.2, zorder=5, label=name)
 
-    # Annotate points
     ax.annotate("Flat BM25\n(5.3 ms)", (5.3, 0.6727), xytext=(5, -18), textcoords="offset points", fontsize=8.5, fontweight="bold")
     ax.annotate("Hierarchical BM25F\n(8.2 ms)", (8.2, 0.7089), xytext=(8, 10), textcoords="offset points", fontsize=8.5, fontweight="bold")
     ax.annotate("Cluster Routed\n(19.8 ms)", (19.8, 0.6335), xytext=(10, -15), textcoords="offset points", fontsize=8.5, fontweight="bold")
     ax.annotate("Dense Full Scan\n(248.0 ms)", (248.0, 0.8036), xytext=(-85, 10), textcoords="offset points", fontsize=8.5, fontweight="bold")
     ax.annotate("★ Hybrid RRF (k=20)\n(Best Quality: 0.8235)", (24.5, 0.8235), xytext=(-35, 12), textcoords="offset points", fontsize=9.5, fontweight="bold", color=PURPLE)
 
-    # Pareto curve connection
-    pareto_x = [5.3, 8.2, 24.5, 248.0]
-    pareto_y = [0.6727, 0.7089, 0.8235, 0.8036]
-    ax.plot([5.3, 8.2, 24.5], [0.6727, 0.7089, 0.8235], linestyle=":", color=PURPLE, alpha=0.7, linewidth=1.8, label="Empirical Pareto Frontier")
+    pareto_x = [5.3, 8.2, 24.5]
+    pareto_y = [0.6727, 0.7089, 0.8235]
+    ax.plot(pareto_x, pareto_y, linestyle=":", color=PURPLE, alpha=0.7, linewidth=1.8, label="Empirical Pareto Frontier")
 
     ax.set_xscale("log")
     ax.set_xlim(3, 400)
@@ -140,68 +251,8 @@ def plot_latency_pareto():
     print(f"Saved: {p}")
 
 
-def plot_effectiveness_comparison():
-    """3. Overall Retrieval Effectiveness across Paradigms."""
-    fig, ax = plt.subplots(figsize=(10, 5.0), dpi=300)
-    fig.patch.set_facecolor("white")
-    ax.set_facecolor("#FCFCFD")
-
-    paradigms = [
-        "BM25\n(Flat Lexical)",
-        "BM25F\n(Multi-Field)",
-        "Neural Routed\n(Cluster Top-2)",
-        "Neural Dense\n(Semantic)",
-        "Hybrid RRF\n(Dense + BM25F)",
-    ]
-
-    ndcg10 = [0.6727, 0.7089, 0.6335, 0.8036, 0.8235]
-    p5 = [0.7067, 0.7333, 0.6800, 0.8133, 0.8533]
-    mrr = [0.8667, 0.8889, 0.9000, 0.9667, 1.0000]
-
-    x = np.arange(len(paradigms))
-    width = 0.25
-
-    rects1 = ax.bar(x - width, ndcg10, width, label="NDCG@10", color=NAVY, alpha=0.9, edgecolor="black", linewidth=0.6)
-    rects2 = ax.bar(x, p5, width, label="Precision@5", color=GOLD, alpha=0.9, edgecolor="black", linewidth=0.6)
-    rects3 = ax.bar(x + width, mrr, width, label="MRR@10", color=SKY_BLUE, alpha=0.9, edgecolor="black", linewidth=0.6)
-
-    def autolabel(rects):
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate(
-                f"{height:.2f}",
-                xy=(rect.get_x() + rect.get_width() / 2, height),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-                fontsize=8,
-                fontweight="bold",
-            )
-
-    autolabel(rects1)
-    autolabel(rects2)
-    autolabel(rects3)
-
-    ax.set_title("Benchmarked Retrieval Effectiveness across 5 Architectural Variants", fontsize=13, fontweight="bold", color=NAVY, pad=15)
-    ax.set_ylabel("Metric Score (0.0 – 1.0)", fontsize=10.5, fontweight="bold", color=SLATE)
-    ax.set_xticks(x)
-    ax.set_xticklabels(paradigms, fontsize=9.5, fontweight="bold")
-    ax.set_ylim(0, 1.15)
-    ax.legend(frameon=True, facecolor="white", edgecolor="#CBD5E0", loc="upper left", fontsize=9.5)
-    ax.grid(axis="y", linestyle="--", alpha=0.35, color="#A0AEC0")
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    plt.tight_layout()
-    p = OUTPUT_DIR / "overall_effectiveness_hybrid.png"
-    plt.savefig(p, bbox_inches="tight")
-    plt.close()
-    print(f"Saved: {p}")
-
-
 def plot_cluster_category_alignment():
-    """4. Unsupervised Neural Clustering vs. Engineering Domains."""
+    """5. Unsupervised Neural Clustering vs. Engineering Domains."""
     fig, ax = plt.subplots(figsize=(10.5, 5.2), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
@@ -255,7 +306,7 @@ def plot_cluster_category_alignment():
 
 
 def plot_cache_speedup():
-    """5. LRU Query Cache Hit vs. Cold Miss Latency."""
+    """6. LRU Query Cache Hit vs. Cold Miss Latency."""
     fig, ax = plt.subplots(figsize=(9.5, 4.8), dpi=300)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("#FCFCFD")
@@ -311,8 +362,9 @@ def plot_cache_speedup():
 
 if __name__ == "__main__":
     plot_storage_footprint()
+    plot_overall_effectiveness()
+    plot_precision_depth_curve()
     plot_latency_pareto()
-    plot_effectiveness_comparison()
     plot_cluster_category_alignment()
     plot_cache_speedup()
-    print("All presentation charts generated successfully in presentation/charts/")
+    print("All presentation charts updated successfully in presentation/charts/")
