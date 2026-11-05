@@ -14,6 +14,14 @@ from urllib.parse import parse_qs, urlsplit
 
 ROOT = Path(__file__).resolve().parent
 
+# Auto-switch to virtual environment if current interpreter lacks PyTorch
+try:
+    import torch
+except ImportError:
+    venv_py = ROOT / ".venv/bin/python"
+    if venv_py.exists() and sys.executable != str(venv_py):
+        os.execv(str(venv_py), [str(venv_py)] + sys.argv)
+
 
 class SearchRuntime:
     def __init__(self, neural_output, corpus_dir, corpus_zip):
@@ -66,7 +74,12 @@ class SearchRuntime:
             sys.path.insert(0, str(neural))
         try:
             os.environ.setdefault("NEURAL_CONFIG", str(ROOT / "config/pipeline.json"))
-            import torch
+            try:
+                import torch
+            except ImportError:
+                print("  [!] PyTorch not found. Neural search is disabled; Classical BM25/BM25F search is active.", flush=True)
+                self.neural = False
+                return
             device = "cuda" if torch.cuda.is_available() else "cpu"
             from src.retrieval.step_08_search import SearchEngine
 
@@ -88,6 +101,8 @@ class SearchRuntime:
             rows = payload["results"]
         else:
             self._load_neural()
+            if not self.neural:
+                raise RuntimeError("Neural search requires PyTorch. Run with '.venv/bin/python run_search_ui.py' or activate .venv.")
             mode = "routed-cluster" if method == "neural-routed" else "dense"
             rows = self.neural.search(query, mode=mode, page_size=10)["results"]
         return {
@@ -119,9 +134,9 @@ def serve(host, port, neural_output, corpus_dir, corpus_zip):
     print("  [2/2] Loading Neural search engine & model weights into memory...", flush=True)
     runtime._load_neural()
     print("  Warming up search caches...", flush=True)
-    if runtime.neural is not None:
+    if runtime.neural:
         runtime.neural.warmup()
-    print("Ready! All search engines are resident in memory.\n", flush=True)
+    print("Ready! All available search engines are resident in memory.\n", flush=True)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):

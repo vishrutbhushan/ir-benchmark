@@ -72,16 +72,24 @@ class Store:
         }
         self.path = ROOT / "data/judgments.csv"
         self.labels = {key: None for key in self.pool}
-        self.updated = {}
+        self.j1 = {}
+        self.j2 = {}
+        self.grade = {}
         if self.path.exists():
             for r in read_csv(self.path):
                 key = (r["query_id"], r["doc_id"])
                 if key not in self.pool:
                     continue
-                if r["relevant"] not in {"", "0", "1", "2"}:
-                    raise ValueError("Invalid judgment")
-                self.labels[key] = int(r["relevant"]) if r["relevant"] else None
-                self.updated[key] = r.get("updated_at", "")
+                if r.get("j1_nemotron") not in (None, ""):
+                    self.j1[key] = int(r["j1_nemotron"])
+                if r.get("j2_gemma") not in (None, ""):
+                    self.j2[key] = int(r["j2_gemma"])
+                if r.get("consensus_grade") not in (None, ""):
+                    self.grade[key] = int(r["consensus_grade"])
+                if r.get("relevant") not in (None, ""):
+                    self.labels[key] = int(r["relevant"])
+                elif key in self.grade:
+                    self.labels[key] = 1 if self.grade[key] >= 1 else 0
         self.archive = Path(archive) if archive else None
         self.paths = {}
         if self.archive and self.archive.is_file():
@@ -104,8 +112,10 @@ class Store:
             {
                 "query_id": q,
                 "doc_id": d,
-                "relevant": self.labels[(q, d)],
-                "updated_at": self.updated.get((q, d), ""),
+                "j1_nemotron": self.j1.get((q, d), 0),
+                "j2_gemma": self.j2.get((q, d), 0),
+                "consensus_grade": self.grade.get((q, d), 2 if (self.j1.get((q, d)) == 1 and self.j2.get((q, d)) == 1) else (1 if (self.j1.get((q, d)) == 1 or self.j2.get((q, d)) == 1) else 0)),
+                "relevant": self.labels.get((q, d), 0),
             }
             for q, d in sorted(self.pool)
         ]
@@ -114,7 +124,7 @@ class Store:
         write_csv(
             self.path,
             self.judgment_rows(),
-            ["query_id", "doc_id", "relevant", "updated_at"],
+            ["query_id", "doc_id", "j1_nemotron", "j2_gemma", "consensus_grade", "relevant"],
         )
 
     def judge(self, qid, doc_id, value):

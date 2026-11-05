@@ -16,12 +16,9 @@ def main():
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument("--config", type=Path, default=ROOT.parent / "config/pipeline.json")
     config_args, _ = config_parser.parse_known_args()
-    settings = load_pipeline_config(config_args.config)["evaluation"]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=config_args.config)
     parser.add_argument("--corpus-zip", type=Path, default=ROOT.parent / "filter/outputs/stage_05_archive/technical_web_corpus.zip")
-    parser.add_argument("--host", default=settings["host"])
-    parser.add_argument("--port", type=int, default=settings["port"])
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--metrics", action="store_true")
     parser.add_argument("--import-classical", type=Path)
@@ -90,9 +87,14 @@ def main():
             )
             logging.info("Exported evaluation metrics and per-query results.")
         else:
-            from src.server import serve
-
-            serve(store, args.host, args.port)
+            print(
+                f"Prepared evaluation: {len(store.queries)} queries, {len(store.runs)} variants, {len(store.pool)} unique judgment pairs."
+            )
+            for kind in ("metrics", "per_query"):
+                rows, columns = store.exports(kind)
+                write_csv(ROOT / f"results/{kind}.csv", rows, columns)
+            print("Exported evaluation metrics and per-query results.")
+            logging.info("Exported evaluation metrics and per-query results.")
     except Exception:
         logging.exception("Evaluation failed")
         raise SystemExit(1) from None

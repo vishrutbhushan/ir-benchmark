@@ -38,7 +38,7 @@ To run the pipeline from scratch, only **one external file** is needed — all o
 |---|---|---|
 | **Raw Crawl Corpus** | `data/00_corpus/technical_web_corpus.zip` | Place external archive here (or at repository root) |
 | **Evaluation Queries** | `evaluation/queries/final_queries.jsonl` | Tracked (15 technical benchmark queries) |
-| **Ground-Truth Judgments** | `evaluation/data/judgments.csv` | Tracked (353 pairs with consensus grades 0, 1, 2) |
+| **Ground-Truth Judgments** | `evaluation/data/judgments.csv` | Tracked (353 pairs with J1 Nemotron, J2 Gemma, consensus grades 0/1/2) |
 | **Zone Weight Training Data** | `neural/data/zone_weight_judgments.csv` | Tracked (32 Manning zone training examples) |
 | **Zone Weight Queries** | `neural/data/zone_weight_queries.csv` | Tracked (8 calibration query seeds) |
 
@@ -83,19 +83,12 @@ python evaluation/run_evaluation.py --metrics --force
 
 ---
 
-## Interactive Web UIs
+## Interactive Search UI
 
-### 1. Cross-Engine Search Comparison UI
-Launches a side-by-side search comparison interface evaluating BM25, BM25F, Dense, Neural Zones, and Cluster-Routed retrieval:
+Launches a comparison interface for executing real-time queries across BM25, BM25F, Dense, and Cluster-Routed retrieval:
+
 ```bash
 python run_search_ui.py
-# Open http://localhost:8080 in your browser
-```
-
-### 2. Evaluation & Judgment Adjudication UI
-Launches the Cranfield evaluation interface for inspecting queries, pooled rankings, and consensus scores:
-```bash
-python evaluation/run_evaluation.py
 # Open http://localhost:8000 in your browser
 ```
 
@@ -155,7 +148,7 @@ The canonical 14-slide academic presentation is maintained at:
 |---|---|---|
 | `classical/` | Tokenization, BM25/BM25F scoring, multi-level inverted index | Source code, test suites |
 | `neural/` | Sliding windows, Qwen3 embeddings, Manning zone weights, K-Means++ clustering & soft routing | Source code, models, search engine |
-| `evaluation/` | 15 technical queries, pooled judgments, graded metrics, evaluation UI | Queries, consensus judgments, metrics CSVs, web UI |
+| `evaluation/` | 15 technical queries, pooled judgments with J1/J2 labels, graded metrics | Queries, consensus judgments, metrics CSVs |
 | `presentation/` | Official 14-slide academic benchmark presentation & publication charts | `IR_Benchmark_Presentation.pptx`, PNG charts |
 | `filter/` | HTML extraction, content filtering, version deduplication, ZIP archive | Source code |
 | `data/` | Common Crawl collection, validation, and repair | Source code |
