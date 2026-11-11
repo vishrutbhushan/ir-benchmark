@@ -10,11 +10,11 @@
   "unique_query_document_pairs": 353,
   "result_rows": 750,
   "saved_html_unavailable_unique_documents_by_variant": {
-    "classical/bm25": 0,
-    "classical/bm25f": 0,
-    "neural/dense": 0,
-    "neural/cluster_routed": 0,
-    "neural/zones": 0
+    "classical/bm25": 144,
+    "classical/bm25f": 142,
+    "neural/dense": 140,
+    "neural/cluster_routed": 139,
+    "neural/zones": 140
   },
   "metrics_scope": "Recall, F1, AP and NDCG use the union of all exported top-ten results as the judged pool; full-corpus recall and full MAP are unavailable",
   "judgment_policy": "Unjudged stays blank. One query/document judgment applies across all variants."
