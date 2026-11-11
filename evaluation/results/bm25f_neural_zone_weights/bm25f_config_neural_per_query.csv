@@ -1,0 +1,16 @@
+﻿query_id,query_text,graded_ndcg5,graded_ndcg10,p5,p10,recall10,mrr,binary_ndcg10
+Q01,pytorch cuda out of memory error during training,0.0936,0.3927,0.2000,0.3000,0.1875,0.2000,0.4652
+Q02,kubernetes readiness probe zero downtime deployment,0.7073,0.8047,0.6000,0.5000,0.2941,1.0000,0.9278
+Q03,postgresql jsonb gin index performance,0.6548,0.8659,0.6000,0.5000,0.3846,1.0000,0.8659
+Q04,python asyncio background task without blocking,0.8539,0.9638,0.8000,0.6000,0.6000,1.0000,0.9582
+Q05,docker build --mount=type=cache syntax,0.4719,0.6905,0.6000,0.6000,0.6000,1.0000,0.8786
+Q06,redis rdb vs aof persistence memory,0.9521,0.9884,0.8000,0.6000,0.6667,1.0000,0.9704
+Q07,elasticsearch ilm rollover policy,0.8539,0.9562,0.8000,0.7000,0.4667,1.0000,0.9562
+Q08,spring boot custom health check actuator endpoint,1.0000,0.9848,1.0000,0.7000,0.5385,1.0000,0.9848
+Q09,linux sysctl tcp socket buffer size,0.9521,0.9902,0.8000,0.7000,0.7778,1.0000,0.9764
+Q10,envoy proxy circuit breaker connection pool limits,0.5317,0.5317,0.4000,0.2000,0.1250,0.3333,0.5706
+Q11,quickest way to initialize a basic spring boot rest service without bloated boilerplate,0.6844,0.8846,0.6000,0.6000,0.5000,1.0000,0.8846
+Q12,sql databse conection keeps timing out when backend tries to connect to mysql,0.9197,0.9197,0.4000,0.2000,0.4000,1.0000,0.9197
+Q13,why does my deployed pod keep restarting constantly with exit code 137,1.0000,1.0000,0.2000,0.1000,1.0000,1.0000,1.0000
+Q14,docker build is crawling sluggishly because dependencies re-download on every layer change,0.4693,0.7614,0.2000,0.3000,0.4286,1.0000,0.7614
+Q15,how to prevent redis from eating all server ram and crashing when cache fills up,0.6309,0.6309,0.2000,0.1000,0.2500,0.5000,0.6309
