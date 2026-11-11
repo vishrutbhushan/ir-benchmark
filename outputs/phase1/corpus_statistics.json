@@ -1,370 +1,349 @@
 {
-  "total_documents": 77565,
-  "aggregate_body_chars": 609007992,
-  "aggregate_body_words": 82082583,
-  "average_doc_chars": 7851.6,
-  "average_doc_words": 1058.2,
+  "total_documents": 61966,
+  "aggregate_body_chars": 457357754,
+  "aggregate_body_words": 60561032,
+  "average_doc_chars": 7380.8,
+  "average_doc_words": 977.3,
   "code_statistics": {
-    "docs_with_code": 49857,
-    "pct_docs_with_code": 64.28,
-    "total_code_blocks": 480280,
-    "total_code_characters": 143622372,
-    "avg_code_blocks_per_doc": 6.19
+    "docs_with_code": 40605,
+    "pct_docs_with_code": 65.53,
+    "total_code_blocks": 369452,
+    "total_code_characters": 116611052,
+    "avg_code_blocks_per_doc": 5.96
   },
   "date_statistics": {
-    "docs_with_dates": 10407,
-    "pct_docs_with_dates": 13.42,
-    "total_dates_detected": 23496,
+    "docs_with_dates": 7679,
+    "pct_docs_with_dates": 12.39,
+    "total_dates_detected": 11624,
     "most_common_dates": [
       [
         "2026-08-13",
-        2345
+        1880
       ],
       [
-        "2025-11-17",
-        736
+        "2026-09-01",
+        216
       ],
       [
-        "2026-04-20",
-        608
+        "2026-08-03",
+        203
+      ],
+      [
+        "2026-08-07",
+        164
+      ],
+      [
+        "2023-01-01",
+        158
+      ],
+      [
+        "2026-07-13",
+        152
+      ],
+      [
+        "2025-11-01",
+        136
+      ],
+      [
+        "2014-12-17",
+        122
       ],
       [
         "2023-11-20",
-        580
+        121
       ],
       [
-        "2026-06-29",
-        562
-      ],
-      [
-        "2025-08-18",
-        508
-      ],
-      [
-        "2026-02-02",
-        455
-      ],
-      [
-        "2025-06-16",
-        430
-      ],
-      [
-        "2024-04-29",
-        428
-      ],
-      [
-        "2025-01-10",
-        419
+        "2026-03-10",
+        90
       ]
     ]
   },
   "category_distribution": {
-    "programming-language": 3785,
-    "framework": 6039,
-    "containers-orchestration": 2836,
-    "distributed-data": 6303,
-    "database-search": 17451,
-    "cloud": 12217,
-    "devops-infrastructure": 10621,
-    "os-networking-web": 7608,
-    "observability": 3236,
-    "security": 62,
-    "ml-infrastructure": 7407
+    "programming-language": 3485,
+    "framework": 3908,
+    "containers-orchestration": 2217,
+    "distributed-data": 4762,
+    "database-search": 14063,
+    "cloud": 11319,
+    "devops-infrastructure": 8812,
+    "os-networking-web": 5846,
+    "observability": 2327,
+    "security": 61,
+    "ml-infrastructure": 5166
   },
   "technology_breakdown": {
-    "Django": {
-      "doc_count": 2440,
-      "avg_chars": 9690.4,
-      "avg_words": 1311.9,
-      "total_code_blocks": 17982,
-      "total_dates": 883
-    },
-    "PostgreSQL": {
-      "doc_count": 2440,
-      "avg_chars": 5844.5,
-      "avg_words": 918.4,
-      "total_code_blocks": 7286,
-      "total_dates": 2736
-    },
-    "GitHub": {
-      "doc_count": 2434,
-      "avg_chars": 7343.4,
-      "avg_words": 992.2,
-      "total_code_blocks": 11330,
-      "total_dates": 522
-    },
-    "Java": {
-      "doc_count": 2431,
-      "avg_chars": 6348.3,
-      "avg_words": 628.7,
-      "total_code_blocks": 17899,
-      "total_dates": 13
-    },
-    "Azure": {
-      "doc_count": 2431,
-      "avg_chars": 14216.7,
-      "avg_words": 2045.5,
-      "total_code_blocks": 15950,
-      "total_dates": 869
-    },
-    "Elasticsearch": {
-      "doc_count": 2427,
-      "avg_chars": 6297.3,
-      "avg_words": 844.2,
-      "total_code_blocks": 9624,
-      "total_dates": 242
-    },
-    "Grafana": {
-      "doc_count": 2422,
-      "avg_chars": 5323.4,
-      "avg_words": 738.2,
-      "total_code_blocks": 8963,
-      "total_dates": 243
-    },
-    "Redis": {
-      "doc_count": 2418,
-      "avg_chars": 7665.4,
-      "avg_words": 1048.5,
-      "total_code_blocks": 20671,
-      "total_dates": 47
-    },
-    "ClickHouse": {
-      "doc_count": 2417,
-      "avg_chars": 4473.3,
-      "avg_words": 572.9,
-      "total_code_blocks": 25759,
-      "total_dates": 461
-    },
-    "Envoy": {
-      "doc_count": 2414,
-      "avg_chars": 3552.0,
-      "avg_words": 467.3,
-      "total_code_blocks": 5861,
-      "total_dates": 805
-    },
-    "MySQL": {
-      "doc_count": 2408,
-      "avg_chars": 5613.2,
-      "avg_words": 719.4,
-      "total_code_blocks": 6320,
-      "total_dates": 268
-    },
-    "Cloudflare": {
-      "doc_count": 2400,
-      "avg_chars": 4967.6,
-      "avg_words": 685.7,
-      "total_code_blocks": 7285,
-      "total_dates": 112
-    },
-    "Spark": {
-      "doc_count": 2393,
-      "avg_chars": 6095.4,
-      "avg_words": 664.1,
-      "total_code_blocks": 14181,
-      "total_dates": 198
-    },
     "Oracle Cloud": {
-      "doc_count": 2391,
-      "avg_chars": 4797.7,
-      "avg_words": 485.7,
-      "total_code_blocks": 21603,
+      "doc_count": 2370,
+      "avg_chars": 4793.6,
+      "avg_words": 485.1,
+      "total_code_blocks": 21498,
       "total_dates": 98
     },
-    "Hadoop": {
-      "doc_count": 2388,
-      "avg_chars": 4683.6,
-      "avg_words": 529.9,
-      "total_code_blocks": 16931,
-      "total_dates": 105
+    "AWS": {
+      "doc_count": 2357,
+      "avg_chars": 5386.3,
+      "avg_words": 654.1,
+      "total_code_blocks": 10947,
+      "total_dates": 226
+    },
+    "ClickHouse": {
+      "doc_count": 2325,
+      "avg_chars": 4564.2,
+      "avg_words": 586.1,
+      "total_code_blocks": 25203,
+      "total_dates": 417
+    },
+    "Java": {
+      "doc_count": 2310,
+      "avg_chars": 6567.1,
+      "avg_words": 649.2,
+      "total_code_blocks": 17681,
+      "total_dates": 13
+    },
+    "Cloudflare": {
+      "doc_count": 2288,
+      "avg_chars": 3263.4,
+      "avg_words": 429.5,
+      "total_code_blocks": 7203,
+      "total_dates": 109
+    },
+    "Elasticsearch": {
+      "doc_count": 2265,
+      "avg_chars": 6348.2,
+      "avg_words": 847.4,
+      "total_code_blocks": 9136,
+      "total_dates": 239
+    },
+    "MySQL": {
+      "doc_count": 2257,
+      "avg_chars": 5594.3,
+      "avg_words": 716.1,
+      "total_code_blocks": 5797,
+      "total_dates": 250
+    },
+    "Azure": {
+      "doc_count": 2235,
+      "avg_chars": 13695.8,
+      "avg_words": 1963.0,
+      "total_code_blocks": 14626,
+      "total_dates": 729
     },
     "Linux Kernel": {
-      "doc_count": 2387,
-      "avg_chars": 9379.8,
-      "avg_words": 1362.9,
-      "total_code_blocks": 9717,
-      "total_dates": 99
-    },
-    "AWS": {
-      "doc_count": 2373,
-      "avg_chars": 5376.0,
-      "avg_words": 653.4,
-      "total_code_blocks": 10967,
-      "total_dates": 230
-    },
-    "OpenSearch": {
-      "doc_count": 2309,
-      "avg_chars": 6252.2,
-      "avg_words": 831.0,
-      "total_code_blocks": 16999,
-      "total_dates": 117
-    },
-    "CUDA": {
-      "doc_count": 2295,
-      "avg_chars": 12026.8,
-      "avg_words": 1650.5,
-      "total_code_blocks": 10391,
-      "total_dates": 177
-    },
-    "MongoDB": {
-      "doc_count": 2231,
-      "avg_chars": 5059.0,
-      "avg_words": 705.9,
-      "total_code_blocks": 11146,
-      "total_dates": 639
-    },
-    "PyTorch": {
-      "doc_count": 2178,
-      "avg_chars": 1890.8,
-      "avg_words": 264.5,
-      "total_code_blocks": 2500,
-      "total_dates": 305
+      "doc_count": 2111,
+      "avg_chars": 9211.5,
+      "avg_words": 1334.3,
+      "total_code_blocks": 8398,
+      "total_dates": 82
     },
     "Gradle": {
-      "doc_count": 2160,
-      "avg_chars": 1276.9,
-      "avg_words": 171.9,
-      "total_code_blocks": 2101,
+      "doc_count": 2089,
+      "avg_chars": 1222.7,
+      "avg_words": 163.5,
+      "total_code_blocks": 2068,
       "total_dates": 2
     },
+    "Spark": {
+      "doc_count": 2002,
+      "avg_chars": 4753.7,
+      "avg_words": 551.0,
+      "total_code_blocks": 11818,
+      "total_dates": 164
+    },
+    "GitHub": {
+      "doc_count": 1962,
+      "avg_chars": 7480.0,
+      "avg_words": 987.2,
+      "total_code_blocks": 9781,
+      "total_dates": 475
+    },
+    "PostgreSQL": {
+      "doc_count": 1961,
+      "avg_chars": 5857.4,
+      "avg_words": 924.2,
+      "total_code_blocks": 6312,
+      "total_dates": 2079
+    },
+    "MongoDB": {
+      "doc_count": 1912,
+      "avg_chars": 5080.3,
+      "avg_words": 708.5,
+      "total_code_blocks": 10081,
+      "total_dates": 559
+    },
+    "Grafana": {
+      "doc_count": 1884,
+      "avg_chars": 6021.9,
+      "avg_words": 835.9,
+      "total_code_blocks": 7782,
+      "total_dates": 212
+    },
     "GitLab": {
-      "doc_count": 1943,
-      "avg_chars": 7801.3,
-      "avg_words": 961.0,
-      "total_code_blocks": 15168,
-      "total_dates": 150
+      "doc_count": 1865,
+      "avg_chars": 7583.4,
+      "avg_words": 920.4,
+      "total_code_blocks": 14480,
+      "total_dates": 146
+    },
+    "CUDA": {
+      "doc_count": 1788,
+      "avg_chars": 11400.6,
+      "avg_words": 1556.9,
+      "total_code_blocks": 7468,
+      "total_dates": 116
+    },
+    "Hadoop": {
+      "doc_count": 1693,
+      "avg_chars": 5238.7,
+      "avg_words": 601.1,
+      "total_code_blocks": 12823,
+      "total_dates": 71
     },
     "Maven": {
-      "doc_count": 1691,
-      "avg_chars": 3223.9,
-      "avg_words": 333.6,
-      "total_code_blocks": 5291,
+      "doc_count": 1544,
+      "avg_chars": 3156.7,
+      "avg_words": 321.9,
+      "total_code_blocks": 4869,
       "total_dates": 27
+    },
+    "Envoy": {
+      "doc_count": 1488,
+      "avg_chars": 3674.9,
+      "avg_words": 482.5,
+      "total_code_blocks": 3613,
+      "total_dates": 416
+    },
+    "OpenSearch": {
+      "doc_count": 1460,
+      "avg_chars": 6087.2,
+      "avg_words": 810.3,
+      "total_code_blocks": 10367,
+      "total_dates": 77
     },
     "DigitalOcean": {
-      "doc_count": 1421,
-      "avg_chars": 7953.6,
-      "avg_words": 1081.8,
-      "total_code_blocks": 8408,
-      "total_dates": 1549
+      "doc_count": 1359,
+      "avg_chars": 6731.9,
+      "avg_words": 923.4,
+      "total_code_blocks": 6946,
+      "total_dates": 1520
     },
-    "OpenSSL": {
-      "doc_count": 1341,
-      "avg_chars": 6192.5,
-      "avg_words": 843.4,
-      "total_code_blocks": 3023,
-      "total_dates": 0
-    },
-    "Kubernetes": {
-      "doc_count": 1250,
-      "avg_chars": 12158.7,
-      "avg_words": 1783.7,
-      "total_code_blocks": 11077,
-      "total_dates": 255
-    },
-    "Git": {
-      "doc_count": 1230,
-      "avg_chars": 25787.0,
-      "avg_words": 4101.7,
-      "total_code_blocks": 18399,
-      "total_dates": 11117
-    },
-    "Angular": {
-      "doc_count": 1222,
-      "avg_chars": 2572.5,
-      "avg_words": 329.8,
-      "total_code_blocks": 4011,
-      "total_dates": 7
+    "Redis": {
+      "doc_count": 1191,
+      "avg_chars": 6156.3,
+      "avg_words": 859.6,
+      "total_code_blocks": 7043,
+      "total_dates": 36
     },
     "Spring Boot": {
-      "doc_count": 1221,
-      "avg_chars": 8494.5,
-      "avg_words": 913.8,
-      "total_code_blocks": 9659,
+      "doc_count": 1106,
+      "avg_chars": 8946.9,
+      "avg_words": 959.1,
+      "total_code_blocks": 9178,
       "total_dates": 5
     },
-    "Google Cloud": {
-      "doc_count": 1201,
-      "avg_chars": 7171.3,
-      "avg_words": 982.1,
-      "total_code_blocks": 4369,
-      "total_dates": 204
+    "Kubernetes": {
+      "doc_count": 1029,
+      "avg_chars": 12476.0,
+      "avg_words": 1827.9,
+      "total_code_blocks": 8822,
+      "total_dates": 211
+    },
+    "PyTorch": {
+      "doc_count": 1016,
+      "avg_chars": 3101.7,
+      "avg_words": 429.1,
+      "total_code_blocks": 2020,
+      "total_dates": 252
+    },
+    "Django": {
+      "doc_count": 1008,
+      "avg_chars": 9754.1,
+      "avg_words": 1227.2,
+      "total_code_blocks": 6174,
+      "total_dates": 330
+    },
+    "OpenSSL": {
+      "doc_count": 932,
+      "avg_chars": 6295.2,
+      "avg_words": 860.5,
+      "total_code_blocks": 2220,
+      "total_dates": 0
     },
     "Ray": {
-      "doc_count": 1162,
-      "avg_chars": 5029.7,
-      "avg_words": 598.7,
-      "total_code_blocks": 3202,
-      "total_dates": 27
+      "doc_count": 904,
+      "avg_chars": 5753.9,
+      "avg_words": 683.9,
+      "total_code_blocks": 2884,
+      "total_dates": 25
+    },
+    "Angular": {
+      "doc_count": 884,
+      "avg_chars": 2737.0,
+      "avg_words": 346.0,
+      "total_code_blocks": 3071,
+      "total_dates": 4
     },
     "Apache HTTP Server": {
-      "doc_count": 1008,
-      "avg_chars": 10598.3,
-      "avg_words": 1556.1,
-      "total_code_blocks": 5927,
+      "doc_count": 861,
+      "avg_chars": 10573.7,
+      "avg_words": 1546.0,
+      "total_code_blocks": 4985,
       "total_dates": 0
     },
     "Hugging Face": {
-      "doc_count": 980,
-      "avg_chars": 28923.7,
-      "avg_words": 3811.3,
-      "total_code_blocks": 10610,
-      "total_dates": 229
+      "doc_count": 788,
+      "avg_chars": 25336.0,
+      "avg_words": 3347.9,
+      "total_code_blocks": 7315,
+      "total_dates": 202
+    },
+    "Google Cloud": {
+      "doc_count": 710,
+      "avg_chars": 8307.7,
+      "avg_words": 1138.5,
+      "total_code_blocks": 3075,
+      "total_dates": 138
     },
     "Neo4j": {
-      "doc_count": 801,
-      "avg_chars": 7122.2,
-      "avg_words": 1049.9,
-      "total_code_blocks": 5716,
+      "doc_count": 692,
+      "avg_chars": 6894.1,
+      "avg_words": 1000.4,
+      "total_code_blocks": 5276,
       "total_dates": 40
     },
+    "Terraform": {
+      "doc_count": 582,
+      "avg_chars": 8241.2,
+      "avg_words": 1126.0,
+      "total_code_blocks": 3909,
+      "total_dates": 85
+    },
     "ZooKeeper": {
-      "doc_count": 632,
-      "avg_chars": 2516.1,
-      "avg_words": 270.1,
-      "total_code_blocks": 4620,
+      "doc_count": 471,
+      "avg_chars": 2793.0,
+      "avg_words": 305.8,
+      "total_code_blocks": 3596,
       "total_dates": 2
     },
-    "Terraform": {
-      "doc_count": 611,
-      "avg_chars": 8210.4,
-      "avg_words": 1122.2,
-      "total_code_blocks": 4180,
-      "total_dates": 89
-    },
-    "React": {
-      "doc_count": 609,
-      "avg_chars": 10000.4,
-      "avg_words": 1385.9,
-      "total_code_blocks": 7419,
-      "total_dates": 0
-    },
     "Docker": {
-      "doc_count": 495,
-      "avg_chars": 7439.2,
-      "avg_words": 1058.8,
-      "total_code_blocks": 4119,
-      "total_dates": 78
+      "doc_count": 459,
+      "avg_chars": 6654.0,
+      "avg_words": 946.7,
+      "total_code_blocks": 3302,
+      "total_dates": 75
     },
     "JavaScript": {
-      "doc_count": 490,
-      "avg_chars": 5602.1,
-      "avg_words": 814.5,
-      "total_code_blocks": 3553,
-      "total_dates": 50
+      "doc_count": 439,
+      "avg_chars": 5018.8,
+      "avg_words": 722.5,
+      "total_code_blocks": 2938,
+      "total_dates": 49
     },
-    "Kubeflow": {
-      "doc_count": 471,
-      "avg_chars": 4188.3,
-      "avg_words": 588.2,
-      "total_code_blocks": 2029,
-      "total_dates": 66
-    },
-    "Jaeger": {
-      "doc_count": 429,
-      "avg_chars": 4675.0,
-      "avg_words": 668.8,
-      "total_code_blocks": 1372,
-      "total_dates": 29
+    "React": {
+      "doc_count": 431,
+      "avg_chars": 9699.4,
+      "avg_words": 1310.2,
+      "total_code_blocks": 5252,
+      "total_dates": 0
     },
     "RFCs": {
       "doc_count": 403,
@@ -373,123 +352,130 @@
       "total_code_blocks": 9593,
       "total_dates": 33
     },
-    "FastAPI": {
-      "doc_count": 395,
-      "avg_chars": 16182.4,
-      "avg_words": 1907.4,
-      "total_code_blocks": 5725,
-      "total_dates": 9
-    },
-    "Podman": {
-      "doc_count": 389,
-      "avg_chars": 6499.6,
-      "avg_words": 947.7,
-      "total_code_blocks": 1870,
-      "total_dates": 14
+    "Kubeflow": {
+      "doc_count": 388,
+      "avg_chars": 4069.2,
+      "avg_words": 571.6,
+      "total_code_blocks": 1568,
+      "total_dates": 57
     },
     "Vault": {
-      "doc_count": 376,
-      "avg_chars": 8573.2,
-      "avg_words": 1165.5,
-      "total_code_blocks": 4987,
+      "doc_count": 358,
+      "avg_chars": 8184.8,
+      "avg_words": 1110.3,
+      "total_code_blocks": 4651,
       "total_dates": 16
     },
-    "Python": {
-      "doc_count": 338,
-      "avg_chars": 39155.6,
-      "avg_words": 5900.2,
-      "total_code_blocks": 8098,
-      "total_dates": 20
-    },
-    "Linkerd": {
-      "doc_count": 327,
-      "avg_chars": 5947.6,
-      "avg_words": 841.5,
-      "total_code_blocks": 2378,
-      "total_dates": 59
+    "FastAPI": {
+      "doc_count": 335,
+      "avg_chars": 12750.4,
+      "avg_words": 1486.9,
+      "total_code_blocks": 3817,
+      "total_dates": 7
     },
     "Rust": {
-      "doc_count": 299,
-      "avg_chars": 9169.4,
-      "avg_words": 1459.3,
-      "total_code_blocks": 2647,
+      "doc_count": 290,
+      "avg_chars": 9133.0,
+      "avg_words": 1456.8,
+      "total_code_blocks": 2637,
       "total_dates": 3
     },
     "OpenTelemetry": {
-      "doc_count": 272,
-      "avg_chars": 7343.4,
-      "avg_words": 1024.4,
-      "total_code_blocks": 1120,
-      "total_dates": 9
+      "doc_count": 250,
+      "avg_chars": 7539.0,
+      "avg_words": 1055.6,
+      "total_code_blocks": 1011,
+      "total_dates": 7
     },
-    "RabbitMQ": {
-      "doc_count": 264,
-      "avg_chars": 15074.0,
-      "avg_words": 2193.2,
-      "total_code_blocks": 3813,
-      "total_dates": 12
+    "Git": {
+      "doc_count": 243,
+      "avg_chars": 13641.0,
+      "avg_words": 2107.7,
+      "total_code_blocks": 2275,
+      "total_dates": 1725
     },
-    "TensorFlow": {
-      "doc_count": 227,
-      "avg_chars": 25123.2,
-      "avg_words": 2963.4,
-      "total_code_blocks": 10049,
-      "total_dates": 84
+    "Python": {
+      "doc_count": 229,
+      "avg_chars": 27026.8,
+      "avg_words": 4014.8,
+      "total_code_blocks": 3637,
+      "total_dates": 13
+    },
+    "Podman": {
+      "doc_count": 203,
+      "avg_chars": 6473.9,
+      "avg_words": 937.9,
+      "total_code_blocks": 952,
+      "total_dates": 7
     },
     "Istio": {
-      "doc_count": 216,
-      "avg_chars": 6813.3,
-      "avg_words": 938.2,
-      "total_code_blocks": 1799,
+      "doc_count": 190,
+      "avg_chars": 7185.4,
+      "avg_words": 993.6,
+      "total_code_blocks": 1631,
       "total_dates": 14
     },
-    "Apache Iceberg": {
-      "doc_count": 209,
-      "avg_chars": 10409.6,
-      "avg_words": 1432.9,
-      "total_code_blocks": 2488,
-      "total_dates": 8
+    "Linkerd": {
+      "doc_count": 190,
+      "avg_chars": 5510.1,
+      "avg_words": 793.9,
+      "total_code_blocks": 1069,
+      "total_dates": 59
     },
-    "Pulsar": {
-      "doc_count": 177,
-      "avg_chars": 6183.0,
-      "avg_words": 831.4,
-      "total_code_blocks": 1763,
-      "total_dates": 0
+    "TensorFlow": {
+      "doc_count": 188,
+      "avg_chars": 24231.4,
+      "avg_words": 2870.1,
+      "total_code_blocks": 7980,
+      "total_dates": 66
     },
     "Jenkins": {
-      "doc_count": 176,
-      "avg_chars": 9794.7,
-      "avg_words": 1404.2,
-      "total_code_blocks": 591,
+      "doc_count": 169,
+      "avg_chars": 10179.7,
+      "avg_words": 1459.1,
+      "total_code_blocks": 586,
       "total_dates": 3
     },
-    "Helm": {
+    "RabbitMQ": {
       "doc_count": 158,
-      "avg_chars": 5670.7,
-      "avg_words": 805.1,
-      "total_code_blocks": 1039,
+      "avg_chars": 14744.7,
+      "avg_words": 2163.6,
+      "total_code_blocks": 2235,
+      "total_dates": 9
+    },
+    "Pulsar": {
+      "doc_count": 149,
+      "avg_chars": 5774.4,
+      "avg_words": 780.7,
+      "total_code_blocks": 1279,
+      "total_dates": 0
+    },
+    "Helm": {
+      "doc_count": 145,
+      "avg_chars": 5820.0,
+      "avg_words": 828.0,
+      "total_code_blocks": 979,
       "total_dates": 8
     },
     "Kotlin": {
-      "doc_count": 148,
-      "avg_chars": 7944.2,
-      "avg_words": 1196.4,
-      "total_code_blocks": 180,
+      "doc_count": 141,
+      "avg_chars": 7889.1,
+      "avg_words": 1191.9,
+      "total_code_blocks": 167,
       "total_dates": 13
     },
-    "Prometheus": {
-      "doc_count": 113,
-      "avg_chars": 20655.3,
-      "avg_words": 2937.0,
-      "total_code_blocks": 1277,
-      "total_dates": 1
+    "Jaeger": {
+      "doc_count": 111,
+      "avg_chars": 5857.2,
+      "avg_words": 841.0,
+      "total_code_blocks": 405,
+      "total_dates": 5
     },
     "Spring": {
-      "doc_count": 109,
-      "avg_chars": 5998.2,
-      "avg_words": 793.8,
-      "total_code_blocks": 823,
+      "doc_count": 107,
+      "avg_chars": 6044.1,
+      "avg_words": 799.7,
+      "total_code_blocks": 805,
       "total_dates": 0
     },
     "MLflow": {
@@ -506,6 +492,13 @@
       "total_code_blocks": 384,
       "total_dates": 13
     },
+    "Prometheus": {
+      "doc_count": 82,
+      "avg_chars": 11342.9,
+      "avg_words": 1654.9,
+      "total_code_blocks": 640,
+      "total_dates": 1
+    },
     "Apache Beam": {
       "doc_count": 58,
       "avg_chars": 11059.2,
@@ -513,18 +506,25 @@
       "total_code_blocks": 658,
       "total_dates": 35
     },
+    "Apache Iceberg": {
+      "doc_count": 53,
+      "avg_chars": 12022.8,
+      "avg_words": 1674.7,
+      "total_code_blocks": 756,
+      "total_dates": 2
+    },
     "TypeScript": {
-      "doc_count": 51,
-      "avg_chars": 10788.5,
-      "avg_words": 1719.5,
-      "total_code_blocks": 952,
+      "doc_count": 48,
+      "avg_chars": 10495.7,
+      "avg_words": 1671.5,
+      "total_code_blocks": 869,
       "total_dates": 0
     },
     "Cassandra": {
-      "doc_count": 48,
-      "avg_chars": 5268.8,
-      "avg_words": 737.6,
-      "total_code_blocks": 132,
+      "doc_count": 46,
+      "avg_chars": 4924.7,
+      "avg_words": 680.4,
+      "total_code_blocks": 130,
       "total_dates": 3
     },
     "Nginx": {
@@ -535,10 +535,10 @@
       "total_dates": 0
     },
     "Node.js": {
-      "doc_count": 43,
-      "avg_chars": 52798.4,
-      "avg_words": 7392.2,
-      "total_code_blocks": 1457,
+      "doc_count": 37,
+      "avg_chars": 50186.1,
+      "avg_words": 7029.1,
+      "total_code_blocks": 1207,
       "total_dates": 0
     },
     "OpenID Connect": {
@@ -555,19 +555,19 @@
       "total_code_blocks": 215,
       "total_dates": 8
     },
-    "NIST": {
-      "doc_count": 29,
-      "avg_chars": 14699.1,
-      "avg_words": 1362.1,
-      "total_code_blocks": 0,
-      "total_dates": 0
-    },
     "Go": {
       "doc_count": 28,
       "avg_chars": 37975.0,
       "avg_words": 5912.8,
       "total_code_blocks": 744,
       "total_dates": 13
+    },
+    "NIST": {
+      "doc_count": 28,
+      "avg_chars": 14705.4,
+      "avg_words": 1361.8,
+      "total_code_blocks": 0,
+      "total_dates": 0
     },
     "HBase": {
       "doc_count": 11,
@@ -577,23 +577,23 @@
       "total_dates": 0
     },
     "HAProxy": {
-      "doc_count": 9,
-      "avg_chars": 655318.3,
-      "avg_words": 101622.9,
-      "total_code_blocks": 9673,
-      "total_dates": 0
-    },
-    "Kafka": {
-      "doc_count": 3,
-      "avg_chars": 537.0,
-      "avg_words": 83.0,
-      "total_code_blocks": 0,
+      "doc_count": 5,
+      "avg_chars": 554413.6,
+      "avg_words": 85562.6,
+      "total_code_blocks": 4408,
       "total_dates": 0
     },
     "OpenShift": {
       "doc_count": 1,
       "avg_chars": 1325.0,
       "avg_words": 208.0,
+      "total_code_blocks": 0,
+      "total_dates": 0
+    },
+    "Kafka": {
+      "doc_count": 1,
+      "avg_chars": 537.0,
+      "avg_words": 83.0,
       "total_code_blocks": 0,
       "total_dates": 0
     },

@@ -18,10 +18,6 @@ import json
 import sys
 from pathlib import Path
 
-from src.phase0_audit.audit_runner import run_corpus_audit
-from src.phase1_extraction.extraction_runner import run_structured_extraction
-from src.phase2_tokenization.tokenization_runner import run_tokenization
-from src.phase3_classic_ir.classic_ir_runner import run_classic_ir
 from src.utils.logging_utils import setup_logger
 from src.utils.visualizer import generate_interactive_dashboard_html
 
@@ -168,8 +164,9 @@ def main() -> None:
 
     print(f"=== Running IR Benchmark Pipeline [Phase: {phase}] ===")
 
-    # Execute Phase 0
-    if phase in ["0", "all"]:
+    # Execute Phase 0 (if present)
+    if phase == "0":
+        from src.phase0_audit.audit_runner import run_corpus_audit
         phase0_out = args.output_dir / "phase0"
         phase0_log = args.logs_dir / "phase0" / "audit.log"
         logger0 = setup_logger("phase0_audit", phase0_log)
@@ -187,6 +184,7 @@ def main() -> None:
 
     # Execute Phase 1
     if phase in ["1", "all"]:
+        from src.phase1_extraction.extraction_runner import run_structured_extraction
         phase1_out = args.output_dir / "phase1"
         phase1_log = args.logs_dir / "phase1" / "extraction.log"
         logger1 = setup_logger("phase1_extraction", phase1_log)
@@ -216,6 +214,7 @@ def main() -> None:
 
     # Execute Phase 2
     if phase in ["2", "all"]:
+        from src.phase2_tokenization.tokenization_runner import run_tokenization
         phase2_out = args.output_dir / "phase2"
         phase2_log = args.logs_dir / "phase2" / "tokenization.log"
         logger2 = setup_logger("phase2_tokenization", phase2_log)
@@ -239,6 +238,7 @@ def main() -> None:
 
     # Execute Phase 3
     if phase in ["3", "all"]:
+        from src.phase3_classic_ir.classic_ir_runner import run_classic_ir
         phase3_out = args.output_dir / "phase3"
         phase3_log = args.logs_dir / "phase3" / "classic_ir.log"
         logger3 = setup_logger("phase3_classic_ir", phase3_log)

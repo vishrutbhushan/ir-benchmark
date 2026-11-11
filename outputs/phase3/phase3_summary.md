@@ -4,60 +4,60 @@
 **BM25 Parameters:** k1=1.2, b=0.75, top_k=20
 **BM25F Zone Weights:** {'title': 4.0, 'heading': 2.5, 'code': 2.0, 'body': 1.0}
 **Hierarchical Taxonomy Boost:** 25%
-**Index Size:** 2078.0 MB
-**Elapsed Time:** 4854.59s
+**Index Size:** 1606.37 MB
+**Elapsed Time:** 60.17s
 
 ## 1. Index Statistics & Hierarchical Postings
 
 | Metric | Value |
 | :--- | :--- |
-| Total Documents | 77,565 |
-| Vocabulary Size | 1,824,935 |
-| Total Postings Entries | 18,821,101 |
-| Total Position Entries | 95,481,935 |
-| avg_postings_per_term | 10.31 |
+| Total Documents | 61,966 |
+| Vocabulary Size | 1,799,233 |
+| Total Postings Entries | 14,338,715 |
+| Total Position Entries | 72,795,150 |
+| avg_postings_per_term | 7.97 |
 | Hierarchical Categories | 13 |
 | Hierarchical Technologies | 76 |
 | Hierarchical Domains | 5 |
-| Total Sections Indexed | 851,580 |
+| Total Sections Indexed | 652,089 |
 | avg_section_length | 79.6 |
-| Champion Lists Count | 1,824,935 |
+| Champion Lists Count | 1,799,233 |
 
 ## 2. Average Zone Lengths across Corpus
 
 | Zone | Average Tokens |
 | :--- | :--- |
-| **Title** | 7.6 tokens |
-| **Heading** | 38.4 tokens |
-| **Body** | 896.6 tokens |
-| **Code** | 289.0 tokens |
+| **Title** | 7.7 tokens |
+| **Heading** | 36.9 tokens |
+| **Body** | 840.5 tokens |
+| **Code** | 290.4 tokens |
 
 ## 3. Query Suite Comparative Results (BM25 vs. Hierarchical BM25F)
 
 | Query ID | Category | Query Text | BM25 Top Score | BM25F Top Score | BM25F Top Tech / Domain |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Q01** | Negation | Asynchronous Python web frameworks that do NO... | `44.4596` | **`25.2862`** | Python (Prog Lang) |
-| **Q02** | Negation | Kubernetes ingress controllers that support S... | `46.7089` | **`21.7763`** | Istio (Containers & Orchestration) |
-| **Q03** | Negation | Java database connection pooling libraries th... | `46.5317` | **`21.1383`** | Spring Boot (Web & Backend Frameworks) |
-| **Q04** | Homonyms | Python memory management reference counting v... | `31.1473` | **`14.7898`** | Python (Prog Lang) |
-| **Q05** | Homonyms | Java thread synchronization primitives and mo... | `21.8364` | **`12.3864`** | Java (Prog Lang) |
-| **Q06** | Homonyms | Docker container networking bridge mode confi... | `28.1469` | **`16.0840`** | Docker (Containers & Orchestration) |
-| **Q07** | Homonyms | PostgreSQL connection pooling versus session ... | `40.7232` | **`19.6292`** | PostgreSQL (DB) |
-| **Q08** | Temporal | React state management patterns introduced st... | `35.4599` | **`16.3479`** | React (Web & Backend Frameworks) |
-| **Q09** | Temporal | Kubernetes security feature deprecations betw... | `43.5779` | **`25.1268`** | Kubernetes (Containers & Orchestration) |
-| **Q10** | Temporal | Java module system additions and breaking cha... | `25.3554` | **`13.7417`** | Java (Prog Lang) |
-| **Q11** | Temporal | FastAPI dependency injection updates in versi... | `31.7610` | **`18.2296`** | FastAPI (Web & Backend Frameworks) |
-| **Q12** | Exact_Terminology | Handling ERR_CONNECTION_RESET exceptions in N... | `48.1977` | **`28.9008`** | Node.js (Web & Backend Frameworks) |
-| **Q13** | Exact_Terminology | PostgreSQL JSONB containment operator @> perf... | `50.3380` | **`29.3950`** | PostgreSQL (DB) |
-| **Q14** | Exact_Terminology | Docker multi-stage build caching syntax using... | `62.5152` | **`37.8129`** | Docker (Containers & Orchestration) |
-| **Q15** | Exact_Terminology | Configuring PyTorch distributed data parallel... | `44.2117` | **`24.7002`** | PyTorch (AI/ML) |
-| **Q16** | Multi_Constraint | How to configure zero-downtime rolling update... | `48.5785` | **`22.4263`** | AWS (Cloud) |
-| **Q17** | Multi_Constraint | FastAPI background tasks integration with Red... | `37.3876` | **`21.5393`** | FastAPI (Web & Backend Frameworks) |
-| **Q18** | Multi_Constraint | Spring Boot actuator endpoint security config... | `55.1923` | **`31.6138`** | Spring Boot (Web & Backend Frameworks) |
-| **Q19** | Multi_Constraint | Terraform AWS provider state locking configur... | `69.5326` | **`40.5711`** | Terraform (DevOps & CI/CD) |
-| **Q20** | Multi_Constraint | Prometheus scraping metrics from secure gRPC ... | `57.9923` | **`31.7428`** | Grafana (Observability & Monitoring) |
-| **Q21** | Error_Troubleshooting | Resolving org.apache.kafka.common.errors.Retr... | `38.5116` | **`17.5312`** | Elasticsearch (DB) |
-| **Q22** | Error_Troubleshooting | Fixing Docker buildkit out of memory error du... | `41.3281` | **`23.6447`** | Docker (Containers & Orchestration) |
-| **Q23** | Configuration_Schema | Kubernetes deployment resource limits CPU and... | `30.7697` | **`18.1194`** | Kubernetes (Containers & Orchestration) |
-| **Q24** | Configuration_Schema | Terraform AWS security group ingress block CI... | `48.6729` | **`28.9308`** | Terraform (DevOps & CI/CD) |
-| **Q25** | Conceptual_Procedural | Architecture difference between Apache Kafka ... | `70.3423` | **`40.1382`** | Pulsar (Communication/msg passing) |
+| **Q01** | Negation | Manage TLS certificates in MongoDB Kubernetes... | `72.3692` | **`43.6837`** | MongoDB (DB) |
+| **Q02** | Negation | Configure Istio Ingress Gateway for HTTPS tra... | `59.6681` | **`35.0138`** | Istio (Containers & Orchestration) |
+| **Q03** | Negation | Execute SQL statements in Go database/sql tha... | `57.4313` | **`33.2099`** | Go (Prog Lang) |
+| **Q04** | Homonyms | Go garbage collector tracing cycle and memory... | `53.7475` | **`31.7295`** | Go (Prog Lang) |
+| **Q05** | Homonyms | Rust thread-safe reference-counting pointer A... | `83.6764` | **`49.1699`** | Rust (Prog Lang) |
+| **Q06** | Homonyms | Docker container host network driver mode and... | `44.2045` | **`25.2164`** | Docker (Containers & Orchestration) |
+| **Q07** | Homonyms | Redis Hash vs JSON storage data structures an... | `37.9224` | **`21.7789`** | Redis (DB) |
+| **Q08** | Temporal | React 19 useEffectEvent hook for extracting n... | `77.3637` | **`33.1674`** | React (Web & Backend Frameworks) |
+| **Q09** | Temporal | Kubernetes removed feature gates and deprecat... | `35.9118` | **`20.2559`** | Kubernetes (Containers & Orchestration) |
+| **Q10** | Temporal | Prometheus 3.0 migration guide metric_name_va... | `57.3157` | **`33.9521`** | Prometheus (Observability & Monitoring) |
+| **Q11** | Temporal | Go encoding/json/v2 migration guide API and b... | `38.4945` | **`22.4916`** | Go (Prog Lang) |
+| **Q12** | Exact_Terminology | PostgreSQL pg_mcv_list_items statistics infor... | `110.3315` | **`63.2147`** | PostgreSQL (DB) |
+| **Q13** | Exact_Terminology | PostgreSQL JSONB containment operator @> and ... | `81.4851` | **`47.4540`** | PostgreSQL (DB) |
+| **Q14** | Exact_Terminology | Linux kernel /proc/sys/vm/drop_caches sysctl ... | `86.3803` | **`34.9028`** | Linux Kernel (OS, Networking & Web Servers) |
+| **Q15** | Exact_Terminology | PyTorch torch.distributed.fsdp.fully_shard FS... | `122.3317` | **`52.8822`** | PyTorch (AI/ML) |
+| **Q16** | Multi_Constraint | Perform a rolling update on a Kubernetes Daem... | `92.6438` | **`53.4920`** | Kubernetes (Containers & Orchestration) |
+| **Q17** | Multi_Constraint | FastAPI BackgroundTasks asynchronous email no... | `72.3936` | **`41.4287`** | FastAPI (Web & Backend Frameworks) |
+| **Q18** | Multi_Constraint | HashiCorp Vault cluster restore from Raft sna... | `93.9770` | **`56.2869`** | Vault (Security & Identity) |
+| **Q19** | Multi_Constraint | Terraform Amazon S3 backend state storage con... | `75.6041` | **`43.1171`** | Terraform (DevOps & CI/CD) |
+| **Q20** | Multi_Constraint | Monitoring Docker container metrics using cAd... | `94.8310` | **`54.7109`** | Prometheus (Observability & Monitoring) |
+| **Q21** | Error_Troubleshooting | PyTorch torch.compile troubleshooting graph b... | `84.0954` | **`36.9048`** | Hugging Face (AI/ML) |
+| **Q22** | Error_Troubleshooting | Istio sidecar injection problems troubleshoot... | `58.8543` | **`34.7181`** | Istio (Containers & Orchestration) |
+| **Q23** | Configuration_Schema | Kubernetes Taints and Tolerations kubectl tai... | `85.0276` | **`48.3410`** | Kubernetes (Containers & Orchestration) |
+| **Q24** | Configuration_Schema | ClickHouse ALTER TABLE DETACH PARTITION distr... | `51.6329` | **`30.2405`** | ClickHouse (DB) |
+| **Q25** | Conceptual_Procedural | RabbitMQ consumer delivery acknowledgements a... | `129.6514` | **`74.9592`** | RabbitMQ (Communication/msg passing) |

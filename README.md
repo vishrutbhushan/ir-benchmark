@@ -1,8 +1,9 @@
 # Technical IR Benchmark — Classical IR & BM25 Engine
 
-A high-performance Information Retrieval system featuring a hand-coded, zero-dependency **Classical IR Engine** evaluated over a 77,565-document technical web documentation corpus.
+A high-performance Information Retrieval system featuring a hand-coded, zero-dependency **Classical IR Engine** evaluated over a **61,966-document** deduplicated technical web documentation corpus (filtered from 77,817 raw pages via `< 200` char filtering + exact SHA-256 content deduplication + 64-bit SimHash near-duplicate removal).
 
 This branch focuses on:
+- **Exact + 64-Bit SimHash Deduplication** (`src/utils/simhash.py` — removes exact & cross-version near-duplicate documentation pages)
 - **Okapi BM25** (Flat Document Baseline)
 - **Zone-Weighted BM25F** (`title`, `heading`, `code`, `body`)
 - **Hierarchical Multi-Level Indexing** (Level 1: Document Zonal Index, Level 2: Section / Passage Sub-Index, Level 0: Hierarchical Taxonomy Routing)
@@ -39,10 +40,10 @@ Parses raw crawled HTML files into structured records (`title`, `headings`, `sec
 # Run stratified extraction (small sample)
 python run_pipeline.py --phase 1 --stratified --max-docs 500
 
-# Run full corpus extraction (77,565 documents)
-python run_pipeline.py --phase 1 --num-workers 8
+# Run full corpus extraction + SimHash deduplication (61,966 unique documents)
+python run_pipeline.py --phase 1 --workers 8
 ```
-- **Outputs**: `outputs/phase1/structured_records.jsonl`, `outputs/phase1/corpus_statistics.json`, `outputs/phase1/corpus_statistics.md`, `outputs/phase1/charts/`
+- **Outputs**: `outputs/phase1/structured_records.jsonl`, `outputs/phase1/duplicate_removal_report.json`, `outputs/phase1/corpus_statistics.json`, `outputs/phase1/corpus_statistics.md`, `outputs/phase1/charts/`
 - **Logs**: `logs/phase1/extraction.log`
 
 ---
@@ -60,7 +61,7 @@ python run_pipeline.py --phase 2 --num-workers 8
 ---
 
 ### 3. Phase 3 — Classical IR Engine (Multi-Level Indexing, BM25 & BM25F)
-Constructs the hand-coded multi-zone inverted index, section sub-index (851,580 passages), category directory, and evaluates the benchmark query suite:
+Constructs the hand-coded multi-zone inverted index (61,966 unique documents, 1,799,233 terms, 14,338,715 postings), section sub-index (652,089 passages), category directory, and evaluates the benchmark query suite:
 
 ```bash
 # Run both Flat BM25 and Hierarchical BM25F side-by-side (default)

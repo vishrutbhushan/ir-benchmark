@@ -1,8 +1,8 @@
 # Phase 1 — Structured Corpus Statistics Report
 
-**Total Structured Documents Processed:** 77,565
-**Average Document Length:** 1,058.2 words (7,851.6 characters)
-**Total Vocabulary / Body Words:** 82,082,583
+**Total Structured Documents Processed:** 61,966
+**Average Document Length:** 977.3 words (7,380.8 characters)
+**Total Vocabulary / Body Words:** 60,561,032
 
 ## Visual Charts & Graphs
 
@@ -14,66 +14,66 @@
 
 ## 1. Code Block & Technical Token Extraction
 
-- **Documents with Code Blocks:** 49,857 (64.28%)
-- **Total Isolated Code Blocks:** 480,280
-- **Average Code Blocks per Document:** 6.19
-- **Total Code Snippet Characters:** 143,622,372
+- **Documents with Code Blocks:** 40,605 (65.53%)
+- **Total Isolated Code Blocks:** 369,452
+- **Average Code Blocks per Document:** 5.96
+- **Total Code Snippet Characters:** 116,611,052
 
 ## 2. Date Detection & Normalization
 
-- **Documents with Dates Detected:** 10,407 (13.42%)
-- **Total Normalized Dates Extracted:** 23,496
+- **Documents with Dates Detected:** 7,679 (12.39%)
+- **Total Normalized Dates Extracted:** 11,624
 
 ### Top Normalized Dates Detected
 
 | Date (ISO) | Document Frequency |
 | :--- | :--- |
-| `2026-08-13` | 2,345 |
-| `2025-11-17` | 736 |
-| `2026-04-20` | 608 |
-| `2023-11-20` | 580 |
-| `2026-06-29` | 562 |
-| `2025-08-18` | 508 |
-| `2026-02-02` | 455 |
-| `2025-06-16` | 430 |
+| `2026-08-13` | 1,880 |
+| `2026-09-01` | 216 |
+| `2026-08-03` | 203 |
+| `2026-08-07` | 164 |
+| `2023-01-01` | 158 |
+| `2026-07-13` | 152 |
+| `2025-11-01` | 136 |
+| `2014-12-17` | 122 |
 
 ## 3. Category Breakdown
 
 | Category | Documents | Share |
 | :--- | :--- | :--- |
-| **programming-language** | 3,785 | 4.9% |
-| **framework** | 6,039 | 7.8% |
-| **containers-orchestration** | 2,836 | 3.7% |
-| **distributed-data** | 6,303 | 8.1% |
-| **database-search** | 17,451 | 22.5% |
-| **cloud** | 12,217 | 15.8% |
-| **devops-infrastructure** | 10,621 | 13.7% |
-| **os-networking-web** | 7,608 | 9.8% |
-| **observability** | 3,236 | 4.2% |
-| **security** | 62 | 0.1% |
-| **ml-infrastructure** | 7,407 | 9.5% |
+| **programming-language** | 3,485 | 5.6% |
+| **framework** | 3,908 | 6.3% |
+| **containers-orchestration** | 2,217 | 3.6% |
+| **distributed-data** | 4,762 | 7.7% |
+| **database-search** | 14,063 | 22.7% |
+| **cloud** | 11,319 | 18.3% |
+| **devops-infrastructure** | 8,812 | 14.2% |
+| **os-networking-web** | 5,846 | 9.4% |
+| **observability** | 2,327 | 3.8% |
+| **security** | 61 | 0.1% |
+| **ml-infrastructure** | 5,166 | 8.3% |
 
 ## 4. Technology Breakdown (Top 20 by Volume)
 
 | Technology | Docs | Avg Words | Avg Chars | Code Blocks | Dates |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| Django | 2,440 | 1311.9 | 9690.4 | 17,982 | 883 |
-| PostgreSQL | 2,440 | 918.4 | 5844.5 | 7,286 | 2736 |
-| GitHub | 2,434 | 992.2 | 7343.4 | 11,330 | 522 |
-| Java | 2,431 | 628.7 | 6348.3 | 17,899 | 13 |
-| Azure | 2,431 | 2045.5 | 14216.7 | 15,950 | 869 |
-| Elasticsearch | 2,427 | 844.2 | 6297.3 | 9,624 | 242 |
-| Grafana | 2,422 | 738.2 | 5323.4 | 8,963 | 243 |
-| Redis | 2,418 | 1048.5 | 7665.4 | 20,671 | 47 |
-| ClickHouse | 2,417 | 572.9 | 4473.3 | 25,759 | 461 |
-| Envoy | 2,414 | 467.3 | 3552.0 | 5,861 | 805 |
-| MySQL | 2,408 | 719.4 | 5613.2 | 6,320 | 268 |
-| Cloudflare | 2,400 | 685.7 | 4967.6 | 7,285 | 112 |
-| Spark | 2,393 | 664.1 | 6095.4 | 14,181 | 198 |
-| Oracle Cloud | 2,391 | 485.7 | 4797.7 | 21,603 | 98 |
-| Hadoop | 2,388 | 529.9 | 4683.6 | 16,931 | 105 |
-| Linux Kernel | 2,387 | 1362.9 | 9379.8 | 9,717 | 99 |
-| AWS | 2,373 | 653.4 | 5376.0 | 10,967 | 230 |
-| OpenSearch | 2,309 | 831.0 | 6252.2 | 16,999 | 117 |
-| CUDA | 2,295 | 1650.5 | 12026.8 | 10,391 | 177 |
-| MongoDB | 2,231 | 705.9 | 5059.0 | 11,146 | 639 |
+| Oracle Cloud | 2,370 | 485.1 | 4793.6 | 21,498 | 98 |
+| AWS | 2,357 | 654.1 | 5386.3 | 10,947 | 226 |
+| ClickHouse | 2,325 | 586.1 | 4564.2 | 25,203 | 417 |
+| Java | 2,310 | 649.2 | 6567.1 | 17,681 | 13 |
+| Cloudflare | 2,288 | 429.5 | 3263.4 | 7,203 | 109 |
+| Elasticsearch | 2,265 | 847.4 | 6348.2 | 9,136 | 239 |
+| MySQL | 2,257 | 716.1 | 5594.3 | 5,797 | 250 |
+| Azure | 2,235 | 1963.0 | 13695.8 | 14,626 | 729 |
+| Linux Kernel | 2,111 | 1334.3 | 9211.5 | 8,398 | 82 |
+| Gradle | 2,089 | 163.5 | 1222.7 | 2,068 | 2 |
+| Spark | 2,002 | 551.0 | 4753.7 | 11,818 | 164 |
+| GitHub | 1,962 | 987.2 | 7480.0 | 9,781 | 475 |
+| PostgreSQL | 1,961 | 924.2 | 5857.4 | 6,312 | 2079 |
+| MongoDB | 1,912 | 708.5 | 5080.3 | 10,081 | 559 |
+| Grafana | 1,884 | 835.9 | 6021.9 | 7,782 | 212 |
+| GitLab | 1,865 | 920.4 | 7583.4 | 14,480 | 146 |
+| CUDA | 1,788 | 1556.9 | 11400.6 | 7,468 | 116 |
+| Hadoop | 1,693 | 601.1 | 5238.7 | 12,823 | 71 |
+| Maven | 1,544 | 321.9 | 3156.7 | 4,869 | 27 |
+| Envoy | 1,488 | 482.5 | 3674.9 | 3,613 | 416 |

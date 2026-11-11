@@ -1,6 +1,6 @@
 # Classical IR & BM25 Engine Architecture Documentation
 
-This document provides a comprehensive technical overview of the hand-coded **Classical Information Retrieval (IR) Engine** built for the 77,565-document technical web corpus benchmark.
+This document provides a comprehensive technical overview of the hand-coded **Classical Information Retrieval (IR) Engine** built for the **61,966-document** deduplicated technical web corpus benchmark.
 
 ---
 
@@ -8,12 +8,18 @@ This document provides a comprehensive technical overview of the hand-coded **Cl
 
 * **Zero-Dependency Policy:** The core indexing structures, posting lists, scoring algorithms, and evaluation metrics are hand-coded from scratch in Python with zero external search libraries (**No Lucene, Whoosh, Rank-BM25, or Elasticsearch**).
 * **Multi-Zone Awareness:** Technical documents are parsed into four semantic zones (`title`, `heading`, `code`, `body`), each carrying distinct relevance weights.
+* **Exact & SimHash Near-Duplicate Removal (`src/utils/simhash.py`):**
+  - Raw manifest pages: `77,817`
+  - Short / boilerplate stubs removed (`< 200` chars): `252` (`77,565` extracted)
+  - Exact SHA-256 content duplicates removed: `4,014`
+  - Cross-version 64-bit SimHash near-duplicates removed (Hamming distance $\le 3$): `11,585`
+  - **Final Unique Indexed Documents:** **`61,966`**
 * **Corpus Scale:**
-  - **Indexed Documents:** 77,565
-  - **Vocabulary Size:** 1,824,935 unique stemmed terms
-  - **Total Posting Entries:** 18,821,101
-  - **Total Positional Entries:** 95,481,935
-  - **Passage Sub-Index:** 851,580 structural sections
+  - **Indexed Documents:** `61,966`
+  - **Vocabulary Size:** `1,799,233` unique stemmed terms
+  - **Total Posting Entries:** `14,338,715`
+  - **Total Positional Entries:** `72,795,150`
+  - **Passage Sub-Index:** `652,089` structural sections
 
 ---
 
@@ -97,9 +103,9 @@ class Posting:
 
 #### Multi-Tier Hierarchy:
 - **Level 0 (Taxonomy Directory):** Inverted mappings for 13 Categories and 76 Technologies allowing fast category-constrained sub-index retrieval.
-- **Level 1 (Document Zonal Index):** 77,565 full documents with 4 zones.
-- **Level 2 (Section Passage Index):** 851,580 individual document sections for passage retrieval.
-- **Tier-1 Champion Lists:** Top-20 documents per term pre-filtered by pseudo-frequency to accelerate candidate generation.
+- **Level 1 (Document Zonal Index):** 61,966 deduplicated full documents with 4 zones.
+- **Level 2 (Section Passage Index):** 652,089 individual document sections for passage retrieval.
+- **Tier-1 Champion Lists:** Top-50 documents per term pre-filtered by prominent zone presence and frequency to accelerate candidate generation.
 
 ---
 

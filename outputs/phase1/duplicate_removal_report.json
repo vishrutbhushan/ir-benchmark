@@ -1,0 +1,7 @@
+{
+  "exact_duplicates_removed": 4014,
+  "near_duplicates_removed": 11585,
+  "total_duplicates_removed": 15599,
+  "unique_documents_retained": 61966,
+  "input_documents": 77565
+}

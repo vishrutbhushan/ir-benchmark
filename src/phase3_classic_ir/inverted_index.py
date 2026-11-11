@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import json
 import math
+import mmap
+import re
 import time
 import logging
 from collections import defaultdict
@@ -82,6 +84,11 @@ class InvertedIndex:
         self.section_lengths: dict[str, int] = {}
         self.avg_section_length: float = 0.0
 
+        # Lazy on-demand disk byte-span map for multi-GB index files
+        self._lazy_path: Path | None = None
+        self._lazy_spans: dict[str, tuple[int, int]] = {}
+        self._lazy_df: dict[str, int] = {}
+
     def build_from_tokenized_corpus(
         self,
         tokenized_path: Path,
@@ -107,9 +114,8 @@ class InvertedIndex:
         # Step 2: Build postings from tokenized records
         logger.info(f"Processing tokenized records from {tokenized_path}...")
 
-        # Temporary accumulator: term → {doc_id → {zone_tfs, positions}}
-        temp_postings: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
-        zone_length_accum: dict[str, list[int]] = defaultdict(list)
+        postings_accum: dict[str, list[Posting]] = defaultdict(list)
+        zone_length_accum: dict[str, int] = defaultdict(int)
 
         doc_count = 0
         with tokenized_path.open("r", encoding="utf-8") as f:
@@ -118,53 +124,74 @@ class InvertedIndex:
                 doc_id = record["doc_id"]
                 doc_count += 1
 
+                # Per-document accumulators to avoid nested corpus-wide dicts
+                doc_tfs: dict[str, dict[str, int]] = {}
+                doc_pos: dict[str, dict[str, list[int]]] = {}
+
                 # Track zone lengths for this document
                 zone_lengths: dict[str, int] = {}
                 for zone in ZONES:
                     tokens_key = f"{zone}_tokens"
                     tokens = record.get(tokens_key, [])
-                    zone_lengths[zone] = len(tokens)
-                    zone_length_accum[zone].append(len(tokens))
+                    z_len = len(tokens)
+                    zone_lengths[zone] = z_len
+                    zone_length_accum[zone] += z_len
 
                     # Process each token: build zone TFs and positional info
                     for position, token in enumerate(tokens):
-                        # Filter out corrupt/replacement tokens or empty tokens
-                        token = token.replace("\ufffd", "").strip()
+                        if "\ufffd" in token:
+                            token = token.replace("\ufffd", "").strip()
                         if not token or len(token) > 64:
                             continue
 
-                        self.vocabulary.add(token)
-
-                        if doc_id not in temp_postings[token]:
-                            temp_postings[token][doc_id] = {
-                                "zone_tfs": defaultdict(int),
-                                "positions": defaultdict(list),
-                            }
-
-                        temp_postings[token][doc_id]["zone_tfs"][zone] += 1
-                        temp_postings[token][doc_id]["positions"][zone].append(position)
+                        tfs_for_tok = doc_tfs.get(token)
+                        if tfs_for_tok is None:
+                            doc_tfs[token] = {zone: 1}
+                            doc_pos[token] = {zone: [position]}
+                        else:
+                            tfs_for_tok[zone] = tfs_for_tok.get(zone, 0) + 1
+                            pos_for_tok = doc_pos[token]
+                            z_pos = pos_for_tok.get(zone)
+                            if z_pos is None:
+                                pos_for_tok[zone] = [position]
+                            else:
+                                z_pos.append(position)
 
                 self.doc_zone_lengths[doc_id] = zone_lengths
 
-                # Step 2b: Multi-level section postings
+                for token, z_tfs in doc_tfs.items():
+                    postings_accum[token].append(
+                        Posting(
+                            doc_id=doc_id,
+                            zone_tfs=z_tfs,
+                            positions=doc_pos[token],
+                        )
+                    )
+
+                # Step 2b: Multi-level section postings (full in-memory section postings for small corpora;
+                # for full-scale corpora, section lengths are tracked and candidate sections are scored via doc_sections)
                 for sec in record.get("sections", []):
                     sec_id = sec.get("sec_id", "")
                     sec_toks = sec.get("tokens", [])
                     if not sec_id or not sec_toks:
                         continue
                     self.section_lengths[sec_id] = len(sec_toks)
-                    sec_tf: dict[str, int] = defaultdict(int)
-                    for st in sec_toks:
-                        st = st.replace("\ufffd", "").strip()
-                        if st and len(st) <= 64:
-                            sec_tf[st] += 1
-                    for st, scnt in sec_tf.items():
-                        self.section_postings[st].append((sec_id, scnt))
+                    if doc_count <= 5000:
+                        sec_tf: dict[str, int] = defaultdict(int)
+                        for st in sec_toks:
+                            if "\ufffd" in st:
+                                st = st.replace("\ufffd", "").strip()
+                            if st and len(st) <= 64:
+                                sec_tf[st] += 1
+                        for st, scnt in sec_tf.items():
+                            self.section_postings[st].append((sec_id, scnt))
+                    elif self.section_postings:
+                        self.section_postings.clear()
 
-                if doc_count % 100 == 0:
+                if doc_count % 2000 == 0:
                     elapsed = time.time() - start_time
                     logger.info(
-                        f"Indexed {doc_count} docs, {len(temp_postings):,} unique terms "
+                        f"Indexed {doc_count:,} docs, {len(postings_accum):,} unique terms "
                         f"({elapsed:.1f}s)..."
                     )
 
@@ -172,27 +199,17 @@ class InvertedIndex:
 
         # Step 3: Compute average zone lengths
         for zone in ZONES:
-            lengths = zone_length_accum[zone]
-            self.avg_zone_lengths[zone] = sum(lengths) / len(lengths) if lengths else 0.0
+            self.avg_zone_lengths[zone] = (
+                zone_length_accum[zone] / doc_count if doc_count > 0 else 0.0
+            )
 
         if self.section_lengths:
             self.avg_section_length = sum(self.section_lengths.values()) / len(self.section_lengths)
 
-        # Step 4: Convert temp_postings to final Posting objects
+        # Step 4: Finalize vocabulary and postings lists
         logger.info("Finalizing postings lists...")
-        for term, doc_entries in temp_postings.items():
-            posting_list: list[Posting] = []
-            for did, data in doc_entries.items():
-                posting_list.append(
-                    Posting(
-                        doc_id=did,
-                        zone_tfs=dict(data["zone_tfs"]),
-                        positions=dict(data["positions"]),
-                    )
-                )
-            # Sort postings by doc_id for deterministic output
-            posting_list.sort(key=lambda p: p.doc_id)
-            self.postings[term] = posting_list
+        self.postings = dict(postings_accum)
+        self.vocabulary = set(self.postings.keys())
 
         # Step 5: Build Tiered Champion Lists
         logger.info("Building Tier-1 Champion lists for multi-level candidate pruning...")
@@ -253,13 +270,38 @@ class InvertedIndex:
                 self.technology_postings[raw_tech].append(doc_id)
                 self.domain_postings[domain].append(doc_id)
 
+    def _materialize_lazy_term(self, term: str) -> None:
+        """If term postings are stored on disk via lazy byte spans, decode them on demand."""
+        if term in self.postings or term not in self._lazy_spans or self._lazy_path is None:
+            return
+        start_b, end_b = self._lazy_spans[term]
+        with self._lazy_path.open("rb") as f:
+            f.seek(start_b)
+            raw_bytes = f.read(end_b - start_b)
+        val = json.loads(raw_bytes.decode("utf-8"))
+        plist_raw = val.get("postings", []) if isinstance(val, dict) else val
+        self.postings[term] = [
+            Posting(
+                doc_id=p["doc_id"],
+                zone_tfs=p.get("tfs", p.get("zone_tfs", {})),
+                positions=p.get("positions", {}),
+            )
+            for p in plist_raw
+        ]
+
     def get_postings(self, term: str) -> list[Posting]:
         """Retrieve the postings list for a given term."""
+        if term not in self.postings and term in self._lazy_spans:
+            self._materialize_lazy_term(term)
         return self.postings.get(term, [])
 
     def document_frequency(self, term: str) -> int:
         """Return the number of documents containing the term (df)."""
-        return len(self.postings.get(term, []))
+        if term in self.postings:
+            return len(self.postings[term])
+        if term in self._lazy_df:
+            return self._lazy_df[term]
+        return 0
 
     def idf(self, term: str) -> float:
         """
@@ -301,48 +343,57 @@ class InvertedIndex:
 
     # ── Multi-Level Tiered & Section Retrieval Methods ──────────────────────
 
+    def _ensure_term_champion_list(self, term: str, top_r: int = 50) -> None:
+        """Lazily builds Tier-1 and Tier-2 postings for a single term."""
+        if term in self.champion_postings:
+            return
+        if term not in self.postings and term in self._lazy_spans:
+            self._materialize_lazy_term(term)
+        if term not in self.postings:
+            return
+        plist = self.postings[term]
+        high_value: list[Posting] = []
+        standard: list[Posting] = []
+
+        for p in plist:
+            has_prominent_zone = (p.zone_tfs.get("title", 0) > 0) or (p.zone_tfs.get("heading", 0) > 0)
+            if has_prominent_zone:
+                high_value.append(p)
+            else:
+                standard.append(p)
+
+        standard.sort(key=lambda p: -sum(p.zone_tfs.values()))
+        champ = high_value + standard[:max(0, top_r - len(high_value))]
+        champ_set = {p.doc_id for p in champ}
+        tier2 = [p for p in plist if p.doc_id not in champ_set]
+
+        self.champion_postings[term] = champ
+        self.tier2_postings[term] = tier2
+
     def build_champion_lists(self, top_r: int = 50) -> None:
         """
-        Constructs Tier-1 (Champion Lists) and Tier-2 postings for every term.
-        Tier-1 contains postings where the term appears in high-value zones (title/heading)
-        or has the highest total term frequency (top r).
-        Tier-2 contains remaining postings.
+        Constructs Tier-1 (Champion Lists) and Tier-2 postings.
+        For large vocabularies (>50,000 terms), defers construction to on-demand
+        per-term lookup to avoid duplicating 15M+ postings in memory.
         """
+        self._champion_top_r = top_r
         self.champion_postings.clear()
         self.tier2_postings.clear()
 
-        for term, plist in self.postings.items():
-            high_value: list[Posting] = []
-            standard: list[Posting] = []
-
-            for p in plist:
-                has_prominent_zone = (p.zone_tfs.get("title", 0) > 0) or (p.zone_tfs.get("heading", 0) > 0)
-                if has_prominent_zone:
-                    high_value.append(p)
-                else:
-                    standard.append(p)
-
-            # Sort standard by total frequency descending
-            standard.sort(key=lambda p: -sum(p.zone_tfs.values()))
-
-            # Combine high_value + top standard up to top_r
-            champ = high_value + standard[:max(0, top_r - len(high_value))]
-            champ_set = {p.doc_id for p in champ}
-            tier2 = [p for p in plist if p.doc_id not in champ_set]
-
-            self.champion_postings[term] = champ
-            self.tier2_postings[term] = tier2
+        if len(self.postings) <= 50000:
+            for term in self.postings:
+                self._ensure_term_champion_list(term, top_r=top_r)
 
     def get_champion_postings(self, term: str) -> list[Posting]:
         """Return Tier-1 Champion postings for a term."""
-        if not self.champion_postings and self.postings:
-            self.build_champion_lists()
+        top_r = getattr(self, "_champion_top_r", 50)
+        self._ensure_term_champion_list(term, top_r=top_r)
         return self.champion_postings.get(term, [])
 
     def get_tier2_postings(self, term: str) -> list[Posting]:
         """Return Tier-2 postings for a term."""
-        if not self.tier2_postings and self.postings:
-            self.build_champion_lists()
+        top_r = getattr(self, "_champion_top_r", 50)
+        self._ensure_term_champion_list(term, top_r=top_r)
         return self.tier2_postings.get(term, [])
 
     def score_sections(
@@ -363,20 +414,45 @@ class InvertedIndex:
         sec_scores: dict[str, float] = defaultdict(float)
         avg_len = self.avg_section_length if self.avg_section_length > 0 else 50.0
 
-        for term in query_terms:
-            idf = self.idf(term)
-            if idf <= 0.0:
-                continue
-
-            for sec_id, tf in self.section_postings.get(term, []):
-                doc_id = sec_id.split("#")[0]
-                if doc_id_filter is not None and doc_id not in doc_id_filter:
+        if self.section_postings:
+            for term in query_terms:
+                idf = self.idf(term)
+                if idf <= 0.0:
                     continue
 
-                sec_len = self.section_lengths.get(sec_id, int(avg_len))
-                len_norm = 1.0 - b + b * (sec_len / avg_len) if avg_len > 0 else 1.0
-                term_score = idf * (tf * (k1 + 1.0)) / (tf + k1 * len_norm)
-                sec_scores[sec_id] += term_score
+                for sec_id, tf in self.section_postings.get(term, []):
+                    doc_id = sec_id.split("#")[0]
+                    if doc_id_filter is not None and doc_id not in doc_id_filter:
+                        continue
+
+                    sec_len = self.section_lengths.get(sec_id, int(avg_len))
+                    len_norm = 1.0 - b + b * (sec_len / avg_len) if avg_len > 0 else 1.0
+                    term_score = idf * (tf * (k1 + 1.0)) / (tf + k1 * len_norm)
+                    sec_scores[sec_id] += term_score
+        else:
+            # Fallback when index is loaded from disk (score candidate doc_sections directly)
+            from src.phase2_tokenization.tokenizer import tokenize
+            target_docs = doc_id_filter if doc_id_filter is not None else list(self.doc_sections.keys())
+            q_idfs = {t: self.idf(t) for t in query_terms if self.idf(t) > 0.0}
+            for doc_id in target_docs:
+                for sec in self.doc_sections.get(doc_id, []):
+                    sec_id = sec.get("sec_id", "")
+                    if not sec_id:
+                        continue
+                    text = f"{sec.get('heading', '')} {sec.get('snippet', '')}"
+                    toks = tokenize(text)
+                    if not toks:
+                        continue
+                    sec_len = len(toks)
+                    len_norm = 1.0 - b + b * (sec_len / avg_len) if avg_len > 0 else 1.0
+                    tf_map: dict[str, int] = defaultdict(int)
+                    for tok in toks:
+                        tf_map[tok] += 1
+                    for term, idf in q_idfs.items():
+                        tf = tf_map.get(term, 0)
+                        if tf > 0:
+                            # Boost heading matches within section
+                            sec_scores[sec_id] += idf * (tf * (k1 + 1.0)) / (tf + k1 * len_norm)
 
         if not sec_scores:
             return []
@@ -417,26 +493,32 @@ class InvertedIndex:
         """
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        # 1. Pure Inverted Index (term -> {df, idf, postings})
-        index_data = {}
-        for term, plist in self.postings.items():
-            df = len(plist)
-            idf = self.idf(term)
-            index_data[term] = {
-                "df": df,
-                "idf": round(idf, 6),
-                "postings": [
-                    {
-                        "doc_id": p.doc_id,
-                        "tfs": p.zone_tfs,
-                        "positions": p.positions,
-                    }
-                    for p in plist
-                ],
-            }
-
+        # 1. Pure Inverted Index (term -> {df, idf, postings}) streamed directly to disk
         with path.open("w", encoding="utf-8") as f:
-            json.dump(index_data, f, ensure_ascii=False)
+            f.write("{")
+            first = True
+            for term, plist in self.postings.items():
+                if not first:
+                    f.write(",")
+                first = False
+                df = len(plist)
+                idf = round(self.idf(term), 6)
+                entry = {
+                    "df": df,
+                    "idf": idf,
+                    "postings": [
+                        {
+                            "doc_id": p.doc_id,
+                            "tfs": p.zone_tfs,
+                            "positions": p.positions,
+                        }
+                        for p in plist
+                    ],
+                }
+                f.write(
+                    f"{json.dumps(term, ensure_ascii=False)}:{json.dumps(entry, ensure_ascii=False)}"
+                )
+            f.write("}")
 
         # 2. Document Catalog (lengths, averages, metadata, multi-level hierarchy)
         catalog_path = path.parent / "document_catalog.json"
@@ -461,10 +543,48 @@ class InvertedIndex:
         if catalog_path is None:
             catalog_path = path.parent / "document_catalog.json"
 
+        idx = cls()
+
+        # Fast path for multi-GB index files (>50 MB): scan term byte spans via mmap
+        if catalog_path.exists() and path.stat().st_size > 50 * 1024 * 1024:
+            with catalog_path.open("r", encoding="utf-8") as f:
+                cat = json.load(f)
+            idx.total_docs = cat["total_docs"]
+            idx.avg_zone_lengths = cat["avg_zone_lengths"]
+            idx.doc_zone_lengths = cat["doc_zone_lengths"]
+            idx.doc_metadata = cat["doc_metadata"]
+            if "category_postings" in cat:
+                idx.category_postings = defaultdict(list, cat["category_postings"])
+            if "technology_postings" in cat:
+                idx.technology_postings = defaultdict(list, cat["technology_postings"])
+            if "domain_postings" in cat:
+                idx.domain_postings = defaultdict(list, cat["domain_postings"])
+            if "doc_sections" in cat:
+                idx.doc_sections = defaultdict(list, cat["doc_sections"])
+            if "avg_section_length" in cat:
+                idx.avg_section_length = cat["avg_section_length"]
+
+            idx._lazy_path = path
+            term_pat = re.compile(rb'"([^"\\]+)":\{"df":\s*(\d+)')
+            with path.open("rb") as f:
+                mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+                prev_term: str | None = None
+                prev_val_start: int = 0
+                for m in term_pat.finditer(mm):
+                    if prev_term is not None:
+                        idx._lazy_spans[prev_term] = (prev_val_start, m.start() - 1)
+                    t_str = m.group(1).decode("utf-8", errors="ignore")
+                    idx.vocabulary.add(t_str)
+                    idx._lazy_df[t_str] = int(m.group(2))
+                    prev_term = t_str
+                    prev_val_start = m.start() + len(m.group(1)) + 3
+                if prev_term is not None:
+                    idx._lazy_spans[prev_term] = (prev_val_start, len(mm) - 1)
+                mm.close()
+            return idx
+
         with path.open("r", encoding="utf-8") as f:
             raw_data = json.load(f)
-
-        idx = cls()
 
         # Check if legacy wrapped format or clean index format (clean index format is term -> {df, idf, postings})
         is_legacy = isinstance(raw_data, dict) and "total_docs" in raw_data and isinstance(raw_data["total_docs"], int) and "avg_zone_lengths" in raw_data
