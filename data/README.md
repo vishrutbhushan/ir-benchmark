@@ -1,37 +1,38 @@
-# Data Collection & Corpus Placement
+# Data Fetch & Corpus Creation
 
-This component contains the Common Crawl collection, validation, and repair harness.
+A single-step, self-contained pipeline for fetching Common Crawl WARC segments and packaging the production corpus.
 
-> [!NOTE]
-> Raw data collection and creation of `technical_web_corpus.zip` is a separate external preparation step. It is **not** required for running the core IR benchmark pipeline.
+The output is written directly to **`data/00_corpus/technical_web_corpus.zip`**, making it immediately usable by the main benchmark pipeline (`run_full_pipeline.py`) without any copying, moving, or manual repair steps.
 
 ---
 
-## 1. Quick Setup: Placing the Corpus Archive
+## 1. Quick Start: Use Existing Corpus
 
-The pipeline assumes the raw corpus archive has already been created. Simply place `technical_web_corpus.zip` into either location:
+If you already have `technical_web_corpus.zip`, place it in `data/00_corpus/` (or directly in the repository root). You can immediately run the main pipeline:
 
-* `data/00_corpus/technical_web_corpus.zip` (recommended)
-* Or directly at the repository root: `technical_web_corpus.zip`
-
-Once placed, you can run the full pipeline without manually executing collection:
 ```bash
-# Build filters, classical index, and neural engine (excluding evaluation)
-python run_full_pipeline.py --stage up-to-engine
-
-# Or run the entire end-to-end benchmark
 python run_full_pipeline.py
 ```
 
 ---
 
-## 2. Advanced: Running Collection from Common Crawl
+## 2. Generating the Corpus from Scratch
 
-If you wish to crawl fresh WARC segments from Common Crawl from scratch:
+To fetch webpages from Common Crawl and build the corpus archive:
+
 ```bash
-cd data
-python run_collect.py --step collect
-python run_collect.py --step validate
-python run_collect.py --step repair
+# Run data collection (fetches HTML, writes manifest, and builds the ZIP directly)
+python data/run_collect.py
+
+# Optional: customize concurrency or download a subset
+python data/run_collect.py --workers 8 --max-docs 1000
 ```
-`run_collect.py` will download segments into `data/00_corpus/` and record checkpoints in `data/runtime/` (both ignored by Git).
+
+### What `data/run_collect.py` Does:
+1. Reads candidate entries from `data/00_corpus/metadata/corpus_manifest.jsonl`.
+2. Downloads original HTML bodies via parallel HTTP Range requests from Common Crawl.
+3. Saves raw HTML files directly to `data/00_corpus/documents/html/<technology>/`.
+4. Writes `data/00_corpus/metadata/corpus_manifest.jsonl` and `corpus_state.json`.
+5. Automatically packages everything into `data/00_corpus/technical_web_corpus.zip`.
+
+Once complete, `python run_full_pipeline.py` or `python filter/run_filter.py` can be executed immediately with zero manual intervention.
