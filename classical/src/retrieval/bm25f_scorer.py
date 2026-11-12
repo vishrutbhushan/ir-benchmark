@@ -35,9 +35,9 @@ from src.utils.taxonomy import infer_query_taxonomy
 
 
 DEFAULT_ZONE_WEIGHTS: dict[str, float] = {
-    "title": 4.0,
-    "heading": 2.5,
-    "code": 2.0,
+    "title": 1.0,
+    "heading": 1.37,
+    "code": 0.55,
     "body": 1.0,
 }
 
