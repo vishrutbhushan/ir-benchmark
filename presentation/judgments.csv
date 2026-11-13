@@ -24,7 +24,6 @@ Q01,document_074697,1,1,2,1
 Q01,document_074771,1,1,2,1
 Q01,document_074811,1,0,1,1
 Q01,document_075556,0,1,1,1
-Q01,document_075594,0,0,0,0
 Q02,document_003936,0,0,0,0
 Q02,document_004002,0,0,0,0
 Q02,document_010566,0,0,0,0
@@ -54,6 +53,7 @@ Q02,document_048895,1,1,2,1
 Q02,document_053327,1,0,1,1
 Q02,document_053542,1,1,2,1
 Q02,document_056335,0,0,0,0
+Q02,document_075708,1,1,2,1
 Q03,document_007690,0,0,0,0
 Q03,document_008103,0,0,0,0
 Q03,document_008809,0,1,1,1
@@ -104,7 +104,6 @@ Q05,document_010076,0,1,1,1
 Q05,document_010116,0,0,0,0
 Q05,document_010134,0,0,0,0
 Q05,document_010146,0,0,0,0
-Q05,document_010192,0,1,1,1
 Q05,document_010227,1,1,2,1
 Q05,document_010258,0,0,0,0
 Q05,document_010261,1,1,2,1
@@ -117,6 +116,7 @@ Q05,document_012148,0,1,1,1
 Q05,document_012233,0,0,0,0
 Q05,document_012264,0,0,0,0
 Q05,document_053482,0,0,0,0
+Q06,document_026428,0,0,0,0
 Q06,document_026525,0,0,0,0
 Q06,document_026610,0,0,0,0
 Q06,document_026640,1,1,2,1
@@ -139,6 +139,7 @@ Q06,document_027940,1,0,1,1
 Q06,document_027961,0,0,0,0
 Q06,document_028127,0,0,0,0
 Q06,document_028490,1,1,2,1
+Q06,document_028503,0,0,0,0
 Q06,document_028539,1,1,2,1
 Q06,document_048431,0,0,0,0
 Q06,document_048736,0,0,0,0
@@ -148,6 +149,7 @@ Q07,document_029461,1,1,2,1
 Q07,document_029525,0,1,1,1
 Q07,document_029657,1,1,2,1
 Q07,document_029807,0,0,0,0
+Q07,document_029845,0,0,0,0
 Q07,document_029874,1,1,2,1
 Q07,document_029972,1,1,2,1
 Q07,document_030345,1,1,2,1
@@ -176,14 +178,16 @@ Q08,document_004445,0,0,0,0
 Q08,document_004528,0,0,0,0
 Q08,document_004572,0,0,0,0
 Q08,document_004623,0,0,0,0
+Q08,document_004718,0,0,0,0
 Q08,document_004795,0,0,0,0
+Q08,document_004833,0,0,0,0
 Q08,document_004856,0,0,0,0
 Q08,document_004948,1,0,1,1
 Q08,document_004987,1,0,1,1
 Q08,document_005132,0,0,0,0
-Q08,document_010757,0,0,0,0
 Q08,document_037712,0,0,0,0
 Q08,document_064248,0,0,0,0
+Q08,document_064271,0,0,0,0
 Q09,document_018779,0,1,1,1
 Q09,document_020645,0,0,0,0
 Q09,document_022755,0,0,0,0
@@ -197,7 +201,6 @@ Q09,document_061524,0,0,0,0
 Q09,document_061858,1,1,2,1
 Q09,document_062296,0,1,1,1
 Q09,document_062344,0,0,0,0
-Q09,document_062598,0,0,0,0
 Q09,document_062672,0,0,0,0
 Q09,document_062828,0,0,0,0
 Q09,document_062844,0,0,0,0
@@ -257,8 +260,6 @@ Q11,document_010011,0,0,0,0
 Q11,document_010089,0,0,0,0
 Q11,document_010135,1,0,1,1
 Q12,document_007609,1,1,2,1
-Q12,document_007669,0,0,0,0
-Q12,document_007792,0,0,0,0
 Q12,document_009265,1,1,2,1
 Q12,document_021499,0,0,0,0
 Q12,document_021713,0,0,0,0
@@ -280,13 +281,16 @@ Q12,document_023820,0,1,1,1
 Q12,document_023892,1,0,1,1
 Q12,document_033695,0,1,1,1
 Q12,document_035578,0,0,0,0
+Q12,document_035874,1,1,2,1
 Q12,document_048431,0,0,0,0
 Q12,document_048981,0,0,0,0
 Q12,document_049204,0,1,1,1
+Q12,document_049476,0,0,0,0
 Q12,document_056045,0,0,0,0
 Q12,document_063035,0,0,0,0
 Q12,document_070722,1,1,2,1
 Q13,document_009830,0,0,0,0
+Q13,document_010536,0,1,1,1
 Q13,document_010547,0,0,0,0
 Q13,document_010553,0,1,1,1
 Q13,document_010566,0,0,0,0
@@ -334,6 +338,7 @@ Q14,document_054764,0,0,0,0
 Q14,document_076323,0,1,1,1
 Q15,document_026346,0,0,0,0
 Q15,document_026395,1,1,2,1
+Q15,document_026602,0,1,1,1
 Q15,document_026724,0,0,0,0
 Q15,document_026746,1,1,2,1
 Q15,document_026763,1,1,2,1
@@ -348,11 +353,11 @@ Q15,document_027372,1,1,2,1
 Q15,document_027588,1,1,2,1
 Q15,document_027765,0,0,0,0
 Q15,document_028152,0,0,0,0
+Q15,document_028263,0,0,0,0
 Q15,document_028270,0,1,1,1
 Q15,document_028304,0,0,0,0
 Q15,document_028390,1,0,1,1
 Q15,document_028490,1,1,2,1
-Q15,document_028513,0,0,0,0
 Q15,document_028539,1,1,2,1
 Q15,document_028661,0,0,0,0
 Q15,document_040260,0,1,1,1
@@ -380,12 +385,11 @@ Q16,document_041902,0,0,0,0
 Q16,document_046030,0,0,0,0
 Q16,document_048172,0,0,0,0
 Q16,document_048412,0,0,0,0
-Q16,document_048561,0,0,0,0
 Q16,document_048931,0,0,0,0
 Q16,document_062424,0,0,0,0
 Q16,document_071797,0,0,0,0
 Q16,document_073543,0,0,0,0
-Q16,document_075446,0,0,0,0
+Q16,document_073999,0,1,1,1
 Q16,document_075634,1,1,2,1
 Q16,document_075859,1,1,2,1
 Q16,document_075867,0,0,0,0
@@ -427,8 +431,10 @@ Q18,document_028270,0,0,0,0
 Q18,document_028304,0,0,0,0
 Q18,document_028390,0,0,0,0
 Q18,document_028490,1,1,2,1
+Q18,document_028600,0,0,0,0
 Q18,document_028661,0,0,0,0
 Q18,document_041371,0,0,0,0
+Q18,document_047440,0,0,0,0
 Q18,document_048431,0,0,0,0
 Q18,document_048736,0,0,0,0
 Q18,document_048851,0,0,0,0
