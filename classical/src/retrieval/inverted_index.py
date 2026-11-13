@@ -180,7 +180,12 @@ class InvertedIndex:
 
         # Step 4: Convert temp_postings to final Posting objects
         logger.info("Finalizing postings lists...")
-        for term, doc_entries in temp_postings.items():
+        while temp_postings:
+            # Drop the temporary term map before creating its final postings.
+            # This limits the conversion peak to one term instead of retaining
+            # both complete index representations until the loop ends.
+            term = next(iter(temp_postings))
+            doc_entries = temp_postings.pop(term)
             posting_list: list[Posting] = []
             for did, data in doc_entries.items():
                 posting_list.append(
@@ -193,10 +198,6 @@ class InvertedIndex:
             # Sort postings by doc_id for deterministic output
             posting_list.sort(key=lambda p: p.doc_id)
             self.postings[term] = posting_list
-
-        # Step 5: Build Tiered Champion Lists
-        logger.info("Building Tier-1 Champion lists for multi-level candidate pruning...")
-        self.build_champion_lists(top_r=50)
 
         total_time = time.time() - start_time
         logger.info(
@@ -417,29 +418,39 @@ class InvertedIndex:
         """
         path.parent.mkdir(parents=True, exist_ok=True)
 
-        # 1. Pure Inverted Index (term -> {df, idf, postings})
-        index_data = {}
-        for term, plist in self.postings.items():
-            df = len(plist)
-            idf = self.idf(term)
-            index_data[term] = {
-                "df": df,
-                "idf": round(idf, 6),
-                "postings": [
-                    {
-                        "doc_id": p.doc_id,
-                        "tfs": p.zone_tfs,
-                        "positions": p.positions,
-                    }
-                    for p in plist
-                ],
-            }
-
-        with path.open("w", encoding="utf-8") as f:
-            json.dump(index_data, f, ensure_ascii=False)
+        temporary_path = path.with_suffix(path.suffix + ".part")
+        with temporary_path.open("w", encoding="utf-8") as f:
+            # Stream one term and posting at a time. Building an intermediate
+            # JSON object for the full 1 GB index duplicates the in-memory index.
+            f.write("{")
+            for term_index, (term, plist) in enumerate(self.postings.items()):
+                if term_index:
+                    f.write(",")
+                json.dump(term, f, ensure_ascii=False)
+                f.write(":{\"df\":")
+                f.write(str(len(plist)))
+                f.write(",\"idf\":")
+                json.dump(round(self.idf(term), 6), f)
+                f.write(',"postings":[')
+                for posting_index, posting in enumerate(plist):
+                    if posting_index:
+                        f.write(",")
+                    json.dump(
+                        {
+                            "doc_id": posting.doc_id,
+                            "tfs": posting.zone_tfs,
+                            "positions": posting.positions,
+                        },
+                        f,
+                        ensure_ascii=False,
+                    )
+                f.write("]}")
+            f.write("}")
+        temporary_path.replace(path)
 
         # 2. Document Catalog (lengths, averages, metadata, multi-level hierarchy)
         catalog_path = path.parent / "document_catalog.json"
+        catalog_temporary = catalog_path.with_suffix(catalog_path.suffix + ".part")
         catalog_data = {
             "total_docs": self.total_docs,
             "vocabulary_size": len(self.vocabulary),
@@ -452,8 +463,9 @@ class InvertedIndex:
             "doc_sections": dict(self.doc_sections),
             "avg_section_length": self.avg_section_length,
         }
-        with catalog_path.open("w", encoding="utf-8") as f:
+        with catalog_temporary.open("w", encoding="utf-8") as f:
             json.dump(catalog_data, f, ensure_ascii=False, indent=2)
+        catalog_temporary.replace(catalog_path)
 
     @classmethod
     def load(cls, path: Path, catalog_path: Path | None = None) -> "InvertedIndex":

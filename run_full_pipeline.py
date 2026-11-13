@@ -4,15 +4,13 @@
 Executes all 4 pipeline components in sequence:
   1. filter/run_filter.py (Validation, Repair, Quality Filtering, Deduplication, Archive Packaging)
   2. classical/run_pipeline.py (Tokenization, Inverted Index, BM25 & BM25F Scoring)
-  3. neural/run_pipeline.py (SQLite Extract, Windows, 0.6B Embeddings, Zone Weights, Title+Headings Clustering, Routing, Verification)
-  4. evaluation/run_evaluation.py (Metrics Calculation & Export across all 10 Benchmark Queries)
+  3. neural/run_pipeline.py (Extraction, Windows, Embeddings, Zone Weights, Clustering, Routing, Verification, Query Export)
+  4. evaluation/run_evaluation.py (Strict pooled metrics and charts for six engines)
 """
 
 from __future__ import annotations
 
-import json
 import os
-import shutil
 import subprocess
 import sys
 import time
@@ -21,12 +19,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable or str(REPO_ROOT / ".venv/bin/python")
 
+sys.path.insert(0, str(REPO_ROOT))
+from config import load_pipeline_config, resolve_path
+
+PIPELINE_CONFIG = load_pipeline_config()
+PIPELINE_LOG = resolve_path(PIPELINE_CONFIG["paths"]["pipeline_log"])
+
 
 def log(msg: str) -> None:
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     line = f"[{now}] {msg}"
     print(line, flush=True)
-    with open(REPO_ROOT / "full_pipeline.log", "a", encoding="utf-8") as f:
+    PIPELINE_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with open(PIPELINE_LOG, "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
 
@@ -36,7 +41,7 @@ def run_stage(name: str, cmd: list[str]) -> float:
     t0 = time.perf_counter()
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO_ROOT)
-    env["NEURAL_CONFIG"] = str(REPO_ROOT / "config/pipeline.json")
+    env["NEURAL_CONFIG"] = str(resolve_path("config/pipeline.json"))
     process = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
@@ -60,72 +65,23 @@ def run_stage(name: str, cmd: list[str]) -> float:
     return elapsed
 
 
-def prepare_neural_outputs():
-    """Archive previous small/label output directories to prevent fingerprint collisions, preserving downloaded model weights."""
-    neural_out = REPO_ROOT / "neural/outputs"
-    summary_path = neural_out / "step_01_extraction/summary.json"
-    if summary_path.exists():
-        try:
-            summary = json.loads(summary_path.read_text())
-            if summary.get("source_documents", 0) < 1000:
-                log(f"Archiving previous {summary.get('source_documents')} doc output to neural/outputs/labels_equivalent...")
-                archive_dir = neural_out / "labels_equivalent"
-                archive_dir.mkdir(parents=True, exist_ok=True)
-                for item in neural_out.iterdir():
-                    if item.name in {"small_equivalent", "labels_equivalent"}:
-                        continue
-                    if item.name == "step_03_embeddings" and (item / "model").exists():
-                        continue
-                    dest = archive_dir / item.name
-                    if dest.exists():
-                        if dest.is_dir():
-                            shutil.rmtree(dest)
-                        else:
-                            dest.unlink()
-                    shutil.move(str(item), str(dest))
-                # For step_03_embeddings, move non-model subdirectories
-                step03 = neural_out / "step_03_embeddings"
-                if step03.exists():
-                    for sub in step03.iterdir():
-                        if sub.name != "model":
-                            dest = archive_dir / "step_03_embeddings" / sub.name
-                            dest.parent.mkdir(parents=True, exist_ok=True)
-                            if dest.exists():
-                                if dest.is_dir():
-                                    shutil.rmtree(dest)
-                                else:
-                                    dest.unlink()
-                            shutil.move(str(sub), str(dest))
-        except Exception as e:
-            log(f"Warning during output prep: {e}")
-
-
 def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--stage",
-        choices=["all", "up-to-engine", "filter", "classical", "neural", "evaluation"],
+        choices=["all", "up-to-engine", "filter", "classical", "neural", "evaluation", "search-ui"],
         default="all",
-        help="Pipeline stages to run ('up-to-engine' runs filter, classical, and neural, stopping before evaluation)"
+        help="Pipeline stages to run ('up-to-engine' builds the indexes; 'search-ui' starts the six-engine UI)"
     )
     args = parser.parse_args()
 
     log(f"Starting IR Benchmark Master Pipeline Execution (target: {args.stage})")
-    source_archive = REPO_ROOT / "data/00_corpus/technical_web_corpus.zip"
-    if not source_archive.exists():
-        alt = REPO_ROOT / "technical_web_corpus.zip"
-        if alt.exists():
-            source_archive.parent.mkdir(parents=True, exist_ok=True)
-            log(f"Found source archive at root: linking to {source_archive}")
-            try:
-                os.link(str(alt), str(source_archive))
-            except OSError:
-                shutil.copy2(str(alt), str(source_archive))
-        else:
-            log(f"FATAL: Source archive not found at {source_archive} or {alt}")
-            log("Please place 'technical_web_corpus.zip' in 'data/00_corpus/' before running.")
-            sys.exit(1)
+    source_archive = resolve_path(PIPELINE_CONFIG["paths"]["source_archive"])
+    if args.stage in {"all", "up-to-engine", "filter"} and not source_archive.exists():
+        log(f"FATAL: Source archive not found at {source_archive}")
+        log("Place the corpus archive at the configured source_archive path.")
+        sys.exit(1)
 
     timings = {}
     master_start = time.perf_counter()
@@ -141,15 +97,33 @@ def main():
     if args.stage in {"all", "up-to-engine", "classical"}:
         timings["classical"] = run_stage(
             "classical",
-            [PYTHON, "classical/run_pipeline.py", "--config", "config/pipeline.json", "--phase", "all"]
+            [PYTHON, "classical/run_pipeline.py", "--config", "config/pipeline.json", "--phase", "all", "--force"]
         )
 
     # 3. Neural Stage
     if args.stage in {"all", "up-to-engine", "neural"}:
-        prepare_neural_outputs()
         timings["neural"] = run_stage(
             "neural",
             [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "all"]
+        )
+
+    # A full run exports current neural rankings and then derives BM25/BM25F
+    # snapshots plus RRF before calculating metrics. Saved rankings are reused
+    # when the evaluation-only target is selected.
+    if args.stage == "all":
+        timings["neural_query_export"] = run_stage(
+            "neural_query_export",
+            [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "08"],
+        )
+        timings["classical_evaluation_csvs"] = run_stage(
+            "classical_evaluation_csvs",
+            [PYTHON, "evaluation/update_classical_runs.py", "--config", "config/pipeline.json"],
+        )
+
+    if args.stage == "classical":
+        timings["classical_evaluation_csvs"] = run_stage(
+            "classical_evaluation_csvs",
+            [PYTHON, "evaluation/update_classical_runs.py", "--config", "config/pipeline.json"],
         )
 
     # 4. Evaluation Stage
@@ -162,6 +136,9 @@ def main():
             "evaluation_metrics",
             [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--metrics", "--force"]
         )
+
+    if args.stage == "search-ui":
+        run_stage("search-ui", [PYTHON, "run_search_ui.py"])
 
     total_time = time.perf_counter() - master_start
     log("==================================================")

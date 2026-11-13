@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
-"""Run numbered neural stages; collection and final evaluation live on other branches."""
+"""Run the numbered neural indexing, retrieval, and verification stages."""
 
 import argparse
 import json
 import os
 from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def configured_path(config, key, fallback=None):
+    value = config.get("paths", {}).get(key, fallback)
+    if value is None:
+        raise KeyError(f"Missing configured path: {key}")
+    path = Path(value)
+    return path if path.is_absolute() else REPO_ROOT / path
 
 
 def parse_and_run():
@@ -16,17 +27,10 @@ def parse_and_run():
     )
     config_args, _ = config_parser.parse_known_args()
     os.environ["NEURAL_CONFIG"] = str(config_args.config.resolve())
-    from src.common.config import load_config, default_mode
+    from src.common.config import load_config
 
     settings = load_config()
     pipeline = json.loads(config_args.config.resolve().read_text(encoding="utf-8"))
-    paths = pipeline.get("paths", {})
-    repository_root = config_args.config.resolve().parents[1]
-
-    def configured_path(key, fallback):
-        value = paths.get(key, fallback)
-        path = Path(value)
-        return path if path.is_absolute() else repository_root / path
     parser = argparse.ArgumentParser(description=__doc__, parents=[config_parser])
     parser.add_argument(
         "--step",
@@ -40,60 +44,55 @@ def parse_and_run():
             "06",
             "07",
             "08",
-            "09",
-            "audit",
-            "export",
         ],
         default="all",
     )
     parser.add_argument(
         "--corpus-dir",
         type=Path,
-        default=configured_path("corpus_dir", "../data/00_corpus"),
+        default=configured_path(pipeline, "corpus_dir", "data/00_corpus"),
     )
     parser.add_argument(
         "--corpus-zip",
         type=Path,
         default=configured_path(
+            pipeline,
             "filtered_archive",
-            "../filter/outputs/stage_05_archive/technical_web_corpus.zip",
+            "filter/outputs/stage_05_archive/technical_web_corpus.zip",
         ),
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=configured_path("neural_output_dir", "outputs"),
+        default=configured_path(pipeline, "neural_output_dir", "neural/outputs"),
         help="Root for this run's numbered outputs and markers.",
     )
     parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
     parser.add_argument("--device", choices=["cuda", "cpu"], default=settings["device"])
-    parser.add_argument("--query")
-    parser.add_argument("--queries", type=Path)
-    parser.add_argument("--variants", type=Path)
-    parser.add_argument("--export-dir", type=Path)
-    parser.add_argument(
-        "--mode",
-        choices=["dense", "zones", "routed-cluster"],
-        default=default_mode(settings),
-    )
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     args = parser.parse_args()
     if args.workers < 1 or args.batch_size < 1:
         parser.error("Workers and batch size must be positive")
     os.environ.setdefault("MPLCONFIGDIR", str(Path(".cache/matplotlib").resolve()))
     os.environ.setdefault("HF_HOME", str(Path(".cache/huggingface").resolve()))
-    run(args, parser)
+    if args.device == "cuda":
+        from src.common.gpu_lock import gpu_job_lock
+
+        with gpu_job_lock():
+            run(args, parser)
+    else:
+        run(args, parser)
 
 
 def run(args, parser):
     root = args.output_dir
     from src.common.logging import run_stage
     from src.common.artifacts import digest_file
-    from src.common.config import load_config
+    from src.common.config import load_config, load_pipeline_config
 
+    pipeline = load_pipeline_config()
+    analysis_root = configured_path(pipeline, "neural_analysis_dir")
     markers = {
         stage: root / f"step_{stage}_{name}" / "stage.done"
         for stage, name in {
@@ -111,17 +110,14 @@ def run(args, parser):
         complete = markers[stage].exists()
         if stage == "04":
             model_path = root / "step_04_weights/model.json"
-            feature_path = Path("results/step_04_weights/features/training_features.csv")
-            complete = complete and model_path.exists() and feature_path.exists()
+            weights_path = analysis_root / "step_04_weights/weights.csv"
+            complete = complete and model_path.exists() and weights_path.exists()
             if complete:
                 model = json.loads(model_path.read_text(encoding="utf-8"))
-                repository_root = Path(__file__).resolve().parents[1]
                 settings = load_config()
                 inputs = {
-                    "queries_csv_sha256": repository_root
-                    / settings["weight_queries"],
-                    "judgments_csv_sha256": repository_root
-                    / settings["weight_judgments"],
+                    "queries_csv_sha256": REPO_ROOT / settings["weight_queries"],
+                    "judgments_csv_sha256": REPO_ROOT / settings["weight_judgments"],
                 }
                 complete = all(
                     model.get(key) == digest_file(path)
@@ -145,7 +141,7 @@ def run(args, parser):
                     "schema"
                 ) == "cluster-postings-v1"
         if stage == "07":
-            report_path = Path("results/step_07_verification/summary.json")
+            report_path = analysis_root / "step_07_verification/summary.json"
             complete = complete and report_path.exists()
             if complete:
                 complete = json.loads(report_path.read_text()).get(
@@ -183,11 +179,6 @@ def run(args, parser):
         run_if_needed("03", embed_zones, root, args.device, args.batch_size)
         if args.step == "03":
             return
-    if args.step == "audit":
-        from src.verification.learning_audit import audit_learning_data
-
-        audit_learning_data(root)
-        return
     from src.retrieval.step_08_search import SearchEngine
 
     learning = args.step in {"all", "04", "05", "06"}
@@ -203,19 +194,19 @@ def run(args, parser):
     )
     startup_seconds = time.perf_counter() - startup
     try:
-        if args.step == "export":
-            if not all((args.queries, args.variants, args.export_dir)):
-                parser.error("export requires --queries, --variants and --export-dir")
+        if args.step == "08":
             from src.retrieval.export_results import export_results
 
             run_stage(
                 "08",
                 export_results,
                 engine,
-                args.queries,
-                args.variants,
-                args.export_dir,
+                configured_path(pipeline, "queries", "evaluation/queries/final_queries.jsonl"),
+                pipeline["evaluation"]["neural_variants"],
+                configured_path(pipeline, "neural_results_dir", "evaluation/results/neural"),
                 startup_seconds,
+                pipeline["evaluation"]["neural_timing_repeats"],
+                pipeline["evaluation"]["results_per_query"],
             )
             return
         if args.step == "all":
@@ -248,23 +239,6 @@ def run(args, parser):
             from src.verification.step_07_verification import verify
 
             run_if_needed("07", verify, engine, root)
-        elif args.step == "08":
-            if not args.query:
-                parser.error("--query is required for step 08")
-            print(
-                json.dumps(
-                    engine.search(
-                        args.query,
-                        mode=args.mode,
-                    ),
-                    indent=2,
-                    ensure_ascii=False,
-                )
-            )
-        elif args.step == "09":
-            from src.ui.step_09_ui import serve
-
-            serve(engine, args.host, args.port)
     finally:
         engine.close()
 
@@ -272,6 +246,7 @@ def run(args, parser):
 def main():
     import sys
     from src.common.logging import run_log
+    from src.common.config import load_pipeline_config
 
     if "--help" in sys.argv or "-h" in sys.argv:
         parse_and_run()
@@ -279,10 +254,11 @@ def main():
     preview = argparse.ArgumentParser(add_help=False)
     preview.add_argument("--step", default="all")
     args, _ = preview.parse_known_args()
-    step = {"audit": "07", "export": "08"}.get(args.step, args.step)
-    if step not in {"all", *[f"{i:02}" for i in range(1, 10)]}:
+    step = args.step
+    if step not in {"all", *[f"{i:02}" for i in range(1, 9)]}:
         step = "all"
-    with run_log(step):
+    configured_logs = configured_path(load_pipeline_config(), "neural_logs_dir")
+    with run_log(step, configured_logs):
         parse_and_run()
 
 

@@ -8,6 +8,7 @@ from pathlib import Path
 import sqlite3
 
 from src.common.config import load_config
+from src.common.paths import configured_path
 
 _SETTINGS = load_config()
 MODEL_ID = _SETTINGS["model_id"]
@@ -58,8 +59,10 @@ def connect(path, readonly=False):
 def report(directory, title, stats, distributions):
     """Save stage metadata and learning charts."""
     directory = Path(directory)
+    output_root = configured_path("neural_output_dir").resolve()
+    results_root = configured_path("neural_analysis_dir").resolve()
     try:
-        relative = directory.resolve().relative_to(Path("outputs").resolve())
+        relative = directory.resolve().relative_to(output_root)
     except ValueError:
         relative = None
     if relative is not None:
@@ -71,7 +74,7 @@ def report(directory, title, stats, distributions):
         }:
             write_json(directory / "summary.json", stats)
             return
-        directory = Path("results") / relative
+        directory = results_root / relative
     os.environ.setdefault("MPLCONFIGDIR", str(Path(".cache/matplotlib").resolve()))
     import matplotlib
 

@@ -1,250 +1,134 @@
-"""Load fixed result snapshots and persist shared query/document judgments."""
+"""Read the six saved result sets and strict pooled judgments."""
 
-from collections import defaultdict
-from datetime import datetime, timezone
 import json
-from pathlib import Path
-import threading
-import random
-from zipfile import ZipFile
-from .common import ROOT, COLUMNS, read_csv, write_csv, write_json
-from .metrics import calculate
+from collections import defaultdict
+
+from config import load_pipeline_config, resolve_path
+
+from .common import ROOT, read_csv, write_json
+from .metrics import calculate, calculate_graded
 
 
 class Store:
-    def __init__(self, archive=None):
-        self.lock = threading.RLock()
+    def __init__(self):
+        self.config = load_pipeline_config()
+        self.results_dir = resolve_path(self.config["paths"]["evaluation_results_dir"])
         self.queries = [
             json.loads(line)
-            for line in (ROOT / "queries/final_queries.jsonl").read_text().splitlines()
+            for line in resolve_path(self.config["paths"]["queries"])
+            .read_text(encoding="utf-8")
+            .splitlines()
             if line.strip()
         ]
-        if not self.queries or len({q["query_id"] for q in self.queries}) != len(
-            self.queries
-        ):
-            raise ValueError("Need at least one uniquely identified query")
-        texts = {q["query_id"]: q["query_text"] for q in self.queries}
-        self.query_types = {
-            q["query_id"]: q.get("query_type", "unspecified") for q in self.queries
-        }
+        if not self.queries or len({q["query_id"] for q in self.queries}) != len(self.queries):
+            raise ValueError("The configured query set must have unique query IDs")
+        self.query_text = {q["query_id"]: q["query_text"] for q in self.queries}
+        self.query_types = {q["query_id"]: q.get("query_type", "unspecified") for q in self.queries}
         self.runs = {}
         self.documents = {}
         self.pool = set()
-        for engine in ("classical", "neural"):
-            for path in sorted((ROOT / "results" / engine).glob("*.csv")):
-                if path.name == "timings.csv":
-                    continue
-                rows = read_csv(path)
-                if not rows:
-                    continue
-                variant = rows[0]["variant"]
-                expected_rows = len(self.queries) * 10
-                if len(rows) != expected_rows:
-                    raise ValueError(f"{path.name}: need {expected_rows} results")
-                grouped = defaultdict(list)
-                for r in rows:
-                    if (
-                        r["engine"] != engine
-                        or r["variant"] != variant
-                        or r["query_text"] != texts.get(r["query_id"])
-                    ):
-                        raise ValueError("Result identity mismatch")
-                    grouped[r["query_id"]].append(r)
-                    old = self.documents.get(r["doc_id"])
-                    if old and old["url"] != r["url"]:
-                        raise ValueError(
-                            "Document ID has conflicting URLs across snapshots"
-                        )
-                    self.documents[r["doc_id"]] = r
-                    self.pool.add((r["query_id"], r["doc_id"]))
-                if set(grouped) != set(texts):
-                    raise ValueError("A run is missing queries")
-                if any(
-                    sorted(int(r["rank"]) for r in group) != list(range(1, 11))
-                    or len({r["doc_id"] for r in group}) != 10
-                    for group in grouped.values()
-                ):
-                    raise ValueError("Invalid top-ten ordering")
-                self.runs[(engine, variant)] = rows
-        self.pending_results = {
-            engine: not any(e == engine for e, _ in self.runs)
-            for engine in ("classical", "neural")
-        }
-        self.path = ROOT / "data/judgments.csv"
-        self.labels = {key: None for key in self.pool}
-        self.j1 = {}
-        self.j2 = {}
-        self.grade = {}
-        if self.path.exists():
-            for r in read_csv(self.path):
-                key = (r["query_id"], r["doc_id"])
-                if key not in self.pool:
-                    continue
-                if r.get("j1_nemotron") not in (None, ""):
-                    self.j1[key] = int(r["j1_nemotron"])
-                if r.get("j2_gemma") not in (None, ""):
-                    self.j2[key] = int(r["j2_gemma"])
-                if r.get("consensus_grade") not in (None, ""):
-                    self.grade[key] = int(r["consensus_grade"])
-                if r.get("relevant") not in (None, ""):
-                    self.labels[key] = int(r["relevant"])
-                elif key in self.grade:
-                    self.labels[key] = 1 if self.grade[key] >= 1 else 0
-        self.archive = Path(archive) if archive else None
-        self.paths = {}
-        if self.archive and self.archive.is_file():
-            with ZipFile(self.archive) as source:
-                with source.open(
-                    "technical_web_corpus/metadata/corpus_manifest.jsonl"
-                ) as stream:
-                    for line in stream:
-                        d = json.loads(line)
-                        if d["doc_id"] in self.documents:
-                            if d["url"] != self.documents[d["doc_id"]]["url"]:
-                                raise ValueError(
-                                    "Archive and result document URLs differ"
-                                )
-                            self.paths[d["doc_id"]] = d["html_path"]
-        self.save()
+        limit = int(self.config["evaluation"]["results_per_query"])
 
-    def judgment_rows(self):
-        return [
-            {
-                "query_id": q,
-                "doc_id": d,
-                "j1_nemotron": self.j1.get((q, d), 0),
-                "j2_gemma": self.j2.get((q, d), 0),
-                "consensus_grade": self.grade.get((q, d), 2 if (self.j1.get((q, d)) == 1 and self.j2.get((q, d)) == 1) else (1 if (self.j1.get((q, d)) == 1 or self.j2.get((q, d)) == 1) else 0)),
-                "relevant": self.labels.get((q, d), 0),
-            }
-            for q, d in sorted(self.pool)
-        ]
+        for item in self.config["evaluation"]["result_snapshots"]:
+            path = self.results_dir / item["path"]
+            rows = read_csv(path)
+            expected = len(self.queries) * limit
+            if len(rows) != expected:
+                raise ValueError(f"{path}: expected {expected} result rows, found {len(rows)}")
+            if item["engine"] == "hybrid":
+                enriched = []
+                for row in rows:
+                    metadata = self.documents.get(row["doc_id"], {})
+                    enriched.append({
+                        "engine": "hybrid",
+                        "variant": "rrf",
+                        "query_id": row["query_id"],
+                        "query_text": self.query_text.get(row["query_id"], ""),
+                        "rank": row["rank"],
+                        "doc_id": row["doc_id"],
+                        "title": metadata.get("title", ""),
+                        "url": metadata.get("url", ""),
+                        "technology": metadata.get("technology", ""),
+                        "categories": metadata.get("categories", "[]"),
+                        "score": row["score"],
+                    })
+                rows = enriched
+            self._validate_run(rows, item["engine"], item["variant"], limit)
+            for row in rows:
+                self.documents[row["doc_id"]] = row
+                self.pool.add((row["query_id"], row["doc_id"]))
+            self.runs[(item["engine"], item["variant"])] = rows
 
-    def save(self):
-        write_csv(
-            self.path,
-            self.judgment_rows(),
-            ["query_id", "doc_id", "j1_nemotron", "j2_gemma", "consensus_grade", "relevant"],
-        )
+        self.labels = {}
+        self.grades = {}
+        judgment_path = resolve_path(self.config["paths"]["judgments"])
+        for row in read_csv(judgment_path):
+            key = (row["query_id"], row["doc_id"])
+            if row.get("relevant") not in (None, ""):
+                self.labels[key] = int(row["relevant"])
+            if row.get("consensus_grade") not in (None, ""):
+                self.grades[key] = int(row["consensus_grade"])
 
-    def judge(self, qid, doc_id, value):
-        key = qid, doc_id
-        if key not in self.pool or not (
-            value is None or (type(value) is int and value in (0, 1, 2))
-        ):
-            raise ValueError("Unknown pair or invalid label")
-        with self.lock:
-            self.labels[key] = value
-            self.updated[key] = datetime.now(timezone.utc).isoformat()
-            self.save()
+        missing = self.pool - self.labels.keys()
+        missing_grades = self.pool - self.grades.keys()
+        if missing or missing_grades:
+            raise ValueError(
+                f"Judgments are incomplete: {len(missing)} binary labels and "
+                f"{len(missing_grades)} grades missing from the six-engine pool"
+            )
 
-    def query(self, engine, variant, qid):
-        key = engine, variant
-        if key not in self.runs:
-            raise ValueError("Unknown engine or variant")
-        rows = []
-        for r in self.runs[key]:
-            if r["query_id"] == qid:
-                rows.append(
-                    {
-                        **r,
-                        "relevant": self.labels[(qid, r["doc_id"])],
-                        "saved_url": f"/document/{r['doc_id']}"
-                        if r["doc_id"] in self.paths
-                        else None,
-                    }
-                )
-        if not rows:
-            raise ValueError("Unknown query")
-        rows.sort(key=lambda r: int(r["rank"]))
-        pool = [key for key in self.pool if key[0] == qid]
-        return {
-            "results": rows,
-            "judged": sum(r["relevant"] is not None for r in rows),
-            "pool_judged": sum(self.labels[k] is not None for k in pool),
-            "pool_size": len(pool),
-        }
+    def _validate_run(self, rows, engine, variant, limit):
+        grouped = defaultdict(list)
+        for row in rows:
+            if row["engine"] != engine or row["variant"] != variant:
+                raise ValueError(f"Unexpected engine identity in {engine}/{variant}")
+            if row["query_text"] != self.query_text.get(row["query_id"]):
+                raise ValueError(f"Query text mismatch in {engine}/{variant}")
+            grouped[row["query_id"]].append(row)
+        if set(grouped) != set(self.query_text):
+            raise ValueError(f"{engine}/{variant} does not include all configured queries")
+        for query_id, results in grouped.items():
+            ranks = sorted(int(row["rank"]) for row in results)
+            if ranks != list(range(1, limit + 1)) or len({r["doc_id"] for r in results}) != limit:
+                raise ValueError(f"Invalid top-{limit} results for {engine}/{variant}/{query_id}")
 
     def exports(self, kind):
-        if kind == "judgments":
-            return self.judgment_rows(), [
-                "query_id",
-                "doc_id",
-                "relevant",
-                "updated_at",
-            ]
-        if kind == "results":
-            rows = [
-                {**r, "relevant": self.labels[(r["query_id"], r["doc_id"])]}
-                for results in self.runs.values()
-                for r in results
-            ]
-            return rows, COLUMNS + ["relevant"]
-        if kind == "timings":
-            rows = []
-            for engine in ("classical", "neural"):
-                path = ROOT / f"results/{engine}/timings.csv"
-                if path.exists():
-                    rows.extend(read_csv(path))
-            return rows, list(rows[0]) if rows else []
-        details, summary = calculate(self.runs, self.labels, self.query_types)
-        rows = summary if kind == "metrics" else details
+        if kind == "metrics_graded":
+            details, summary = calculate_graded(self.runs, self.labels, self.grades)
+            rows = summary
+        elif kind == "per_query_graded":
+            rows, _ = calculate_graded(self.runs, self.labels, self.grades)
+        elif kind == "metrics":
+            details, summary = calculate(self.runs, self.labels, self.query_types)
+            rows = summary
+        elif kind == "per_query":
+            rows, _ = calculate(self.runs, self.labels, self.query_types)
+        else:
+            raise ValueError(f"Unsupported evaluation export: {kind}")
         return rows, list(rows[0]) if rows else []
-
-    def apply_synthetic_random(self, seed):
-        rng = random.Random(seed)
-        for key in self.pool:
-            self.labels[key] = rng.randint(0, 1)
-            self.updated[key] = "synthetic_random_relevance"
-        return [
-            {
-                "query_id": query_id,
-                "query_type": self.query_types.get(query_id, "unspecified"),
-                "doc_id": doc_id,
-                "relevant": self.labels[(query_id, doc_id)],
-                "label_source": "synthetic_random_relevance",
-                "seed": seed,
-            }
-            for query_id, doc_id in sorted(self.pool)
-        ]
-
-    def html(self, doc_id):
-        if doc_id not in self.paths:
-            raise KeyError(doc_id)
-        with ZipFile(self.archive) as source:
-            return source.read("technical_web_corpus/" + self.paths[doc_id]).decode(
-                "utf-8", errors="replace"
-            )
 
     def comparison_report(self):
         manifests = {}
         for engine in ("classical", "neural"):
-            path = ROOT / f"results/{engine}/manifest.json"
+            path = self.results_dir / engine / "manifest.json"
             if path.exists():
-                manifests[engine] = json.loads(path.read_text())
-        missing = {
-            f"{engine}/{variant}": len(
-                {r["doc_id"] for r in rows if r["doc_id"] not in self.paths}
-            )
-            for (engine, variant), rows in self.runs.items()
-        }
+                manifests[engine] = json.loads(path.read_text(encoding="utf-8"))
+        classical = manifests.get("classical", [{}])[0]
+        neural = manifests.get("neural", [{}])[0]
+        same_corpus = (
+            classical.get("corpus_documents") == neural.get("corpus_documents")
+            and classical.get("corpus_manifest_sha256") is not None
+            and classical.get("corpus_manifest_sha256") == neural.get("corpus_manifest_sha256")
+        )
         report = {
-            "classical_corpus_documents": manifests.get("classical", [{}])[0].get(
-                "corpus_documents"
-            ),
-            "neural_corpus_documents": manifests.get("neural", [{}])[0].get(
-                "corpus_documents"
-            ),
-            "pending_results": self.pending_results,
-            "controlled_comparison": False,
-            "reason": "Classical export uses a different corpus and does not provide its manifest hash",
+            "classical_corpus_documents": classical.get("corpus_documents"),
+            "neural_corpus_documents": neural.get("corpus_documents"),
+            "controlled_comparison": same_corpus,
+            "reason": None if same_corpus else "Corpus counts or manifest hashes do not match",
+            "active_engines": [f"{engine}/{variant}" for engine, variant in self.runs],
             "unique_query_document_pairs": len(self.pool),
-            "result_rows": sum(len(r) for r in self.runs.values()),
-            "saved_html_unavailable_unique_documents_by_variant": missing
-            if self.archive
-            else None,
-            "metrics_scope": "Recall, F1, AP and NDCG use the union of all exported top-ten results as the judged pool; full-corpus recall and full MAP are unavailable",
-            "judgment_policy": "Unjudged stays blank. One query/document judgment applies across all variants.",
+            "result_rows": sum(len(rows) for rows in self.runs.values()),
+            "metrics_scope": "Pooled metrics use strict labels for the six active engines; Binary NDCG is primary and graded NDCG is secondary.",
         }
-        write_json(ROOT / "results/comparison.json", report)
+        write_json(self.results_dir / "comparison.json", report)
         return report

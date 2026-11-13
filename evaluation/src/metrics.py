@@ -11,24 +11,15 @@ METRICS = [
 ] + ["pooled_ap@10", "rr@10"]
 
 
-def compute_ndcg(relevances, k=None):
-    """Compute binary nDCG for an ordered relevance sequence."""
-    values = list(relevances if k is None else relevances[:k])
-    dcg = sum((value == 1) / math.log2(rank + 1) for rank, value in enumerate(values, 1))
-    ideal = sorted(values, reverse=True)
-    ideal_dcg = sum(
-        (value == 1) / math.log2(rank + 1)
-        for rank, value in enumerate(ideal, 1)
-    )
-    return dcg / ideal_dcg if ideal_dcg else 0.0
-
-
 def calculate(runs, labels, query_types=None):
     query_types = query_types or {}
     pools = defaultdict(set)
     for rows in runs.values():
         for row in rows:
             pools[row["query_id"]].add(row["doc_id"])
+    for (query_id, doc_id), value in labels.items():
+        if value is not None:
+            pools[query_id].add(doc_id)
     details = []
     for (engine, variant), rows in runs.items():
         queries = defaultdict(list)
@@ -151,4 +142,101 @@ def calculate(runs, labels, query_types=None):
                     else None
                 )
             summary.append(result)
+    return details, summary
+
+
+def calculate_graded(runs, labels, grades):
+    """Compute binary and graded metrics from the shared judged pool."""
+    pools = defaultdict(set)
+    for rows in runs.values():
+        for row in rows:
+            pools[row["query_id"]].add(row["doc_id"])
+    for (query_id, doc_id), value in labels.items():
+        if value is not None:
+            pools[query_id].add(doc_id)
+
+    details = []
+    summary = []
+    for (engine, variant), rows in runs.items():
+        grouped = defaultdict(list)
+        for row in rows:
+            grouped[row["query_id"]].append(row)
+        run_metrics = []
+        for query_id, pool in sorted(pools.items()):
+            results = sorted(
+                grouped[query_id], key=lambda row: int(row["rank"])
+            )[:10]
+            pool_binary = [labels.get((query_id, doc_id)) for doc_id in pool]
+            if any(value is None for value in pool_binary):
+                raise ValueError(f"Unjudged query pool: {query_id}")
+            pool_grades = [grades.get((query_id, doc_id)) for doc_id in pool]
+            if any(value is None for value in pool_grades):
+                raise ValueError(f"Missing relevance grade in query pool: {query_id}")
+
+            binary = [labels[(query_id, row["doc_id"])] for row in results]
+            ranked_grades = [grades[(query_id, row["doc_id"])] for row in results]
+            relevant_total = sum(value >= 1 for value in pool_binary)
+            hits5 = sum(value >= 1 for value in binary[:5])
+            hits10 = sum(value >= 1 for value in binary[:10])
+            p5 = hits5 / 5
+            p10 = hits10 / 10
+            recall10 = hits10 / relevant_total if relevant_total else 0.0
+            rr10 = next(
+                (1 / rank for rank, value in enumerate(binary, 1) if value >= 1),
+                0.0,
+            )
+            binary_dcg = sum(
+                (value >= 1) / math.log2(rank + 1)
+                for rank, value in enumerate(binary[:10], 1)
+            )
+            binary_ideal = sum(
+                1 / math.log2(rank + 1)
+                for rank in range(1, min(relevant_total, 10) + 1)
+            )
+            binary_ndcg10 = binary_dcg / binary_ideal if binary_ideal else 0.0
+
+            pool_gain = sorted((2**int(value) - 1 for value in pool_grades), reverse=True)
+            graded_ndcg = {}
+            for cutoff in (5, 10):
+                dcg = sum(
+                    (2**int(value) - 1) / math.log2(rank + 1)
+                    for rank, value in enumerate(ranked_grades[:cutoff], 1)
+                )
+                ideal = sum(
+                    gain / math.log2(rank + 1)
+                    for rank, gain in enumerate(pool_gain[:cutoff], 1)
+                )
+                graded_ndcg[cutoff] = dcg / ideal if ideal else 0.0
+
+            detail = {
+                "engine": engine,
+                "variant": variant,
+                "query_id": query_id,
+                "p5": f"{p5:.4f}",
+                "p10": f"{p10:.4f}",
+                "recall10": f"{recall10:.4f}",
+                "rr10": f"{rr10:.4f}",
+                "binary_ndcg10": f"{binary_ndcg10:.4f}",
+                "graded_ndcg5": f"{graded_ndcg[5]:.4f}",
+                "graded_ndcg10": f"{graded_ndcg[10]:.4f}",
+            }
+            details.append(detail)
+            run_metrics.append(
+                (p5, p10, recall10, rr10, binary_ndcg10, graded_ndcg[5], graded_ndcg[10])
+            )
+
+        means = [sum(row[index] for row in run_metrics) / len(run_metrics) for index in range(7)]
+        summary.append(
+            {
+                "engine": engine,
+                "variant": variant,
+                "P@5": means[0],
+                "P@10": means[1],
+                "Recall@10": means[2],
+                "MRR@10": means[3],
+                "Binary_NDCG@10": means[4],
+                "Graded_NDCG@5": means[5],
+                "Graded_NDCG@10": means[6],
+            }
+        )
     return details, summary

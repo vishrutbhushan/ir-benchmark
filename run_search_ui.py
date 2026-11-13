@@ -13,8 +13,10 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
+from config import load_pipeline_config, resolve_path
 
 ROOT = Path(__file__).resolve().parent
+PIPELINE_CONFIG = load_pipeline_config()
 
 # Auto-switch to virtual environment if current interpreter lacks PyTorch
 try:
@@ -26,15 +28,11 @@ except ImportError:
 
 
 def get_configured_limit():
-    """Read the configured result limit from config/pipeline.json (default 10, adaptable to 20)."""
-    try:
-        cfg_path = ROOT / "config/pipeline.json"
-        if cfg_path.exists():
-            cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-            return int(cfg.get("neural", {}).get("result_limit", cfg.get("classical", {}).get("top_k", 10)))
-    except Exception:
-        pass
-    return 10
+    return int(PIPELINE_CONFIG["neural"]["result_limit"])
+
+
+def get_configured_rrf():
+    return PIPELINE_CONFIG["evaluation"]["rrf"]
 
 
 def clean_title_for_comparison(title):
@@ -70,13 +68,8 @@ def extract_heading_snippet(title, headings):
     return " › ".join(distinct)
 
 
-METHOD_NAMES = {
-    "hybrid-rrf": "Hybrid RRF (BM25F + Routed Neural)",
-    "bm25f": "Hierarchical BM25F (Fields)",
-    "bm25": "Flat BM25 (Lucene Default)",
-    "neural-routed": "Cluster-Routed Neural (Soft Boundary)",
-    "neural-dense": "Dense Cosine (Exhaustive)",
-}
+SEARCH_ENGINES = PIPELINE_CONFIG["evaluation"]["search_engines"]
+METHOD_NAMES = {item["id"]: item["name"] for item in SEARCH_ENGINES}
 
 
 class SearchRuntime:
@@ -131,7 +124,7 @@ class SearchRuntime:
             from src.retrieval.inverted_index import InvertedIndex
             from src.retrieval.query_processor import QueryProcessor
 
-            index_path = classical / "outputs/stage_03_retrieval/inverted_index.json"
+            index_path = resolve_path(PIPELINE_CONFIG["paths"]["classical_output_dir"]) / "stage_03_retrieval/inverted_index.json"
             if not index_path.exists():
                 raise RuntimeError("Classical index is unavailable; run classical/run_pipeline.py first")
             index = InvertedIndex.load(index_path)
@@ -177,29 +170,39 @@ class SearchRuntime:
             pass
 
     def search(self, method, query, limit=None):
+        if method not in {"neural-dense", "neural-zones", "neural-routed", "hybrid-rrf"}:
+            return self._search(method, query, limit)
+        from neural.src.common.gpu_lock import gpu_job_lock
+
+        with gpu_job_lock():
+            return self._search(method, query, limit)
+
+    def _search(self, method, query, limit=None):
         limit = limit or get_configured_limit()
         started = time.perf_counter()
 
         if method == "hybrid-rrf":
             self._load_classical()
             self._load_neural()
-            fetch_k = limit * 2
-            bm25f_rows = self.classical["bm25f"].search(query, top_k=fetch_k)["results"]
+            config = json.loads((ROOT / "config/pipeline.json").read_text(encoding="utf-8"))
+            rrf = get_configured_rrf()
+            bm25f_depth = int(rrf["bm25f_depth"])
+            routed_depth = int(rrf["routed_depth"])
+            bm25f_rows = self.classical["bm25f"].search(query, top_k=bm25f_depth)["results"]
             if self.neural:
-                routed_rows = self.neural.search(query, mode="routed-cluster", page_size=fetch_k)["results"]
+                routed_rows = self.neural.search(query, mode="routed-cluster", page_size=routed_depth)["results"]
             else:
                 routed_rows = []
 
-            # Reciprocal Rank Fusion: 0.5 / (60 + r_bm25f) + 0.5 / (60 + r_routed)
             scores = {}
             doc_map = {}
             for rank, r in enumerate(bm25f_rows, 1):
                 did = r["doc_id"]
-                scores[did] = scores.get(did, 0.0) + 0.5 / (60.0 + rank)
+                scores[did] = scores.get(did, 0.0) + rrf["bm25f_weight"] / (rrf["k"] + rank)
                 doc_map[did] = r
             for rank, r in enumerate(routed_rows, 1):
                 did = r["doc_id"]
-                scores[did] = scores.get(did, 0.0) + 0.5 / (60.0 + rank)
+                scores[did] = scores.get(did, 0.0) + rrf["routed_weight"] / (rrf["k"] + rank)
                 if did not in doc_map:
                     doc_map[did] = r
 
@@ -218,7 +221,10 @@ class SearchRuntime:
             self._load_neural()
             if not self.neural:
                 raise RuntimeError("Neural search requires PyTorch. Run with '.venv/bin/python run_search_ui.py' or activate .venv.")
-            mode = "routed-cluster" if method == "neural-routed" else "dense"
+            mode = {
+                "neural-routed": "routed-cluster",
+                "neural-zones": "zones",
+            }.get(method, "dense")
             rows = self.neural.search(query, mode=mode, page_size=limit)["results"]
 
         elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
@@ -237,16 +243,23 @@ class SearchRuntime:
         title = row.get("title", "")
         doc_id = row.get("doc_id", "")
         heading_snippet = self.get_document_headings(doc_id, title)
+        categories = row.get("categories", row.get("category", ""))
+        if isinstance(categories, str):
+            try:
+                categories = json.loads(categories)
+            except json.JSONDecodeError:
+                categories = [categories] if categories else []
 
         return {
             "rank": rank,
             "doc_id": doc_id,
             "title": title,
             "technology": row.get("technology", ""),
+            "category": ", ".join(map(str, categories)) if categories else "",
             "heading_snippet": heading_snippet,
             "score": round(float(row.get("score", 0)), 6),
-            "excerpt": row.get("snippet", row.get("body_text", ""))[:350],
             "url": row.get("url", ""),
+            "saved_html": f"/document/{doc_id}",
         }
 
 
@@ -266,13 +279,15 @@ def serve(host, port, neural_output, corpus_dir, corpus_zip):
         def log_message(self, fmt, *args):
             print(f"[search-ui] {fmt % args}", flush=True)
 
-        def respond(self, payload, status=200, content_type="application/json"):
+        def respond(self, payload, status=200, content_type="application/json", headers=None):
             try:
                 body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
                 self.send_response(status)
                 self.send_header("Content-Type", content_type + "; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))
                 self.send_header("X-Content-Type-Options", "nosniff")
+                for name, value in (headers or {}).items():
+                    self.send_header(name, value)
                 self.end_headers()
                 self.wfile.write(body)
             except (BrokenPipeError, ConnectionResetError):
@@ -282,6 +297,33 @@ def serve(host, port, neural_output, corpus_dir, corpus_zip):
             parsed = urlsplit(self.path)
             if parsed.path == "/":
                 self.respond(UI.encode(), content_type="text/html")
+                return
+            if parsed.path.startswith("/document/"):
+                doc_id = parsed.path.removeprefix("/document/")
+                if not re.fullmatch(r"document_[0-9]+", doc_id):
+                    self.send_error(404)
+                    return
+                if not runtime.neural:
+                    self.respond({"error": "Saved corpus is unavailable"}, 503)
+                    return
+                try:
+                    source = runtime.neural.corpus.read_html(doc_id)
+                except (KeyError, FileNotFoundError):
+                    self.send_error(404)
+                    return
+                body = (
+                    "<!doctype html><meta charset=utf-8><title>Saved document</title>"
+                    '<iframe sandbox="" referrerpolicy="no-referrer" style="border:0;width:100%;height:97vh" srcdoc="'
+                    + html.escape(source, quote=True)
+                    + '"></iframe>'
+                ).encode()
+                self.respond(
+                    body,
+                    content_type="text/html",
+                    headers={
+                        "Content-Security-Policy": "default-src 'none'; frame-src 'self' about:; style-src 'unsafe-inline'; img-src data:; script-src 'none'; form-action 'none'; base-uri 'none'"
+                    },
+                )
                 return
             if parsed.path == "/favicon.ico":
                 try:
@@ -295,7 +337,7 @@ def serve(host, port, neural_output, corpus_dir, corpus_zip):
                 query = values.get("q", [""])[0].strip()
                 method = values.get("method", ["hybrid-rrf"])[0]
                 limit_arg = values.get("limit", [None])[0]
-                limit = int(limit_arg) if limit_arg and limit_arg.isdigit() else None
+                limit = min(int(limit_arg), get_configured_limit()) if limit_arg and limit_arg.isdigit() else get_configured_limit()
                 if not query or method not in METHOD_NAMES:
                     self.respond({"error": "Provide query 'q' and a supported retrieval method"}, 400)
                     return
@@ -457,6 +499,22 @@ UI = """<!doctype html>
     font-size: 12px;
     color: #70757a;
   }
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 18px 0 28px;
+  }
+  .pagination button {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    color: var(--text);
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+  .pagination button:disabled { opacity: 0.45; cursor: default; }
 </style>
 </head>
 <body>
@@ -465,13 +523,7 @@ UI = """<!doctype html>
 
 <form class="search-form" id="searchForm">
   <input class="input-query" id="qInput" placeholder="Search technical documentation, flags, code, or architecture..." autofocus autocomplete="off">
-  <select class="select-method" id="methodSelect">
-    <option value="hybrid-rrf">Hybrid RRF (BM25F + Routed Neural)</option>
-    <option value="bm25f">Hierarchical BM25F (Fields)</option>
-    <option value="bm25">Flat BM25 (Lucene Default)</option>
-    <option value="neural-routed">Cluster-Routed Neural (Soft Boundary)</option>
-    <option value="neural-dense">Dense Cosine (Exhaustive)</option>
-  </select>
+  <select class="select-method" id="methodSelect">{method_options}</select>
   <button class="btn-search" type="submit">Search</button>
 </form>
 
@@ -484,9 +536,47 @@ const qInput = document.getElementById('qInput');
 const methodSelect = document.getElementById('methodSelect');
 const statusContainer = document.getElementById('statusContainer');
 const resultsContainer = document.getElementById('resultsContainer');
+const PAGE_SIZE = {page_size};
+const RESULT_LIMIT = {result_limit};
+let rankedResults = [];
+let currentPage = 1;
 
 function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderResults(page) {
+  const pageCount = Math.max(1, Math.ceil(rankedResults.length / PAGE_SIZE));
+  currentPage = Math.max(1, Math.min(page, pageCount));
+  const first = (currentPage - 1) * PAGE_SIZE;
+  const shown = rankedResults.slice(first, first + PAGE_SIZE);
+  const cards = shown.map(x => {
+    const headingHtml = x.heading_snippet ? `<div class="heading-snippet"><span class="crumb-icon">›</span> ${escapeHtml(x.heading_snippet)}</div>` : '';
+    const techHtml = x.technology ? `<span class="tech-badge">${escapeHtml(x.technology)}</span>` : '';
+    const categoryHtml = x.category ? `<span class="tech-badge">${escapeHtml(x.category)}</span>` : '';
+    return `
+      <article class="result-card">
+        <div class="result-header">
+          <span class="rank-badge">${x.rank}.</span>
+          <a class="result-title" href="${escapeHtml(x.url)}" target="_blank" rel="noopener">${escapeHtml(x.title || 'Untitled Document')}</a>
+        </div>
+        <div class="result-url-bar">${techHtml}${categoryHtml}<span class="url-text">${escapeHtml(x.url)}</span></div>
+        <div class="result-footer">
+          <span>Relevance Score: <b>${x.score}</b></span>
+          <span>Document ID: <code>${x.doc_id}</code></span>
+          <a href="${escapeHtml(x.saved_html)}" target="_blank" rel="noopener">Open saved HTML</a>
+        </div>
+      </article>`;
+  }).join('');
+  const controls = pageCount > 1 ? `
+    <nav class="pagination" aria-label="Search result pages">
+      <button type="button" id="previousPage" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+      <span>Page ${currentPage} of ${pageCount}</span>
+      <button type="button" id="nextPage" ${currentPage === pageCount ? 'disabled' : ''}>Next</button>
+    </nav>` : '';
+  resultsContainer.innerHTML = cards + controls;
+  document.getElementById('previousPage')?.addEventListener('click', () => renderResults(currentPage - 1));
+  document.getElementById('nextPage')?.addEventListener('click', () => renderResults(currentPage + 1));
 }
 
 form.onsubmit = async (e) => {
@@ -509,33 +599,12 @@ form.onsubmit = async (e) => {
     statusContainer.innerHTML = `<span class="status-chip"> <b>${data.results.length} results</b> retrieved in <b>${data.elapsed_ms} ms</b> · Method: <b>${escapeHtml(data.method_name)}</b></span>`;
 
     if (data.results.length === 0) {
+      rankedResults = [];
       resultsContainer.innerHTML = '<p style="color:#5f6368">No matching technical documents found for this query.</p>';
       return;
     }
-
-    resultsContainer.innerHTML = data.results.map(x => {
-      const headingHtml = x.heading_snippet ? `<div class="heading-snippet"><span class="crumb-icon">›</span> ${escapeHtml(x.heading_snippet)}</div>` : '';
-      const techHtml = x.technology ? `<span class="tech-badge">${escapeHtml(x.technology)}</span>` : '';
-
-      return `
-        <article class="result-card">
-          <div class="result-header">
-            <span class="rank-badge">${x.rank}.</span>
-            <a class="result-title" href="${x.url}" target="_blank" rel="noopener">${escapeHtml(x.title || 'Untitled Document')}</a>
-          </div>
-          <div class="result-url-bar">
-            ${techHtml}
-            <span class="url-text">${escapeHtml(x.url)}</span>
-          </div>
-          ${headingHtml}
-          <div class="result-excerpt">${escapeHtml(x.excerpt)}</div>
-          <div class="result-footer">
-            <span>Relevance Score: <b>${x.score}</b></span>
-            <span>Document ID: <code>${x.doc_id}</code></span>
-          </div>
-        </article>
-      `;
-    }).join('');
+    rankedResults = data.results.slice(0, RESULT_LIMIT);
+    renderResults(1);
 
   } catch (err) {
     statusContainer.innerHTML = `<span class="status-chip error">Connection error: ${escapeHtml(err.message)}</span>`;
@@ -547,16 +616,27 @@ form.onsubmit = async (e) => {
 </html>
 """
 
+UI = UI.replace(
+    "{method_options}",
+    "".join(
+        f'<option value="{html.escape(item["id"], quote=True)}">{html.escape(item["name"])}</option>'
+        for item in SEARCH_ENGINES
+    ),
+)
+UI = UI.replace("{page_size}", str(PIPELINE_CONFIG["neural"]["page_size"]))
+UI = UI.replace("{result_limit}", str(PIPELINE_CONFIG["neural"]["result_limit"]))
+
 if __name__ == "__main__":
+    defaults = PIPELINE_CONFIG["evaluation"]
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--neural-output", type=Path, default=ROOT / "neural/outputs")
-    parser.add_argument("--corpus-dir", type=Path, default=ROOT / "data/00_corpus")
+    parser.add_argument("--host", default=defaults["search_host"])
+    parser.add_argument("--port", type=int, default=defaults["search_port"])
+    parser.add_argument("--neural-output", type=Path, default=resolve_path(PIPELINE_CONFIG["paths"]["neural_output_dir"]))
+    parser.add_argument("--corpus-dir", type=Path, default=resolve_path(PIPELINE_CONFIG["paths"]["corpus_dir"]))
     parser.add_argument(
         "--corpus-zip",
         type=Path,
-        default=ROOT / "filter/outputs/stage_05_archive/technical_web_corpus.zip",
+        default=resolve_path(PIPELINE_CONFIG["paths"]["filtered_archive"]),
     )
     args = parser.parse_args()
     serve(args.host, args.port, args.neural_output, args.corpus_dir, args.corpus_zip)

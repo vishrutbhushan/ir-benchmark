@@ -10,11 +10,11 @@ Implements the standard BM25F ranking function from scratch:
         IDF(t) * ( tf_tilde(t, d) / (k1 + tf_tilde(t, d)) )
 
 Where:
-    - w_z: weight of zone z (e.g., title=4.0, heading=2.5, code=2.0, body=1.0)
+    - w_z: weight of zone z, supplied through config/pipeline.json
     - b_z: length normalization parameter per zone z
     - |d_z|: length of document d in zone z
     - avgdl_z: corpus-wide average length of zone z
-    - k1: term frequency saturation parameter (default 1.2)
+    - k1: term frequency saturation parameter, read from project configuration
     - IDF(t): Robertson-Spärck Jones IDF
 
 Hierarchical Conditioning (Optional):
@@ -32,21 +32,7 @@ from typing import Any
 
 from src.retrieval.inverted_index import InvertedIndex, ZONES
 from src.utils.taxonomy import infer_query_taxonomy
-
-
-DEFAULT_ZONE_WEIGHTS: dict[str, float] = {
-    "title": 1.0,
-    "heading": 1.37,
-    "code": 0.55,
-    "body": 1.0,
-}
-
-DEFAULT_ZONE_B: dict[str, float] = {
-    "title": 0.3,
-    "heading": 0.5,
-    "code": 0.6,
-    "body": 0.75,
-}
+from config import load_pipeline_config
 
 
 class BM25FScorer:
@@ -57,29 +43,35 @@ class BM25FScorer:
     def __init__(
         self,
         index: InvertedIndex,
-        k1: float = 1.2,
+        k1: float | None = None,
         zone_weights: dict[str, float] | None = None,
         zone_b: dict[str, float] | None = None,
-        hierarchical_boost: float = 0.25,
+        hierarchical_boost: float | None = None,
     ) -> None:
         """
         Args:
             index: Pre-built inverted index with per-zone data.
             k1: Term frequency saturation parameter.
-            zone_weights: Weight per zone w_z (defaults: title=4.0, heading=2.5, code=2.0, body=1.0).
+            zone_weights: Weight per zone w_z from the project config.
             zone_b: Length normalization parameter b_z per zone.
             hierarchical_boost: Bonus factor applied to documents whose category/technology
                                 matches the query's inferred taxonomy intent (0.0 to disable).
         """
+        settings = load_pipeline_config()["classical"]
         self.index = index
-        self.k1 = k1
-        self.zone_weights = dict(DEFAULT_ZONE_WEIGHTS)
-        if zone_weights:
-            self.zone_weights.update(zone_weights)
-
-        self.zone_b = dict(DEFAULT_ZONE_B)
-        if zone_b:
-            self.zone_b.update(zone_b)
+        self.k1 = settings["k1"] if k1 is None else k1
+        zone_weights = settings["zone_weights"] if zone_weights is None else zone_weights
+        zone_b = settings["zone_b"] if zone_b is None else zone_b
+        hierarchical_boost = (
+            settings["hierarchical_boost"]
+            if hierarchical_boost is None
+            else hierarchical_boost
+        )
+        expected_zones = set(ZONES)
+        if set(zone_weights) != expected_zones or set(zone_b) != expected_zones:
+            raise ValueError("BM25F weights and b values must define every indexed zone")
+        self.zone_weights = dict(zone_weights)
+        self.zone_b = dict(zone_b)
 
         self.hierarchical_boost = max(0.0, hierarchical_boost)
 
@@ -95,8 +87,8 @@ class BM25FScorer:
             if tf_z <= 0:
                 continue
 
-            w_z = self.zone_weights.get(zone, 1.0)
-            b_z = self.zone_b.get(zone, 0.75)
+            w_z = self.zone_weights[zone]
+            b_z = self.zone_b[zone]
             len_z = self.index.get_zone_length(doc_id, zone)
             avg_z = self.index.avg_zone_lengths.get(zone, 0.0)
 

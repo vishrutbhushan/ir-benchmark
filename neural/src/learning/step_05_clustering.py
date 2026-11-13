@@ -9,6 +9,7 @@ import numpy as np
 
 from src.common.artifacts import report, write_json
 from src.common.config import load_config
+from src.common.zones import ZONES
 
 CLUSTERING_ZONES = ("title", "headings")
 
@@ -92,7 +93,10 @@ def train_clusters(root, engine):
     out.mkdir(parents=True, exist_ok=True)
     settings = load_config()
     vectors, present = build_zone_vectors(engine)
-    weights = engine.weights if engine.weights is not None else settings["zone_weights"]
+    if engine.weights is not None:
+        weights = dict(zip(ZONES, map(float, engine.weights)))
+    else:
+        weights = settings["zone_weights"]
     features = _features(vectors, present, weights)
     k = min(settings["cluster_k"], len(features))
     labels, centers, inertia = _kmeans(

@@ -130,6 +130,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    settings = load_pipeline_config(args.config)["classical"]
 
     phase = args.phase.lower()
     if phase.startswith("phase"):
@@ -200,6 +201,8 @@ def main() -> None:
             b=args.b,
             top_k=args.top_k,
             scorer_type=args.scorer,
+            zone_weights=settings["zone_weights"],
+            zone_b=settings["zone_b"],
             hierarchical_boost=args.hierarchical_boost,
             routing_mode=args.routing_mode,
         )

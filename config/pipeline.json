@@ -9,18 +9,17 @@
     "classical_output_dir": "classical/outputs",
     "classical_logs_dir": "classical/logs",
     "queries": "evaluation/queries/final_queries.jsonl",
+    "judgments": "evaluation/data/judgments.csv",
     "neural_output_dir": "neural/outputs",
+    "neural_analysis_dir": "neural/results",
+    "neural_results_dir": "evaluation/results/neural",
     "neural_logs_dir": "neural/logs",
     "evaluation_results_dir": "evaluation/results",
-    "evaluation_logs_dir": "evaluation/logs"
-  },
-  "data": {
-    "workers": 4,
-    "archive": "data/00_corpus/technical_web_corpus.zip"
+    "evaluation_logs_dir": "evaluation/logs",
+    "pipeline_log": "logs/pipeline.log"
   },
   "filter": {
-    "workers": 4,
-    "force": false
+    "workers": 4
   },
   "classical": {
     "workers": 8,
@@ -30,6 +29,18 @@
     "scorer": "both",
     "k1": 1.2,
     "b": 0.75,
+    "zone_weights": {
+      "title": 0.3136,
+      "heading": 0.7056,
+      "code": 1.1368,
+      "body": 1.764
+    },
+    "zone_b": {
+      "title": 0.3,
+      "heading": 0.5,
+      "code": 0.6,
+      "body": 0.75
+    },
     "top_k": 20,
     "hierarchical_boost": 0.25,
     "routing_mode": "hybrid"
@@ -38,18 +49,14 @@
     "model_id": "Qwen/Qwen3-Embedding-0.6B",
     "model_revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
     "model_weights_sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd",
-    "zone_model_id": "Qwen/Qwen3-Embedding-4B",
-    "zone_model_revision": "5cf2132abc99cad020ac570b19d031efec650f2b",
-    "zone_model_weights_sha256": "",
-    "zone_max_tokens": 8192,
-    "zone_batch_size": 8,
     "max_tokens": 512,
     "reserved_tokens": 16,
     "overlap": 64,
     "device": "cuda",
-    "batch_size": 512,
+    "batch_size": 32,
     "workers": 4,
     "zone_weighting": true,
+    "use_learned_zone_weights": false,
     "cluster_routing": true,
     "cluster_k": 8,
     "cluster_seed": 20261102,
@@ -60,20 +67,58 @@
     "query_cache_size": 64,
     "ranking_cache_size": 16,
     "result_limit": 10,
-    "page_size": 10,
+    "page_size": 5,
     "minimum_zone_weight": 0.01,
-    "weight_regularization": 0.05,
     "weight_queries": "neural/data/zone_weight_queries.csv",
     "weight_judgments": "neural/data/zone_weight_judgments.csv",
     "zone_weights": {
-      "title": 0.15,
-      "headings": 0.15,
-      "body": 0.5,
-      "code": 0.2
+      "title": 0.08,
+      "headings": 0.18,
+      "body": 0.45,
+      "code": 0.29
     }
   },
   "evaluation": {
-    "host": "127.0.0.1",
-    "port": 8001
+    "search_host": "127.0.0.1",
+    "search_port": 8000,
+    "results_per_query": 10,
+    "neural_timing_repeats": 3,
+    "neural_variants": [
+      {"id": "dense", "mode": "dense", "weights": null},
+      {"id": "zones", "mode": "zones", "weights": {"title": 0.08, "headings": 0.18, "body": 0.45, "code": 0.29}},
+      {"id": "routed", "mode": "routed-cluster", "weights": {"title": 0.08, "headings": 0.18, "body": 0.45, "code": 0.29}}
+    ],
+    "result_snapshots": [
+      {"engine": "classical", "variant": "bm25", "path": "classical/bm25.csv"},
+      {"engine": "classical", "variant": "bm25f", "path": "classical/bm25f.csv"},
+      {"engine": "neural", "variant": "dense", "path": "neural/dense.csv"},
+      {"engine": "neural", "variant": "zones", "path": "neural/zones.csv"},
+      {"engine": "neural", "variant": "routed", "path": "neural/routed.csv"},
+      {"engine": "hybrid", "variant": "rrf", "path": "hybrid/rrf.csv"}
+    ],
+    "query_groups": {
+      "keyword": {"start": 1, "end": 10},
+      "natural_language": {"start": 11, "end": 20}
+    },
+    "reported_latency_ms": {
+      "bm25": 23.6,
+      "bm25f": 36.1,
+      "rrf": 60.3
+    },
+    "search_engines": [
+      {"id": "hybrid-rrf", "name": "Hybrid RRF (BM25F + Routed Neural)"},
+      {"id": "bm25f", "name": "BM25F (Field-weighted)"},
+      {"id": "bm25", "name": "BM25 (Flat)"},
+      {"id": "neural-routed", "name": "Cluster-routed Neural"},
+      {"id": "neural-dense", "name": "Dense Neural"},
+      {"id": "neural-zones", "name": "Zone-weighted Neural"}
+    ],
+    "rrf": {
+      "k": 60,
+      "bm25f_weight": 0.5,
+      "routed_weight": 0.5,
+      "bm25f_depth": 10,
+      "routed_depth": 10
+    }
   }
 }

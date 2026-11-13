@@ -16,7 +16,7 @@ from src.common.artifacts import (
 from src.common.encoder import Encoder
 
 
-def run_embeddings(passages, out, model_path, device="cuda", batch_size=512):
+def run_embeddings(passages, out, model_path, device="cuda", batch_size=32):
     out.mkdir(parents=True, exist_ok=True)
     source = json.loads((passages / "summary.json").read_text())
     signature = hashlib.sha256(
@@ -180,7 +180,7 @@ def run_embeddings(passages, out, model_path, device="cuda", batch_size=512):
     return stats
 
 
-def embed_zones(root, device="cuda", batch_size=512):
+def embed_zones(root, device="cuda", batch_size=32):
     from src.common.zones import ZONES
 
     root = Path(root)

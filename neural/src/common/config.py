@@ -8,18 +8,20 @@ from src.common.zones import ZONES
 from pathlib import Path
 
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+
+
+def load_pipeline_config():
+    configured = os.environ.get("NEURAL_CONFIG")
+    path = Path(configured) if configured else REPOSITORY_ROOT / "config/pipeline.json"
+    if not path.is_absolute():
+        path = REPOSITORY_ROOT / path
+    return json.loads(path.resolve().read_text(encoding="utf-8"))
+
+
 def load_config():
-    custom = os.environ.get("NEURAL_CONFIG")
-    if custom and Path(custom).exists():
-        path = Path(custom)
-    elif Path("config/pipeline.json").exists():
-        path = Path("config/pipeline.json")
-    elif Path("../config/pipeline.json").exists():
-        path = Path("../config/pipeline.json")
-    else:
-        path = Path("config/pipeline.json")
-    values = json.loads(path.read_text(encoding="utf-8"))
-    values = values.get("neural", values)
+    pipeline = load_pipeline_config()
+    values = pipeline.get("neural", pipeline)
     for key in (
         "max_tokens",
         "reserved_tokens",
@@ -35,8 +37,6 @@ def load_config():
         "cluster_seed",
         "cluster_iterations",
         "route_clusters",
-        "zone_max_tokens",
-        "zone_batch_size",
     ):
         if type(values[key]) is not int or values[key] < (
             0 if key in {"reserved_tokens", "overlap"} else 1
@@ -54,12 +54,6 @@ def load_config():
         raise ValueError("zone_weights must sum to one")
     if not 0 < values["minimum_zone_weight"] < 1 / len(ZONES):
         raise ValueError("minimum_zone_weight must be positive and below uniform weight")
-    if (
-        type(values["weight_regularization"]) not in {int, float}
-        or not math.isfinite(values["weight_regularization"])
-        or values["weight_regularization"] < 0
-    ):
-        raise ValueError("weight_regularization must be a non-negative number")
     budget = values["max_tokens"] - values["reserved_tokens"]
     if (
         budget < 4
@@ -75,17 +69,13 @@ def load_config():
         raise ValueError("route_clusters must be within cluster_k")
     if not 0 <= values["secondary_margin"] <= 2:
         raise ValueError("Invalid secondary margin")
-    for key in ("zone_weighting", "cluster_routing"):
+    for key in ("zone_weighting", "use_learned_zone_weights", "cluster_routing"):
         if type(values[key]) is not bool:
             raise ValueError(f"{key} must be true or false")
     if not values["model_id"].startswith("Qwen/Qwen3-Embedding-"):
         raise ValueError(
             "Only Qwen3 embedding models use the implemented pooling contract"
         )
-    if not values["zone_model_id"].startswith("Qwen/Qwen3-Embedding-"):
-        raise ValueError("Only Qwen3 embedding models use the zone pooling contract")
-    if len(values["zone_model_revision"]) != 40:
-        raise ValueError("Pin a zone model commit")
     if len(values["model_revision"]) != 40 or len(values["model_weights_sha256"]) != 64:
         raise ValueError("Pin a model commit and model.safetensors SHA-256")
     return values

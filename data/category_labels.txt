@@ -1,6 +1,0 @@
-Cloud
-AI/ML
-Prog Lang
-DB
-ML Ops
-Communication/msg passing

@@ -1,6 +1,7 @@
 """Export fixed-query retrieval snapshots and measured resource usage."""
 
 import csv
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -46,14 +47,18 @@ def rss_bytes():
 
 
 def export_results(
-    engine, query_path, variants_path, directory, startup_seconds, repeats=3
+    engine, query_path, variants, directory, startup_seconds, repeats, result_limit
 ):
     queries = [
         json.loads(line)
         for line in Path(query_path).read_text().splitlines()
         if line.strip()
     ]
-    variants = json.loads(Path(variants_path).read_text())
+    variants_sha256 = hashlib.sha256(
+        json.dumps(variants, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    if result_limit < 1:
+        raise ValueError("Result limit must be positive")
     if (
         not queries
         or len({q["query_id"] for q in queries}) != len(queries)
@@ -135,9 +140,11 @@ def export_results(
                     samples.append(sample)
                     timings.append(sample)
                 variant_times.extend(s["retrieval_ms"] for s in samples)
-                order = ranking["order"][:10]
-                if len(order) != 10:
-                    raise RuntimeError("A query returned fewer than 10 documents")
+                order = ranking["order"][:result_limit]
+                if len(order) != result_limit:
+                    raise RuntimeError(
+                        f"A query returned fewer than {result_limit} documents"
+                    )
                 for rank, index in enumerate(order, 1):
                     index = int(index)
                     doc = engine.documents[index]
@@ -174,10 +181,10 @@ def export_results(
                     "corpus_manifest_sha256": source["dataset_manifest_sha256"],
                     "corpus_documents": len(engine.documents),
                     "query_count": len(queries),
-                    "results_per_query": 10,
+                    "results_per_query": result_limit,
                     "repetitions": repeats,
                     "queries_sha256": digest_file(query_path),
-                    "variants_sha256": digest_file(variants_path),
+                    "variants_sha256": variants_sha256,
                     "device": engine.device,
                     "python": platform.python_version(),
                     "torch": engine.torch.__version__,
@@ -197,7 +204,9 @@ def export_results(
                 }
             )
             print(
-                f"Exported {variant['id']}: 20 queries, 200 results, median {statistics.median(variant_times):.1f} ms",
+                f"Exported {variant['id']}: {len(queries)} queries, "
+                f"{len(queries) * result_limit} results, median "
+                f"{statistics.median(variant_times):.1f} ms",
                 flush=True,
             )
             write_csv(directory / "timings.csv", timings, list(timings[0]))

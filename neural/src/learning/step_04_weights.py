@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from src.common.artifacts import digest_file, write_json
-from src.common.paths import REPOSITORY_ROOT
+from src.common.paths import REPOSITORY_ROOT, configured_path
 from src.common.config import load_config
 from src.common.zones import ZONES
 
@@ -59,6 +59,9 @@ def configure_weights(root, engine=None):
         )
     root = Path(root)
     settings = load_config()
+    queries_path = REPOSITORY_ROOT / settings.get(
+        "weight_queries", "neural/data/zone_weight_queries.csv"
+    )
     judgments_path = REPOSITORY_ROOT / settings.get(
         "weight_judgments", "neural/data/zone_weight_judgments.csv"
     )
@@ -106,13 +109,14 @@ def configure_weights(root, engine=None):
     mse = float(np.mean((predictions - y) ** 2))
 
     model = {
-        "schema": "query-balanced-zone-ridge-v1",
+        "schema": "constrained-zone-least-squares-v1",
         "method": "Manning Chapter 6 Section 6.1 Weighted Zone Scoring",
         "zones": list(ZONES),
         "weights": weights.tolist(),
         "unrestricted_least_squares_weights": unrestricted.tolist(),
         "configured_weights": configured.tolist(),
         "index_fingerprint": engine.summary["fingerprint"],
+        "queries_csv_sha256": digest_file(queries_path),
         "judgments_csv": str(judgments_path.relative_to(REPOSITORY_ROOT)),
         "judgments_csv_sha256": digest_file(judgments_path),
         "minimum_zone_weight": minimum_floor,
@@ -126,7 +130,7 @@ def configure_weights(root, engine=None):
     write_json(out_dir / "model.json", model)
     engine.weights = weights.astype(np.float32)
 
-    weights_csv = REPOSITORY_ROOT / "neural/results/step_04_weights/weights.csv"
+    weights_csv = configured_path("neural_analysis_dir") / "step_04_weights/weights.csv"
     weights_csv.parent.mkdir(parents=True, exist_ok=True)
     with weights_csv.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(

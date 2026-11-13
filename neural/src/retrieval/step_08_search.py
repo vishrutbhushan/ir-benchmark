@@ -117,10 +117,10 @@ class SearchEngine:
             [self.config["zone_weights"][z] for z in ZONES], dtype=np.float32
         )
         learned_model = self.root / "step_04_weights/model.json"
-        if learned_model.exists():
+        if self.config["use_learned_zone_weights"] and learned_model.exists():
             learned = json.loads(learned_model.read_text(encoding="utf-8"))
             if (
-                learned.get("schema") == "query-balanced-zone-ridge-v1"
+                learned.get("schema") == "constrained-zone-least-squares-v1"
                 and learned.get("index_fingerprint") == self.summary["fingerprint"]
                 and learned.get("zones") == list(ZONES)
             ):

@@ -22,8 +22,8 @@ class Tee:
 
 
 @contextmanager
-def run_log(step):
-    directory = Path("logs") / ("all" if step == "all" else f"step_{step}")
+def run_log(step, logs_directory):
+    directory = Path(logs_directory) / ("all" if step == "all" else f"step_{step}")
     directory.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
     with (directory / "run.log").open("a", encoding="utf-8", buffering=1) as stream:

@@ -57,17 +57,14 @@ IR_Benchmark_Mermaid_VSCode.zip
 *- Copy.pptx
 IR_Benchmark_Template_Formatted*.pptx
 *.tmp
-
-# Ignore all scratch/utility scripts
-scripts/
+.DS_Store
+~$*.pptx
 
 # Ignore legacy and seed data inputs
 data_inputs/
 
 # Ignore intermediate judge outputs and legacy metrics
 evaluation/data/judgments_*.csv
-evaluation/results/metrics.csv
-evaluation/results/per_query.csv
 
 # Course material and agent documents
 course material/
@@ -77,3 +74,6 @@ agent.md
 AGENT.md
 *_backup.csv
 candidates.json
+
+# Retained legacy files are local only; active pipeline files stay at the root.
+/trash/

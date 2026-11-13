@@ -65,7 +65,7 @@ class Encoder:
                 "CUDA is unavailable. Select --device cpu or use a compatible PyTorch/CUDA installation."
             )
         self.device = device
-        torch.set_num_threads(8)
+        torch.set_num_threads(8 if device == "cuda" else 1)
         self.tokenizer = tokenizer(path)
         self.tokenizer.padding_side = "right"
         self.model = (

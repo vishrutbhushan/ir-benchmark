@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 from src.retrieval.inverted_index import InvertedIndex
 from src.retrieval.bm25_scorer import BM25Scorer
-from src.retrieval.bm25f_scorer import BM25FScorer, DEFAULT_ZONE_WEIGHTS
+from src.retrieval.bm25f_scorer import BM25FScorer
 from src.retrieval.inverted_index import InvertedIndex
 from src.retrieval.query_processor import QueryProcessor
 from src.utils.file_utils import write_json, write_text
@@ -34,11 +34,12 @@ def run_classic_ir(
     queries_path: Path,
     output_dir: Path,
     logger: logging.Logger,
+    zone_weights: dict[str, float],
+    zone_b: dict[str, float],
     k1: float = 1.2,
     b: float = 0.75,
     top_k: int = 20,
     scorer_type: str = "both",
-    zone_weights: dict[str, float] | None = None,
     hierarchical_boost: float = 0.25,
     routing_mode: str = "hybrid",
 ) -> dict[str, Any]:
@@ -56,7 +57,8 @@ def run_classic_ir(
         b: BM25 document length normalization parameter.
         top_k: Number of results per query.
         scorer_type: "bm25", "bm25f", or "both".
-        zone_weights: Custom zone weights for BM25F.
+        zone_weights: Zone weights loaded from config/pipeline.json.
+        zone_b: Per-zone length normalization loaded from config/pipeline.json.
         hierarchical_boost: Taxonomy matching bonus factor for BM25F.
         routing_mode: "hybrid" (soft boost), "hierarchical_first" (category sub-index routing),
                       or "tiered" (champion list candidate pruning).
@@ -73,6 +75,9 @@ def run_classic_ir(
     # ── Step 1: Build inverted index ──────────────────────────────────────
     index = InvertedIndex()
     index.build_from_tokenized_corpus(tokenized_path, structured_path, logger)
+    if routing_mode == "tiered":
+        logger.info("Building tiered champion lists for configured tiered retrieval.")
+        index.build_champion_lists(top_r=50)
 
     # Save index to disk
     index_path = output_dir / "inverted_index.json"
@@ -108,7 +113,7 @@ def run_classic_ir(
 
         # 2. Hierarchical BM25F
         if scorer_type in ["bm25f", "both"]:
-            active_weights = zone_weights or DEFAULT_ZONE_WEIGHTS
+            active_weights = zone_weights
             logger.info(
                 f"Executing Hierarchical Zone-Weighted BM25F retrieval (weights={active_weights}, boost={hierarchical_boost}, routing={routing_mode})..."
             )
@@ -116,6 +121,7 @@ def run_classic_ir(
                 index,
                 k1=k1,
                 zone_weights=active_weights,
+                zone_b=zone_b,
                 hierarchical_boost=hierarchical_boost,
             )
             qp_bm25f = QueryProcessor(index, bm25f_scorer, logger, routing_mode=routing_mode)
@@ -186,7 +192,8 @@ def run_classic_ir(
             "b": b,
             "top_k": top_k,
             "hierarchical_boost": hierarchical_boost,
-            "zone_weights": zone_weights or DEFAULT_ZONE_WEIGHTS,
+            "zone_weights": zone_weights,
+            "zone_b": zone_b,
         },
         "index_statistics": index_stats,
         "index_size_mb": round(index_size_mb, 2),
