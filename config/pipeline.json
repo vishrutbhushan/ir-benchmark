@@ -28,10 +28,10 @@
     "k1": 1.2,
     "b": 0.75,
     "zone_weights": {
-      "title": 0.3136,
-      "heading": 0.7056,
-      "code": 1.1368,
-      "body": 1.764
+      "title": 0.35,
+      "heading": 0.30,
+      "code": 0.15,
+      "body": 0.20
     },
     "zone_b": {
       "title": 0.3,
