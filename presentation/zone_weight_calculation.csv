@@ -1,0 +1,33 @@
+﻿query_id,query_text,doc_id,doc_title,s_T,s_H,s_B,s_C,relevant_r
+CAL01,how do I fix a merge conflict when rebasing in git,document_051364,Resolving merge conflicts after a Git rebase - GitHub Help,1,1,1,1,1
+CAL01,how do I fix a merge conflict when rebasing in git,document_011363,Opening a pull request | Kubernetes,0,1,1,1,0
+CAL01,how do I fix a merge conflict when rebasing in git,document_051302,Merge conflicts - GitHub Enterprise Server 3.17 Docs,1,1,1,1,1
+CAL01,how do I fix a merge conflict when rebasing in git,document_034925,Functions for working with nullable values - ClickHouse Documentation,0,0,0,0,0
+CAL02,why does mongodb trigger an election when a secondary restarts,document_023992,Replica Set Elections - Database Manual - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,1,0,0,1
+CAL02,why does mongodb trigger an election when a secondary restarts,document_025734,Replication - Database Manual v7.0 - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,1,0,0,1
+CAL02,why does mongodb trigger an election when a secondary restarts,document_026329,atlas api clusters restartPrimaries - Atlas CLI v1.57 - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,1,0,0,0,0
+CAL02,why does mongodb trigger an election when a secondary restarts,document_060609,_mm256_sra_epi64 in core::arch::x86 - Rust,0,0,0,0,0
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_056312,SPIFFE - auth methods | Vault | HashiCorp Developer,0,1,0,1,1
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_053599,Configure SSL for a Linux package installation | GitLab Docs,1,1,1,1,1
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_046099,Per-hostname authenticated origin pulls · Cloudflare SSL/TLS docs,0,0,1,1,0
+CAL03,how to set up ssl certificates on an nginx reverse proxy,document_018128,ServerCnxnHelper (Apache ZooKeeper - Server 3.8.4 API),0,0,0,0,0
+CAL04,kafka consumers stuck in constant rebalancing loop,document_030789,Kafka input plugin v12.0.0 | Logstash Plugins,1,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_029188,Kafka input plugin v10.5.2 | Logstash Plugins,1,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_041198,Event Hubs features and terminology - Azure Event Hubs | Microsoft Learn,0,1,1,0,1
+CAL04,kafka consumers stuck in constant rebalancing loop,document_068592,BigValueColorMode | Grafana documentation,0,0,0,0,0
+CAL05,how to wait for multiple goroutines to finish in go,document_002805,Effective Go - The Go Programming Language,1,1,1,1,1
+CAL05,how to wait for multiple goroutines to finish in go,document_002795,Documentation - The Go Programming Language,1,1,1,0,1
+CAL05,how to wait for multiple goroutines to finish in go,document_003251,async function - JavaScript | MDN MDN MDN Mozilla,0,0,0,0,0
+CAL05,how to wait for multiple goroutines to finish in go,document_047214,Math functions · Cloudflare Pipelines Docs,0,0,0,0,0
+CAL06,preventing concurrent runs with terraform remote state lock,document_055603,Manage Terraform versions | Terraform | HashiCorp Developer,0,0,0,1,0
+CAL06,preventing concurrent runs with terraform remote state lock,document_055699,Version remote state with the HCP Terraform API | Terraform | HashiCorp Developer,1,1,1,0,1
+CAL06,preventing concurrent runs with terraform remote state lock,document_055767,Upgrading to Terraform v1.10 | Terraform | HashiCorp Developer,0,1,1,1,1
+CAL06,preventing concurrent runs with terraform remote state lock,document_035670,estimateCompressionRatio - ClickHouse Documentation,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_069474,eventhandler_config next | Grafana Agent documentation,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_026128,Send Trigger Events to AWS EventBridge - Atlas - MongoDB Docs arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right arrow-right menu-vertical,0,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_032208,Ansible playbook - OpenSearch Documentation Ansible playbook | OpenSearch Documentation Link Search Menu Expand Document Documentation Menu,1,0,0,0,0
+CAL07,ansible handler not triggering after configuration file change,document_074408,VaultGemma · Hugging Face,0,0,0,0,0
+CAL08,why are reads failing when using local quorum in cassandra,document_017832,Dynamo | Apache Cassandra Documentation,1,1,1,1,1
+CAL08,why are reads failing when using local quorum in cassandra,document_017844,Dynamo | Apache Cassandra Documentation,1,1,1,1,1
+CAL08,why are reads failing when using local quorum in cassandra,document_018693,Deploying a multi-cluster on bare metal | Apache Pulsar,0,0,0,0,0
+CAL08,why are reads failing when using local quorum in cassandra,document_029519,Terminate After | Java API [6.8] | Elastic,0,0,0,0,0
