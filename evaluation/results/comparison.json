@@ -1,21 +1,17 @@
 {
-  "classical_corpus_documents": null,
-  "neural_corpus_documents": null,
-  "pending_results": {
-    "classical": false,
-    "neural": false
-  },
-  "controlled_comparison": false,
-  "reason": "Classical export uses a different corpus and does not provide its manifest hash",
-  "unique_query_document_pairs": 353,
-  "result_rows": 750,
-  "saved_html_unavailable_unique_documents_by_variant": {
-    "classical/bm25": 144,
-    "classical/bm25f": 142,
-    "neural/dense": 140,
-    "neural/cluster_routed": 139,
-    "neural/zones": 140
-  },
-  "metrics_scope": "Recall, F1, AP and NDCG use the union of all exported top-ten results as the judged pool; full-corpus recall and full MAP are unavailable",
-  "judgment_policy": "Unjudged stays blank. One query/document judgment applies across all variants."
+  "classical_corpus_documents": 45881,
+  "neural_corpus_documents": 45881,
+  "controlled_comparison": true,
+  "reason": null,
+  "active_engines": [
+    "classical/bm25",
+    "classical/bm25f",
+    "neural/dense",
+    "neural/zones",
+    "neural/routed",
+    "hybrid/rrf"
+  ],
+  "unique_query_document_pairs": 482,
+  "result_rows": 1200,
+  "metrics_scope": "Pooled metrics use strict labels for the six active engines; Binary NDCG is primary and graded NDCG is secondary."
 }

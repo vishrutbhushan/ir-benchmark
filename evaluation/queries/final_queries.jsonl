@@ -1,15 +1,20 @@
-{"query_id":"Q01","query_text":"pytorch cuda out of memory error during training","query_type":"Troubleshooting","target_tech":"PyTorch"}
-{"query_id":"Q02","query_text":"kubernetes readiness probe zero downtime deployment","query_type":"Configuration","target_tech":"Kubernetes"}
-{"query_id":"Q03","query_text":"postgresql jsonb gin index performance","query_type":"Performance","target_tech":"PostgreSQL"}
-{"query_id":"Q04","query_text":"python asyncio background task without blocking","query_type":"Conceptual","target_tech":"Python"}
-{"query_id":"Q05","query_text":"docker build --mount=type=cache syntax","query_type":"Syntax","target_tech":"Docker"}
-{"query_id":"Q06","query_text":"redis rdb vs aof persistence memory","query_type":"Architecture","target_tech":"Redis"}
-{"query_id":"Q07","query_text":"elasticsearch ilm rollover policy","query_type":"Operational","target_tech":"Elasticsearch"}
-{"query_id":"Q08","query_text":"spring boot custom health check actuator endpoint","query_type":"Integration","target_tech":"Spring Boot"}
-{"query_id":"Q09","query_text":"linux sysctl tcp socket buffer size","query_type":"SysAdmin","target_tech":"Linux Kernel"}
-{"query_id":"Q10","query_text":"envoy proxy circuit breaker connection pool limits","query_type":"Networking","target_tech":"Envoy"}
-{"query_id":"Q11","query_text":"quickest way to initialize a basic spring boot rest service without bloated boilerplate","query_type":"Conversational-Setup","target_tech":"Spring Boot"}
-{"query_id":"Q12","query_text":"sql databse conection keeps timing out when backend tries to connect to mysql","query_type":"Conversational-Troubleshooting","target_tech":"MySQL"}
-{"query_id":"Q13","query_text":"why does my deployed pod keep restarting constantly with exit code 137","query_type":"Conversational-Troubleshooting","target_tech":"Kubernetes"}
-{"query_id":"Q14","query_text":"docker build is crawling sluggishly because dependencies re-download on every layer change","query_type":"Conversational-Performance","target_tech":"Docker"}
-{"query_id":"Q15","query_text":"how to prevent redis from eating all server ram and crashing when cache fills up","query_type":"Conversational-Performance","target_tech":"Redis"}
+{"query_id": "Q01", "query_text": "pytorch cuda out of memory error during training", "query_type": "Troubleshooting", "target_tech": "PyTorch"}
+{"query_id": "Q02", "query_text": "kubernetes readiness probe zero downtime deployment", "query_type": "Configuration", "target_tech": "Kubernetes"}
+{"query_id": "Q03", "query_text": "postgresql jsonb gin index performance", "query_type": "Performance", "target_tech": "PostgreSQL"}
+{"query_id": "Q04", "query_text": "python asyncio background task without blocking", "query_type": "Conceptual", "target_tech": "Python"}
+{"query_id": "Q05", "query_text": "docker build --mount=type=cache syntax", "query_type": "Syntax", "target_tech": "Docker"}
+{"query_id": "Q06", "query_text": "redis rdb vs aof persistence memory", "query_type": "Architecture", "target_tech": "Redis"}
+{"query_id": "Q07", "query_text": "elasticsearch ilm rollover policy", "query_type": "Operational", "target_tech": "Elasticsearch"}
+{"query_id": "Q08", "query_text": "spring boot custom health check actuator endpoint", "query_type": "Integration", "target_tech": "Spring Boot"}
+{"query_id": "Q09", "query_text": "linux sysctl tcp socket buffer size", "query_type": "SysAdmin", "target_tech": "Linux Kernel"}
+{"query_id": "Q10", "query_text": "envoy proxy circuit breaker connection pool limits", "query_type": "Networking", "target_tech": "Envoy"}
+{"query_id": "Q11", "query_text": "quickest way to initialize a basic spring boot rest service without bloated boilerplate", "query_type": "Conversational-Setup", "target_tech": "Spring Boot"}
+{"query_id": "Q12", "query_text": "sql databse conection keeps timing out when backend tries to connect to mysql", "query_type": "Conversational-Troubleshooting", "target_tech": "MySQL"}
+{"query_id": "Q13", "query_text": "why does my deployed pod keep restarting constantly with exit code 137", "query_type": "Conversational-Troubleshooting", "target_tech": "Kubernetes"}
+{"query_id": "Q14", "query_text": "docker build is crawling sluggishly because dependencies re-download on every layer change", "query_type": "Conversational-Performance", "target_tech": "Docker"}
+{"query_id": "Q15", "query_text": "how to prevent redis from eating all server ram and crashing when cache fills up", "query_type": "Conversational-Performance", "target_tech": "Redis"}
+{"query_id": "Q16", "query_text": "My Python service keeps running out of memory after processing requests for a few hours. How can I find objects that aren\u2019t being released?", "query_type": "Conversational-Troubleshooting", "target_tech": "Python"}
+{"query_id": "Q17", "query_text": "A Kubernetes pod keeps restarting because it runs out of memory. How can I find which container exceeded its limit?", "query_type": "Conversational-Troubleshooting", "target_tech": "Kubernetes"}
+{"query_id": "Q18", "query_text": "Redis evicts keys sooner than expected when the cache fills up. How can I control which keys it removes?", "query_type": "Conversational-Configuration", "target_tech": "Redis"}
+{"query_id": "Q19", "query_text": "In PostgreSQL, what happens when `ON CONFLICT DO UPDATE` hits a unique constraint violation?", "query_type": "Identifier-Question", "target_tech": "PostgreSQL"}
+{"query_id": "Q20", "query_text": "When `asyncio.wait_for()` reaches its timeout, does it cancel the underlying task?", "query_type": "Identifier-Question", "target_tech": "Python"}
