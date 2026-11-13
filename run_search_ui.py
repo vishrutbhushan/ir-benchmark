@@ -86,13 +86,18 @@ def serve(host, port):
                 values = parse_qs(parsed.query)
                 query = values.get("q", [""])[0].strip()
                 method = values.get("method", ["hybrid-rrf"])[0]
+                cache_value = values.get("cache", ["true"])[0].lower()
+                if cache_value not in {"true", "false"}:
+                    self.respond({"error": "cache must be true or false"}, 400)
+                    return
+                use_cache = cache_value == "true"
                 limit_arg = values.get("limit", [None])[0]
                 limit = min(int(limit_arg), get_configured_limit()) if limit_arg and limit_arg.isdigit() else get_configured_limit()
                 if not query or method not in METHOD_NAMES:
                     self.respond({"error": "Provide query 'q' and a supported retrieval method"}, 400)
                     return
                 try:
-                    self.respond(runtime.search(method, query, limit=limit))
+                    self.respond(runtime.search(method, query, limit=limit, use_cache=use_cache))
                 except (RuntimeError, ValueError, FileNotFoundError) as error:
                     logging.exception("Search request failed")
                     self.respond({"error": str(error)}, 503)
@@ -271,6 +276,7 @@ UI = """<!doctype html>
 <form class="search-form" id="searchForm">
   <input class="input-query" id="qInput" placeholder="Search technical documentation, flags, code, or architecture..." autofocus autocomplete="off">
   <select class="select-method" id="methodSelect">{method_options}</select>
+  <label class="cache-toggle"><input type="checkbox" id="cacheToggle" checked> Use cache</label>
   <button class="btn-search" type="submit">Search</button>
 </form>
 
@@ -281,6 +287,7 @@ UI = """<!doctype html>
 const form = document.getElementById('searchForm');
 const qInput = document.getElementById('qInput');
 const methodSelect = document.getElementById('methodSelect');
+const cacheToggle = document.getElementById('cacheToggle');
 const statusContainer = document.getElementById('statusContainer');
 const resultsContainer = document.getElementById('resultsContainer');
 const PAGE_SIZE = {page_size};
@@ -333,7 +340,7 @@ form.onsubmit = async (e) => {
   statusContainer.innerHTML = '<span class="status-chip">Searching documentation...</span>';
   resultsContainer.innerHTML = '';
 
-  const params = new URLSearchParams({ q: query, method: methodSelect.value });
+  const params = new URLSearchParams({ q: query, method: methodSelect.value, cache: cacheToggle.checked ? 'true' : 'false' });
   try {
     const res = await fetch('/api/search?' + params);
     const data = await res.json();
@@ -342,7 +349,8 @@ form.onsubmit = async (e) => {
       return;
     }
 
-    statusContainer.innerHTML = `<span class="status-chip"> <b>${data.results.length} results</b> retrieved in <b>${data.elapsed_ms} ms</b> · Method: <b>${escapeHtml(data.method_name)}</b></span>`;
+    const cacheText = data.cache_enabled ? 'cache on' : 'cache off';
+    statusContainer.innerHTML = `<span class="status-chip"> <b>${data.results.length} results</b> retrieved in <b>${data.elapsed_ms} ms</b> · ${cacheText} · Method: <b>${escapeHtml(data.method_name)}</b></span>`;
 
     if (data.results.length === 0) {
       rankedResults = [];

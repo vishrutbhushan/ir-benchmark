@@ -1,0 +1,7 @@
+method,mean_ms
+bm25,21.06
+bm25f,40.3235
+neural-dense,50.91
+neural-zones,40.62
+neural-routed,39.29
+hybrid-rrf,91.281

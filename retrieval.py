@@ -96,12 +96,12 @@ class RetrievalRuntime:
         if method not in modes: raise ValueError('Unknown retrieval engine')
         return self.neural.search(query,mode=modes[method],page_size=limit,use_cache=use_cache)['results']
 
-    def search(self, method, query, limit=None):
+    def search(self, method, query, limit=None, use_cache=True):
         started=time.perf_counter()
         if method in ('bm25','bm25f'):
-            rows=self.retrieve(method,query,limit)
+            rows=self.retrieve(method,query,limit,use_cache=use_cache)
         else:
-            with gpu_job_lock(): rows=self.retrieve(method,query,limit)
+            with gpu_job_lock(): rows=self.retrieve(method,query,limit,use_cache=use_cache)
         results=[]
         for rank,row in enumerate(rows,1):
             did=row['doc_id'];cluster=self.cluster_by_doc.get(did)
@@ -109,7 +109,8 @@ class RetrievalRuntime:
                                 category=f'Cluster {cluster}' if cluster is not None else row.get('category',''),
                                 score=round(float(row['score']),6),url=row.get('url',''),saved_html=f'/document/{did}'))
         names={x['id']:x['name'] for x in self.config['evaluation']['search_engines']}
-        return dict(method=method,method_name=names[method],query=query,results=results,elapsed_ms=round((time.perf_counter()-started)*1000,2))
+        return dict(method=method,method_name=names[method],query=query,results=results,
+                    cache_enabled=bool(use_cache),elapsed_ms=round((time.perf_counter()-started)*1000,2))
 
     def close(self):
         if self.neural is not None: self.neural.close()

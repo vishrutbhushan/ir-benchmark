@@ -321,6 +321,8 @@ class SearchEngine:
         started = time.perf_counter()
         key = (query.strip(), mode)
         with self.lock:
+            if not use_cache:
+                self.query_cache.clear()
             hit = use_cache and key in self.cache
             if hit:
                 ranking = self.cache.pop(key)
