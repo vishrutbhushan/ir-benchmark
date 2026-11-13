@@ -77,7 +77,7 @@ def run_tokenization(
     category_doc_counts: defaultdict[str, int] = defaultdict(int)
     vocab_by_zone: dict[str, set[str]] = {
         "title": set(), "heading": set(), "body": set(),
-        "code": set(), "section": set(),
+        "code": set(),
     }
 
     start_time = time.time()
@@ -101,7 +101,7 @@ def run_tokenization(
                             total_token_count += doc_total
                             tokens_per_doc.append(doc_total)
 
-                            for zone_key in ["title", "heading", "body", "code", "section"]:
+                            for zone_key in ["title", "heading", "body", "code"]:
                                 zone_tokens = tokenized.get(f"{zone_key}_tokens", [])
                                 z_len = len(zone_tokens)
                                 total_tokens_by_zone[zone_key] += z_len
@@ -128,7 +128,7 @@ def run_tokenization(
                         total_token_count += doc_total
                         tokens_per_doc.append(doc_total)
 
-                        for zone_key in ["title", "heading", "body", "code", "section"]:
+                        for zone_key in ["title", "heading", "body", "code"]:
                             zone_tokens = tokenized.get(f"{zone_key}_tokens", [])
                             z_len = len(zone_tokens)
                             total_tokens_by_zone[zone_key] += z_len
@@ -156,7 +156,7 @@ def run_tokenization(
     total_vocab = len(set().union(*vocab_by_zone.values())) if vocab_by_zone else 0
 
     zone_stats = {}
-    for zone_key in ["title", "heading", "body", "code", "section"]:
+    for zone_key in ["title", "heading", "body", "code"]:
         zone_total = total_tokens_by_zone[zone_key]
         zone_docs = zone_doc_counts[zone_key]
         zone_stats[zone_key] = {

@@ -104,34 +104,32 @@ class SearchEngine:
             ) or self.mappings[zone].shape != (summary["passages"],):
                 raise RuntimeError(f"{zone}: vector/mapping shape mismatch")
             total_bytes += self.matrices[zone].nbytes
-        resident = (
-            device == "cuda" and total_bytes < self.torch.cuda.mem_get_info()[0] * 0.55
-        )
+        self.vector_norms = {}
         for zone in ZONES:
-            self.resident[zone] = (
-                self.torch.as_tensor(np.array(self.matrices[zone]), device=device)
-                if resident
-                else None
-            )
+            values = np.array(self.matrices[zone], dtype=np.float32)
+            self.resident[zone] = self.torch.as_tensor(values, device=device)
+            self.vector_norms[zone] = self.torch.linalg.vector_norm(self.resident[zone], dim=1).clamp_min(1e-12)
+        self.routing_plans = {}
         self.weights = np.array(
             [self.config["zone_weights"][z] for z in ZONES], dtype=np.float32
         )
         learned_model = self.root / "step_04_weights/model.json"
-        if self.config["use_learned_zone_weights"] and learned_model.exists():
+        if self.config["use_learned_zone_weights"]:
+            if not learned_model.exists():
+                raise RuntimeError("Learned weights are enabled but not built")
             learned = json.loads(learned_model.read_text(encoding="utf-8"))
-            if (
-                learned.get("schema") == "constrained-zone-least-squares-v1"
-                and learned.get("index_fingerprint") == self.summary["fingerprint"]
-                and learned.get("zones") == list(ZONES)
-            ):
-                values = np.asarray(learned["weights"], dtype=np.float32)
-                if values.shape == (len(ZONES),) and np.isclose(values.sum(), 1):
-                    self.weights = values
+            if learned.get("schema") != "constrained-zone-least-squares-v1" or learned.get("index_fingerprint") != self.summary["fingerprint"]:
+                raise RuntimeError("Learned weights are stale; run neural step 04")
+            self.weights = np.asarray(learned["weights"], dtype=np.float32)
         self.clusters = None
         if (self.root / "step_05_clustering/model.json").exists():
             from src.learning.step_05_clustering import Clusters
 
-            self.clusters = Clusters(self.root)
+            try:
+                self.clusters = Clusters(self.root)
+            except RuntimeError:
+                if require_learning:
+                    raise
         self.routing = (
             json.loads((self.root / "step_06_routing/model.json").read_text())
             if (self.root / "step_06_routing/model.json").exists()
@@ -140,9 +138,10 @@ class SearchEngine:
         self.routing_rows = {}
         if self.routing:
             valid = (
-                self.routing.get("schema") == "cluster-postings-v1"
+                self.routing.get("schema") == "cluster-postings-v2"
                 and self.routing["index_fingerprint"] == self.summary["fingerprint"]
                 and self.clusters is not None
+                and self.routing.get("cluster_fingerprint") == self.clusters.model["training_fingerprint"]
                 and self.routing.get("clusters") == self.clusters.model["clusters"]
             )
             if valid:
@@ -154,6 +153,8 @@ class SearchEngine:
             self.weights is None or self.clusters is None or self.routing is None
         ):
             raise RuntimeError("Learning stages are incomplete; run --step all")
+        if self.routing is not None:
+            self.prepare_routing_plans()
         self.lock, self.cache, self.query_cache = (
             threading.RLock(),
             OrderedDict(),
@@ -181,7 +182,8 @@ class SearchEngine:
             vectors[has_zone, col] /= counts[has_zone, None]
             norms = np.linalg.norm(vectors[has_zone, col], axis=1, keepdims=True)
             valid = (norms.squeeze() > 1e-12)
-            vectors[has_zone, col][valid] /= norms[valid]
+            indices = np.flatnonzero(has_zone)[valid]
+            vectors[indices, col] /= norms[valid]
             present[has_zone, col] = True
 
         return vectors, present
@@ -198,54 +200,51 @@ class SearchEngine:
     def _zone_query(self, query):
         return self._query(query)
 
-    def zone_scores(self, vector, allowed=None, selected_rows=None):
+    def prepare_routing_plans(self):
+        from itertools import combinations
+        self.routing_plans.clear()
+        k = self.config["route_clusters"]
+        for selected in combinations(range(self.clusters.model["clusters"]), k):
+            allowed = np.any(np.isin(self.clusters.memberships, selected), axis=1)
+            rows = {z:np.unique(np.concatenate([self.routing_rows[f"{c}_{z}"] for c in selected])) for z in ZONES}
+            device_rows = {z:self.torch.as_tensor(v.astype(np.int64),device=self.device) for z,v in rows.items()}
+            self.routing_plans[selected] = (allowed, rows, device_rows)
+
+    def zone_scores(self, vector, allowed=None, selected_rows=None, device_rows=None):
         n = len(self.documents)
-        values = np.full((n, len(ZONES)), -np.inf, dtype=np.float32)
-        winners = np.full((n, len(ZONES)), -1, dtype=np.int64)
+        values = np.full((n,len(ZONES)), -np.inf,dtype=np.float32)
+        winners = np.full((n,len(ZONES)), -1,dtype=np.int64)
         torch = self.torch
-        q = torch.as_tensor(vector, device=self.device, dtype=torch.float32)
+        q = torch.as_tensor(vector,device=self.device,dtype=torch.float32)
         scanned = 0
+        block_size = self.config["vector_block_size"]
         with torch.inference_mode():
-            for column, zone in enumerate(ZONES):
-                mapping, matrix = self.mappings[zone], self.matrices[zone]
-                if selected_rows is not None:
-                    rows = selected_rows[zone]
-                    if allowed is not None:
-                        rows = rows[allowed[mapping[rows]]]
-                else:
-                    rows = (
-                        np.arange(len(matrix))
-                        if allowed is None
-                        else np.flatnonzero(allowed[mapping])
-                    )
-                scanned += len(rows)
-                scores = np.empty(len(rows), dtype=np.float32)
-                for start in range(0, len(rows), 32768):
-                    indices = rows[start : start + 32768]
-                    block = (
-                        self.resident[zone][
-                            torch.as_tensor(indices, device=self.device)
-                        ]
-                        if self.resident[zone] is not None
-                        else torch.as_tensor(
-                            np.array(matrix[indices]), device=self.device
-                        )
-                    )
-                    block = block.float()
-                    scores[start : start + len(indices)] = (
-                        (
-                            (block @ q)
-                            / torch.linalg.vector_norm(block, dim=1).clamp_min(1e-12)
-                        )
-                        .cpu()
-                        .numpy()
-                    )
-                if len(rows):
-                    maxima, local = aggregate_documents(scores, mapping[rows], n)
+            for column,zone in enumerate(ZONES):
+                mapping = self.mappings[zone]
+                rows = selected_rows[zone] if selected_rows is not None else None
+                if rows is None and allowed is not None:
+                    rows = np.flatnonzero(allowed[mapping])
+                count = len(rows) if rows is not None else len(mapping)
+                scanned += count
+                scores = np.empty(count,dtype=np.float32)
+                if rows is not None:
+                    indices = device_rows[zone] if device_rows is not None else torch.as_tensor(rows.astype(np.int64),device=self.device)
+                for start in range(0,count,block_size):
+                    stop = min(start+block_size,count)
+                    if rows is None:
+                        block = self.resident[zone][start:stop]
+                        norms = self.vector_norms[zone][start:stop]
+                    else:
+                        take = indices[start:stop]
+                        block = self.resident[zone].index_select(0,take)
+                        norms = self.vector_norms[zone].index_select(0,take)
+                    scores[start:stop] = ((block @ q)/norms).cpu().numpy()
+                if count:
+                    maxima,local = aggregate_documents(scores,mapping if rows is None else mapping[rows],n)
                     valid = np.isfinite(maxima)
-                    values[:, column] = maxima
-                    winners[valid, column] = rows[local[valid]]
-        return values, winners, scanned
+                    values[:,column] = maxima
+                    winners[valid,column] = local[valid] if rows is None else rows[local[valid]]
+        return values,winners,scanned
 
     def rank(self, query, mode="zones", route_k=None):
         if mode not in MODES:
@@ -256,6 +255,7 @@ class SearchEngine:
         allowed = np.ones(len(self.documents), dtype=bool)
         selected = []
         selected_rows = None
+        device_rows = None
         if mode == "routed-cluster":
             if self.clusters is None or self.routing is None:
                 raise RuntimeError("Train clusters and cluster row lists first")
@@ -266,24 +266,18 @@ class SearchEngine:
             selected = [
                 int(c) for c in np.argsort(-cluster_scores, kind="stable")
             ][:k]
-            if hasattr(self.clusters, "memberships"):
-                allowed &= np.any(np.isin(self.clusters.memberships, selected), axis=1)
+            key = tuple(sorted(selected))
+            if key in self.routing_plans:
+                allowed,selected_rows,device_rows = self.routing_plans[key]
             else:
-                allowed &= np.isin(self.clusters.labels, selected)
-            selected_rows = {
-                z: np.unique(
-                    np.concatenate([self.routing_rows[f"{c}_{z}"] for c in selected])
-                )
-                if selected
-                else np.empty(0, np.int32)
-                for z in ZONES
-            }
+                allowed = np.any(np.isin(self.clusters.memberships,selected),axis=1)
+                selected_rows = {z:np.unique(np.concatenate([self.routing_rows[f"{c}_{z}"] for c in selected])) for z in ZONES}
         if selected_rows is None:
             zones, winners, scanned = self.zone_scores(
                 q, None if allowed.all() else allowed
             )
         else:
-            zones, winners, scanned = self.zone_scores(q, allowed, selected_rows)
+            zones, winners, scanned = self.zone_scores(q, allowed, selected_rows, device_rows)
         if mode == "dense" or (
             mode == "routed-cluster" and not self.config["zone_weighting"]
         ):
@@ -409,3 +403,5 @@ class SearchEngine:
         if self.zone_encoder is not None:
             del self.zone_encoder
         self.resident.clear()
+        self.vector_norms.clear()
+        self.routing_plans.clear()

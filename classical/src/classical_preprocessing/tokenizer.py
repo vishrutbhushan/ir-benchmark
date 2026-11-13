@@ -166,7 +166,7 @@ def tokenize_zones(record: dict) -> dict[str, list[str]]:
     Tokenize all zones of a structured document record.
 
     Produces per-zone token lists ready for inverted index construction:
-        title_tokens, heading_tokens, body_tokens, code_tokens, section_tokens
+        title_tokens, heading_tokens, body_tokens, code_tokens
 
     Args:
         record: A structured record from Phase 1 extraction with fields:
@@ -183,7 +183,7 @@ def tokenize_zones(record: dict) -> dict[str, list[str]]:
 
     # Heading tokens — concatenate all heading texts
     headings = record.get("headings", [])
-    heading_text = " ".join(h.get("text", "") for h in headings if isinstance(h, dict))
+    heading_text = " ".join(headings)
     heading_tokens = tokenize(heading_text)
 
     # Body tokens
@@ -199,37 +199,14 @@ def tokenize_zones(record: dict) -> dict[str, list[str]]:
         expand_identifiers=True,
     )
 
-    # Individual section tokens for multi-level (document -> section) indexing
-    sections = record.get("sections", [])
-    tokenized_sections = []
-    all_section_tokens: list[str] = []
-    for idx, s in enumerate(sections):
-        if not isinstance(s, dict):
-            continue
-        h_text = s.get("heading", "")
-        c_text = s.get("content", "")
-        h_toks = tokenize(h_text)
-        c_toks = tokenize(c_text)
-        sec_tokens = h_toks + c_toks
-        all_section_tokens.extend(sec_tokens)
-        if sec_tokens:
-            tokenized_sections.append({
-                "sec_id": f"{doc_id}#sec_{idx}",
-                "heading": h_text,
-                "level": s.get("level", 2),
-                "tokens": sec_tokens,
-            })
-
     return {
         "doc_id": doc_id,
         "title_tokens": title_tokens,
         "heading_tokens": heading_tokens,
         "body_tokens": body_tokens,
         "code_tokens": code_tokens,
-        "section_tokens": all_section_tokens,
-        "sections": tokenized_sections,
         "total_token_count": (
             len(title_tokens) + len(heading_tokens) + len(body_tokens)
-            + len(code_tokens) + len(all_section_tokens)
+            + len(code_tokens)
         ),
     }

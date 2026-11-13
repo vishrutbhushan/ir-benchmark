@@ -19,13 +19,11 @@
     "pipeline_log": "logs/pipeline.log"
   },
   "filter": {
-    "workers": 4
+    "workers": 1
   },
   "classical": {
-    "workers": 8,
+    "workers": 1,
     "max_docs": null,
-    "min_char_length": 200,
-    "stratified": false,
     "scorer": "both",
     "k1": 1.2,
     "b": 0.75,
@@ -54,7 +52,7 @@
     "overlap": 64,
     "device": "cuda",
     "batch_size": 32,
-    "workers": 4,
+    "workers": 1,
     "zone_weighting": true,
     "use_learned_zone_weights": false,
     "cluster_routing": true,
@@ -76,7 +74,11 @@
       "headings": 0.18,
       "body": 0.45,
       "code": 0.29
-    }
+    },
+    "cluster_n_init": 3,
+    "cluster_presence_weight": 0.1,
+    "cluster_tolerance": 1e-06,
+    "vector_block_size": 32768
   },
   "evaluation": {
     "search_host": "127.0.0.1",
@@ -84,34 +86,86 @@
     "results_per_query": 10,
     "neural_timing_repeats": 3,
     "neural_variants": [
-      {"id": "dense", "mode": "dense", "weights": null},
-      {"id": "zones", "mode": "zones", "weights": {"title": 0.08, "headings": 0.18, "body": 0.45, "code": 0.29}},
-      {"id": "routed", "mode": "routed-cluster", "weights": {"title": 0.08, "headings": 0.18, "body": 0.45, "code": 0.29}}
+      {
+        "id": "dense",
+        "mode": "dense"
+      },
+      {
+        "id": "zones",
+        "mode": "zones"
+      },
+      {
+        "id": "routed",
+        "mode": "routed-cluster"
+      }
     ],
     "result_snapshots": [
-      {"engine": "classical", "variant": "bm25", "path": "classical/bm25.csv"},
-      {"engine": "classical", "variant": "bm25f", "path": "classical/bm25f.csv"},
-      {"engine": "neural", "variant": "dense", "path": "neural/dense.csv"},
-      {"engine": "neural", "variant": "zones", "path": "neural/zones.csv"},
-      {"engine": "neural", "variant": "routed", "path": "neural/routed.csv"},
-      {"engine": "hybrid", "variant": "rrf", "path": "hybrid/rrf.csv"}
+      {
+        "engine": "classical",
+        "variant": "bm25",
+        "path": "classical/bm25.csv"
+      },
+      {
+        "engine": "classical",
+        "variant": "bm25f",
+        "path": "classical/bm25f.csv"
+      },
+      {
+        "engine": "neural",
+        "variant": "dense",
+        "path": "neural/dense.csv"
+      },
+      {
+        "engine": "neural",
+        "variant": "zones",
+        "path": "neural/zones.csv"
+      },
+      {
+        "engine": "neural",
+        "variant": "routed",
+        "path": "neural/routed.csv"
+      },
+      {
+        "engine": "hybrid",
+        "variant": "rrf",
+        "path": "hybrid/rrf.csv"
+      }
     ],
     "query_groups": {
-      "keyword": {"start": 1, "end": 10},
-      "natural_language": {"start": 11, "end": 20}
-    },
-    "reported_latency_ms": {
-      "bm25": 23.6,
-      "bm25f": 36.1,
-      "rrf": 60.3
+      "keyword": {
+        "start": 1,
+        "end": 10
+      },
+      "natural_language": {
+        "start": 11,
+        "end": 20
+      }
     },
     "search_engines": [
-      {"id": "hybrid-rrf", "name": "Hybrid RRF (BM25F + Routed Neural)"},
-      {"id": "bm25f", "name": "BM25F (Field-weighted)"},
-      {"id": "bm25", "name": "BM25 (Flat)"},
-      {"id": "neural-routed", "name": "Cluster-routed Neural"},
-      {"id": "neural-dense", "name": "Dense Neural"},
-      {"id": "neural-zones", "name": "Zone-weighted Neural"}
+      {
+        "id": "hybrid-rrf",
+        "name": "Hybrid RRF (BM25F + Routed Neural)"
+      },
+      {
+        "id": "bm25f",
+        "name": "BM25F (Field-weighted)"
+      },
+      {
+        "id": "bm25",
+        "name": "BM25 (Flat)"
+      },
+      {
+        "id": "neural-routed",
+        "name": "Cluster-routed Neural"
+      },
+      {
+        "id": "neural-dense",
+        "name": "Dense Neural"
+      },
+      {
+        "id": "neural-zones",
+        "name": "Zone-weighted Neural"
+      }
     ],
     "rrf": {
       "k": 60,
@@ -119,6 +173,25 @@
       "routed_weight": 0.5,
       "bm25f_depth": 10,
       "routed_depth": 10
+    },
+    "latency": {
+      "repetitions": 3,
+      "cpu_threads": 1,
+      "warmup_queries": 1
+    },
+    "judges": {
+      "url": "http://127.0.0.1:11434",
+      "models": {
+        "nemotron": "nemotron-3.5-bolt:e4b-q8_0",
+        "gemma": "gemma4:12b-it-qat"
+      },
+      "rubric_version": "technical-doc-relevance-v2",
+      "retries": 3,
+      "timeout_seconds": 300,
+      "max_tokens": 2048
     }
+  },
+  "execution": {
+    "cpu_threads": 1
   }
 }

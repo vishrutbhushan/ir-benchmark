@@ -13,6 +13,11 @@ def tune_routing(root, engine):
     out = root / "step_06_routing"
     out.mkdir(parents=True, exist_ok=True)
     clusters = engine.clusters
+    if (out / "model.json").exists() and (out / "rows.npz").exists():
+        saved = json.loads((out / "model.json").read_text())
+        if saved.get("cluster_fingerprint") == clusters.model["training_fingerprint"] and saved.get("default_top_clusters") == load_config()["route_clusters"]:
+            print("Routing inputs unchanged; reusing row postings.",flush=True)
+            return saved
     arrays, counts = {}, {}
     for cluster in range(clusters.model["clusters"]):
         if hasattr(clusters, "memberships"):
@@ -26,7 +31,8 @@ def tune_routing(root, engine):
             ).astype(np.int32)
     np.savez_compressed(out / "rows.npz", **arrays)
     model = {
-        "schema": "cluster-postings-v1",
+        "schema": "cluster-postings-v2",
+        "cluster_fingerprint": clusters.model["training_fingerprint"],
         "index_fingerprint": engine.summary["fingerprint"],
         "clusters": clusters.model["clusters"],
         "documents": len(clusters.labels),
@@ -38,6 +44,7 @@ def tune_routing(root, engine):
     engine.routing = model
     with np.load(out / "rows.npz") as saved:
         engine.routing_rows = {k: saved[k] for k in saved.files}
+    engine.prepare_routing_plans()
     report(out, "Cluster vector row lists", model, {"cluster_documents": counts})
     print(json.dumps(model), flush=True)
     return model

@@ -17,9 +17,6 @@ def calculate(runs, labels, query_types=None):
     for rows in runs.values():
         for row in rows:
             pools[row["query_id"]].add(row["doc_id"])
-    for (query_id, doc_id), value in labels.items():
-        if value is not None:
-            pools[query_id].add(doc_id)
     details = []
     for (engine, variant), rows in runs.items():
         queries = defaultdict(list)
@@ -151,9 +148,6 @@ def calculate_graded(runs, labels, grades):
     for rows in runs.values():
         for row in rows:
             pools[row["query_id"]].add(row["doc_id"])
-    for (query_id, doc_id), value in labels.items():
-        if value is not None:
-            pools[query_id].add(doc_id)
 
     details = []
     summary = []

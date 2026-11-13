@@ -13,7 +13,7 @@ from src.common.artifacts import (
     report,
     write_json,
 )
-from src.common.encoder import Encoder
+from src.common.encoder import Encoder, ENCODING_CONTRACT
 
 
 def run_embeddings(passages, out, model_path, device="cuda", batch_size=32):
@@ -23,8 +23,7 @@ def run_embeddings(passages, out, model_path, device="cuda", batch_size=32):
         (
             source["fingerprint"]
             + MODEL_REVISION
-            + digest_file(Path(__file__).parents[1] / "common/encoder.py")
-            + "last-token-l2-fp16-v1"
+            + ENCODING_CONTRACT
         ).encode()
     ).hexdigest()
     state_path = out / "checkpoint.json"
@@ -150,6 +149,7 @@ def run_embeddings(passages, out, model_path, device="cuda", batch_size=32):
             "dimension": dimension,
             "dtype": "float16",
             "model_revision": MODEL_REVISION,
+            "encoding_contract": ENCODING_CONTRACT,
             "all_vectors_finite": True,
             "norm_min": norms_min,
             "norm_max": norms_max,

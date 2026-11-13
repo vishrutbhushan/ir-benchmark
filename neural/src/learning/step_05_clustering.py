@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 
 import numpy as np
 
-from src.common.artifacts import report, write_json
+from src.common.artifacts import report, write_json, digest_file
 from src.common.config import load_config
 from src.common.zones import ZONES
 
@@ -19,7 +20,7 @@ def build_zone_vectors(engine):
     return engine.zone_document_vectors()
 
 
-def _features(vectors, present, weights):
+def _features(vectors, present, weights, presence_weight):
     if isinstance(weights, dict):
         raw_weights = [weights.get(z, 0.5) for z in CLUSTERING_ZONES]
     else:
@@ -27,7 +28,7 @@ def _features(vectors, present, weights):
     total_w = sum(raw_weights)
     norm_weights = [w / total_w for w in raw_weights]
     scaled = vectors * np.sqrt(np.asarray(norm_weights, dtype=np.float32))[None, :, None]
-    mask = present.astype(np.float32) * 0.1
+    mask = present.astype(np.float32) * presence_weight
     feats = np.concatenate((scaled.reshape(len(vectors), -1), mask), axis=1)
     norms = np.linalg.norm(feats, axis=1, keepdims=True)
     return feats / np.maximum(norms, 1e-12)
@@ -49,7 +50,7 @@ def _kmeans_pp_init(features, k, rng):
     return centers
 
 
-def _kmeans(features, k, seed, iterations=100, n_init=3):
+def _kmeans(features, k, seed, iterations, n_init, tolerance):
     if k > len(features):
         raise ValueError("cluster_k cannot exceed the number of indexed documents")
     best_labels, best_centers, best_inertia = None, None, float("inf")
@@ -73,10 +74,12 @@ def _kmeans(features, k, seed, iterations=100, n_init=3):
                     updated[cluster] = members.mean(axis=0)
                 else:
                     updated[cluster] = features[rng.integers(len(features))]
-            if np.allclose(updated, centers, atol=1e-6):
+            updated /= np.maximum(np.linalg.norm(updated,axis=1,keepdims=True),1e-12)
+            if np.max(np.abs(updated-centers)) < tolerance:
                 centers = updated
                 break
             centers = updated
+        labels = np.argmax(features @ centers.T, axis=1)
         distances = np.sum((features - centers[labels]) ** 2, axis=1)
         inertia = float(distances.sum())
         if inertia < best_inertia:
@@ -87,20 +90,30 @@ def _kmeans(features, k, seed, iterations=100, n_init=3):
     return best_labels, best_centers, best_inertia
 
 
+def cluster_fingerprint(settings, index_fingerprint, weights):
+    keys = ("cluster_k","cluster_seed","cluster_iterations","cluster_n_init","cluster_tolerance","cluster_presence_weight","max_memberships","secondary_margin")
+    values = {k:settings[k] for k in keys}
+    values.update(index_fingerprint=index_fingerprint, weights=dict(zip(CLUSTERING_ZONES,[float(np.float32(weights[z])) for z in CLUSTERING_ZONES])), representation="unit-zone-v2", code=digest_file(__file__))
+    return hashlib.sha256(json.dumps(values,sort_keys=True).encode()).hexdigest()
+
+
 def train_clusters(root, engine):
     root = Path(root)
     out = root / "step_05_clustering"
     out.mkdir(parents=True, exist_ok=True)
     settings = load_config()
-    vectors, present = build_zone_vectors(engine)
-    if engine.weights is not None:
-        weights = dict(zip(ZONES, map(float, engine.weights)))
-    else:
-        weights = settings["zone_weights"]
-    features = _features(vectors, present, weights)
+    weights = dict(zip(ZONES,map(float,engine.weights))) if settings["use_learned_zone_weights"] else settings["zone_weights"]
+    fingerprint = cluster_fingerprint(settings, engine.summary["fingerprint"], weights)
+    if (out / "model.json").exists() and (out / "model.npz").exists():
+        saved = json.loads((out / "model.json").read_text())
+        if saved.get("training_fingerprint") == fingerprint:
+            print("Clustering inputs unchanged; reusing centroids.",flush=True)
+            return saved
+    vectors,present = build_zone_vectors(engine)
+    features = _features(vectors,present,weights,settings["cluster_presence_weight"])
     k = min(settings["cluster_k"], len(features))
     labels, centers, inertia = _kmeans(
-        features, k, settings["cluster_seed"], settings["cluster_iterations"]
+        features, k, settings["cluster_seed"], settings["cluster_iterations"], settings["cluster_n_init"], settings["cluster_tolerance"]
     )
 
     # Multi-membership assignment with secondary_margin
@@ -114,7 +127,7 @@ def train_clusters(root, engine):
     secondary_margin = float(settings.get("secondary_margin", 0.03))
     second_cluster = sorted_clusters[:, 1]
     second_sims = sims[np.arange(len(sims)), second_cluster]
-    has_secondary = second_sims >= (max_sims - secondary_margin)
+    has_secondary = (second_sims >= (max_sims - secondary_margin)) & (settings["max_memberships"] == 2)
 
     memberships = np.full((len(labels), 2), -1, dtype=np.int32)
     memberships[:, 0] = primary
@@ -136,7 +149,10 @@ def train_clusters(root, engine):
     raw_weights = [weights.get(z, 0.5) if isinstance(weights, dict) else 0.5 for z in CLUSTERING_ZONES]
     total_w = sum(raw_weights)
     model = {
-        "schema": "unsupervised-zone-kmeans-v1",
+        "schema": "unsupervised-zone-kmeans-v2",
+        "training_fingerprint": fingerprint,
+        "presence_weight": settings["cluster_presence_weight"],
+        "feature_dimensions": int(features.shape[1]),
         "index_fingerprint": engine.summary["fingerprint"],
         "clusters": k,
         "seed": settings["cluster_seed"],
@@ -167,28 +183,22 @@ class Clusters:
         self.model = json.loads((directory / "model.json").read_text())
         summary = json.loads((root / "step_02_windows/summary.json").read_text())
         if (
-            self.model.get("schema") != "unsupervised-zone-kmeans-v1"
+            self.model.get("schema") != "unsupervised-zone-kmeans-v2"
             or self.model["index_fingerprint"] != summary["fingerprint"]
         ):
             raise RuntimeError("Run step 05: clustering is stale")
+        settings = load_config()
+        weights = settings["zone_weights"]
+        if settings["use_learned_zone_weights"]:
+            learned = json.loads((root / "step_04_weights/model.json").read_text())
+            weights = dict(zip(ZONES,learned["weights"]))
+        if self.model.get("training_fingerprint") != cluster_fingerprint(settings,summary["fingerprint"],weights):
+            raise RuntimeError("Clustering configuration changed; run step 05")
         with np.load(directory / "model.npz") as saved:
             self.labels = saved["labels"]
             self.centers = saved["centers"]
-            self.memberships = (
-                saved["memberships"]
-                if "memberships" in saved
-                else np.column_stack((self.labels, np.full_like(self.labels, -1)))
-            )
-            if "zone_vectors" not in self.model:
-                self.zone_vectors = saved["zone_vectors"].astype(np.float32)
-                self.zone_present = saved["zone_present"]
-            else:
-                self.zone_vectors = None
-                self.zone_present = None
-        if self.model.get("zone_vectors"):
-            with np.load(directory / self.model["zone_vectors"]) as saved:
-                self.zone_vectors = saved["vectors"].astype(np.float32)
-                self.zone_present = saved["present"]
+            self.memberships = saved["memberships"]
+        self.normalized_centers = self.centers / np.maximum(np.linalg.norm(self.centers,axis=1,keepdims=True),1e-12)
         if len(self.labels) != self.model["documents"]:
             raise RuntimeError("Cluster assignment count does not match index")
 
@@ -198,9 +208,7 @@ class Clusters:
         total_w = sum(raw_weights)
         norm_weights = [np.sqrt(w / total_w) for w in raw_weights]
         q_zones = np.concatenate([vector * w for w in norm_weights])
-        q_feat = np.concatenate([q_zones, np.array([0.1, 0.1], dtype=np.float32)])
+        q_feat = np.concatenate([q_zones, np.full(2,self.model["presence_weight"], dtype=np.float32)])
         q_feat /= np.maximum(np.linalg.norm(q_feat), 1e-12)
 
-        c_norms = np.linalg.norm(self.centers, axis=1, keepdims=True)
-        c_normed = self.centers / np.maximum(c_norms, 1e-12)
-        return (c_normed @ q_feat).astype(np.float32)
+        return (self.normalized_centers @ q_feat).astype(np.float32)

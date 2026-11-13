@@ -2,6 +2,7 @@
 
 import csv
 import json
+import hashlib
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -92,20 +93,22 @@ def plot_precision(per_query, query_ids, destination):
     plt.close(fig)
 
 
-def plot_latency(summary, manifests_path, latencies, destination, cutoff):
-    manifest = json.loads(Path(manifests_path).read_text(encoding="utf-8"))
-    latency_map = {
-        ("classical", "bm25"): float(latencies["bm25"]),
-        ("classical", "bm25f"): float(latencies["bm25f"]),
-        ("hybrid", "rrf"): float(latencies["rrf"]),
+def plot_latency(summary, latency_path, destination, cutoff):
+    methods = {
+        "bm25": ("classical", "bm25"), "bm25f": ("classical", "bm25f"),
+        "neural-dense": ("neural", "dense"), "neural-zones": ("neural", "zones"),
+        "neural-routed": ("neural", "routed"), "hybrid-rrf": ("hybrid", "rrf"),
     }
-    latency_map.update({("neural", item["variant"]): float(item["retrieval_median_ms"]) for item in manifest})
+    latency_map = {
+        methods[row["method"]]: float(row["mean_ms"])
+        for row in read_csv(latency_path)
+    }
     metric = f"pooled_ndcg@{cutoff}"
     lookup = {(row["engine"], row["variant"]): row for row in summary if row["query_type"] == "all"}
     fig, ax = plt.subplots(figsize=(9.5, 4.6), dpi=300)
     offsets = {
-        "bm25": (8, -18), "bm25f": (-55, -35), "dense": (8, 14),
-        "zones": (8, 16), "routed": (8, -26), "rrf": (8, 8),
+        "bm25": (8, -18), "bm25f": (-55, -35), "dense": (-100, 10),
+        "zones": (8, 36), "routed": (8, -36), "rrf": (8, 8),
     }
     for engine, variant, name, color, marker in SYSTEMS:
         x = latency_map[(engine, variant)]
@@ -113,7 +116,7 @@ def plot_latency(summary, manifests_path, latencies, destination, cutoff):
         ax.scatter(x, y, s=110, color=color, marker=marker, label=name, edgecolors="white", linewidths=0.8)
         ax.annotate(f"{name}\n({x:.1f} ms, {y:.3f})", (x, y), xytext=offsets[variant], textcoords="offset points", fontsize=8, color=color)
     ax.set_title(f"Latency–effectiveness trade-off (Binary NDCG@{cutoff})", color="#211d70", pad=12)
-    ax.set_xlabel("Query latency (ms)")
+    ax.set_xlabel("Mean query latency over 20 queries (ms)")
     ax.set_ylabel(f"Binary NDCG@{cutoff}")
     ax.set_ylim(0, 1.02)
     ax.grid(True, linestyle="--", alpha=0.3)
@@ -159,8 +162,13 @@ def generate_charts(config_path=None):
             rows_by_system[(engine, variant)] = aggregate(pq, pg, ids)
         plot_metrics(rows_by_system, titles[group], charts / filenames[group])
     plot_precision(per_query, query_ids, charts / "precision_depth_curve.png")
-    manifests = results / "neural/manifest.json"
-    latency = config["evaluation"]["reported_latency_ms"]
-    plot_latency(summary, manifests, latency, charts / "latency_vs_effectiveness_at5.png", 5)
-    plot_latency(summary, manifests, latency, charts / "latency_vs_effectiveness_pareto.png", 10)
+    latency_manifest=json.loads((results / "latency_manifest.json").read_text())
+    if latency_manifest["queries_sha256"] != hashlib.sha256(resolve_path(config["paths"]["queries"]).read_bytes()).hexdigest():
+        raise ValueError("Latency data belongs to a different query suite")
+    for group in ("classical","neural"):
+        if any(item.get("run_id") != latency_manifest["run_id"] for item in json.loads((results / group / "manifest.json").read_text())):
+            raise ValueError("Rankings and latency were not captured in the same run")
+    latency = results / "latency_summary.csv"
+    plot_latency(summary, latency, charts / "latency_vs_effectiveness_at5.png", 5)
+    plot_latency(summary, latency, charts / "latency_vs_effectiveness_pareto.png", 10)
     return charts

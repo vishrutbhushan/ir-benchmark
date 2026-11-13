@@ -11,7 +11,7 @@
     "neural/routed",
     "hybrid/rrf"
   ],
-  "unique_query_document_pairs": 482,
+  "unique_query_document_pairs": 488,
   "result_rows": 1200,
   "metrics_scope": "Pooled metrics use strict labels for the six active engines; Binary NDCG is primary and graded NDCG is secondary."
 }

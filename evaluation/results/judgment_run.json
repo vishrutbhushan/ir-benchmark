@@ -1,0 +1,10 @@
+{
+  "rubric": "technical-doc-relevance-v2",
+  "new_pairs": 11,
+  "active_pairs": 488,
+  "master_pairs": 628,
+  "models": {
+    "nemotron": "nemotron-3.5-bolt:e4b-q8_0",
+    "gemma": "gemma4:12b-it-qat"
+  }
+}

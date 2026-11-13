@@ -1,26 +1,23 @@
 [
   {
+    "run_id": "2026-11-13T11:54:56.318223+00:00",
+    "queries_sha256": "acb954b8071dad0fb7f2847c990e6bd5b6941a48f9c7c0d4f9d43833a8df27aa",
+    "corpus_manifest_sha256": "41916e361bde42fcdbe166d9d6833a1a4e7e850ccb6d7a210e582515852cdb14",
+    "corpus_documents": 45881,
+    "query_count": 20,
+    "results_per_query": 10,
+    "device": "cuda",
+    "model_precision": "bfloat16",
+    "vector_precision": "float32 from persisted float16",
+    "caches": false,
     "engine": "classical",
     "variant": "bm25",
-    "corpus_documents": 45881,
-    "corpus_manifest_sha256": "41916e361bde42fcdbe166d9d6833a1a4e7e850ccb6d7a210e582515852cdb14",
     "parameters_from_config": {
+      "workers": 1,
+      "max_docs": null,
+      "scorer": "both",
       "k1": 1.2,
       "b": 0.75,
-      "top_k": 20
-    },
-    "query_count": 20,
-    "results_per_query": 10
-  },
-  {
-    "engine": "classical",
-    "variant": "bm25f",
-    "corpus_documents": 45881,
-    "corpus_manifest_sha256": "41916e361bde42fcdbe166d9d6833a1a4e7e850ccb6d7a210e582515852cdb14",
-    "parameters_from_config": {
-      "k1": 1.2,
-      "top_k": 20,
-      "hierarchical_boost": 0.25,
       "zone_weights": {
         "title": 0.3136,
         "heading": 0.7056,
@@ -33,9 +30,45 @@
         "code": 0.6,
         "body": 0.75
       },
+      "top_k": 20,
+      "hierarchical_boost": 0.25,
       "routing_mode": "hybrid"
-    },
+    }
+  },
+  {
+    "run_id": "2026-11-13T11:54:56.318223+00:00",
+    "queries_sha256": "acb954b8071dad0fb7f2847c990e6bd5b6941a48f9c7c0d4f9d43833a8df27aa",
+    "corpus_manifest_sha256": "41916e361bde42fcdbe166d9d6833a1a4e7e850ccb6d7a210e582515852cdb14",
+    "corpus_documents": 45881,
     "query_count": 20,
-    "results_per_query": 10
+    "results_per_query": 10,
+    "device": "cuda",
+    "model_precision": "bfloat16",
+    "vector_precision": "float32 from persisted float16",
+    "caches": false,
+    "engine": "classical",
+    "variant": "bm25f",
+    "parameters_from_config": {
+      "workers": 1,
+      "max_docs": null,
+      "scorer": "both",
+      "k1": 1.2,
+      "b": 0.75,
+      "zone_weights": {
+        "title": 0.3136,
+        "heading": 0.7056,
+        "code": 1.1368,
+        "body": 1.764
+      },
+      "zone_b": {
+        "title": 0.3,
+        "heading": 0.5,
+        "code": 0.6,
+        "body": 0.75
+      },
+      "top_k": 20,
+      "hierarchical_boost": 0.25,
+      "routing_mode": "hybrid"
+    }
   }
 ]

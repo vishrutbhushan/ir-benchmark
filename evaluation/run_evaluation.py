@@ -4,6 +4,7 @@
 import argparse
 import json
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -20,9 +21,15 @@ def main():
     parser.add_argument("--config", type=Path, default=config_args.config)
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--metrics", action="store_true")
+    parser.add_argument("--retrieve", action="store_true", help="Export current rankings and measure backend retrieval latency.")
+    parser.add_argument("--judge", action="store_true", help="Judge only missing pairs using the strict prompt.")
     parser.add_argument("--force", action="store_true", help="Re-run completed metric export.")
     args = parser.parse_args()
     config = load_pipeline_config(args.config)
+    os.environ["IR_CONFIG"] = os.environ["NEURAL_CONFIG"] = str(args.config.resolve())
+    for key in ("OMP_NUM_THREADS","MKL_NUM_THREADS","OPENBLAS_NUM_THREADS","NUMEXPR_NUM_THREADS"):
+        os.environ[key] = str(config["execution"]["cpu_threads"])
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
     results_dir = resolve_path(config["paths"]["evaluation_results_dir"])
     logs_dir = resolve_path(config["paths"]["evaluation_logs_dir"])
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -35,6 +42,14 @@ def main():
         ],
     )
     try:
+        if args.retrieve:
+            from src.retrieval import retrieve_and_measure
+            retrieve_and_measure(args.config)
+            return
+        if args.judge:
+            from src.judges import judge_missing
+            judge_missing(args.config)
+            return
         from src.store import Store
 
         store = Store()

@@ -23,6 +23,9 @@ class Store:
         if not self.queries or len({q["query_id"] for q in self.queries}) != len(self.queries):
             raise ValueError("The configured query set must have unique query IDs")
         self.query_text = {q["query_id"]: q["query_text"] for q in self.queries}
+        known=json.loads((resolve_path(self.config["paths"]["judgments"]).parent/"judgment_queries.json").read_text())
+        if any(qid in known and known[qid]!=text for qid,text in self.query_text.items()):
+            raise ValueError("Query text changed under a judged query ID")
         self.query_types = {q["query_id"]: q.get("query_type", "unspecified") for q in self.queries}
         self.runs = {}
         self.documents = {}
@@ -35,24 +38,6 @@ class Store:
             expected = len(self.queries) * limit
             if len(rows) != expected:
                 raise ValueError(f"{path}: expected {expected} result rows, found {len(rows)}")
-            if item["engine"] == "hybrid":
-                enriched = []
-                for row in rows:
-                    metadata = self.documents.get(row["doc_id"], {})
-                    enriched.append({
-                        "engine": "hybrid",
-                        "variant": "rrf",
-                        "query_id": row["query_id"],
-                        "query_text": self.query_text.get(row["query_id"], ""),
-                        "rank": row["rank"],
-                        "doc_id": row["doc_id"],
-                        "title": metadata.get("title", ""),
-                        "url": metadata.get("url", ""),
-                        "technology": metadata.get("technology", ""),
-                        "categories": metadata.get("categories", "[]"),
-                        "score": row["score"],
-                    })
-                rows = enriched
             self._validate_run(rows, item["engine"], item["variant"], limit)
             for row in rows:
                 self.documents[row["doc_id"]] = row
@@ -62,8 +47,14 @@ class Store:
         self.labels = {}
         self.grades = {}
         judgment_path = resolve_path(self.config["paths"]["judgments"])
+        seen = set()
         for row in read_csv(judgment_path):
             key = (row["query_id"], row["doc_id"])
+            if key in seen:
+                raise ValueError("Duplicate master judgment pair")
+            seen.add(key)
+            if key not in self.pool:
+                continue
             if row.get("relevant") not in (None, ""):
                 self.labels[key] = int(row["relevant"])
             if row.get("consensus_grade") not in (None, ""):

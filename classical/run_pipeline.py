@@ -1,227 +1,60 @@
 #!/usr/bin/env python3
-"""
-IR Benchmark Master Pipeline Runner
-
-A single CLI entrypoint to trigger any pipeline phase step with hierarchical
-outputs and logging.
-
-Usage examples:
-    python run_pipeline.py --phase 2
-    python run_pipeline.py --phase 3
-    python run_pipeline.py --phase all
-"""
-
-from __future__ import annotations
+"""Run classical tokenization and ranked document indexing."""
 
 import argparse
+import hashlib
 import json
+import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
 from config import load_pipeline_config, resolve_path
-
 from src.classical_preprocessing.tokenization_runner import run_tokenization
 from src.retrieval.classic_ir_runner import run_classic_ir
 from src.utils.logging_utils import setup_logger
-from src.utils.visualizer import generate_interactive_dashboard_html
 
 
-def parse_args() -> argparse.Namespace:
-    config_parser = argparse.ArgumentParser(add_help=False)
-    repo_root = Path(__file__).resolve().parents[1]
-    default_config = repo_root / "config/pipeline.json"
-    config_parser.add_argument("--config", type=Path, default=default_config)
-    config_args, _ = config_parser.parse_known_args()
-    config = load_pipeline_config(config_args.config)
-    settings = config["classical"]
-    paths = config["paths"]
-    parser = argparse.ArgumentParser(
-        description="Master runner for Information Retrieval Benchmark pipeline phases."
-    )
-    parser.add_argument(
-        "--phase",
-        choices=["2", "3", "phase2", "phase3", "all"],
-        default="2",
-        help="Pipeline phase to execute (2=Tokenization, 3=Classic IR BM25, all=both phases).",
-    )
-    parser.add_argument("--config", type=Path, default=config_args.config)
-    parser.add_argument("--records-path", type=Path, default=resolve_path(paths["classical_records"]), help="Structured records produced by filter.")
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=resolve_path(paths["classical_output_dir"]),
-        help="Root directory for structured outputs.",
-    )
-    parser.add_argument(
-        "--logs-dir",
-        type=Path,
-        default=resolve_path(paths["classical_logs_dir"]),
-        help="Root directory for hierarchical logs.",
-    )
-    parser.add_argument(
-        "--max-docs",
-        type=int,
-        default=settings["max_docs"],
-        help="Maximum documents to extract in Phase 1 (useful for test runs; omit for full corpus).",
-    )
-    parser.add_argument(
-        "--min-char-length",
-        type=int,
-        default=settings["min_char_length"],
-        help="Minimum body text character length threshold.",
-    )
-    parser.add_argument(
-        "--stratified",
-        action="store_true",
-        help="When sampling or running subset extraction, stratify evenly across all technologies.",
-    )
-    parser.add_argument(
-        "--queries-path",
-        type=Path,
-        default=resolve_path(paths["queries"]),
-        help="Path to queries.jsonl file for retrieval benchmarking.",
-    )
-    parser.add_argument(
-        "--k1",
-        type=float,
-        default=settings["k1"],
-        help="BM25 term frequency saturation parameter k1 (default: 1.2).",
-    )
-    parser.add_argument(
-        "--b",
-        type=float,
-        default=settings["b"],
-        help="BM25 document length normalization parameter b (default: 0.75).",
-    )
-    parser.add_argument(
-        "--top-k",
-        type=int,
-        default=settings["top_k"],
-        help="Number of top retrieved results per query (default: 20).",
-    )
-    parser.add_argument(
-        "--scorer",
-        choices=["bm25", "bm25f", "both"],
-        default=settings["scorer"],
-        help="Retrieval engine to execute: bm25 (flat), bm25f (zone-weighted hierarchical), or both (default: both).",
-    )
-    parser.add_argument(
-        "--hierarchical-boost",
-        type=float,
-        default=settings["hierarchical_boost"],
-        help="Taxonomy matching boost factor for BM25F (default: 0.25).",
-    )
-    parser.add_argument(
-        "--routing-mode",
-        choices=["hybrid", "hierarchical_first", "tiered"],
-        default=settings["routing_mode"],
-        help="Hierarchical query routing mode: 'hybrid' (soft boost), 'hierarchical_first' (category sub-index routing), or 'tiered' (champion list candidate pruning).",
-    )
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=settings["workers"],
-        help="Number of parallel worker processes for Phase 1 extraction and Phase 2 tokenization (default: 8).",
-    )
-    parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
-    return parser.parse_args()
+def digest(path):
+    h=hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for block in iter(lambda:stream.read(8*1024*1024),b''): h.update(block)
+    return h.hexdigest()
 
 
-def main() -> None:
-    args = parse_args()
-    settings = load_pipeline_config(args.config)["classical"]
-
-    phase = args.phase.lower()
-    if phase.startswith("phase"):
-        phase = phase.replace("phase", "")
-
-    print(f"=== Running IR Benchmark Pipeline [Phase: {phase}] ===")
-
-    # Execute Phase 2
-    if phase in ["2", "all"]:
-        phase2_out = args.output_dir / "stage_02_tokenization"
-        phase2_log = args.logs_dir / "stage_02_tokenization.log"
-        logger2 = setup_logger("phase2_tokenization", phase2_log)
-
-        records_path = args.records_path
-        if not records_path.exists():
-            print(
-                f"ERROR: Phase 1 output not found at {records_path}. "
-                "Run Phase 1 first: python run_pipeline.py --phase 1"
-            )
-            sys.exit(1)
-
-        marker = phase2_out / "stage.done"
-        if marker.exists() and not args.force:
-            print(f"Tokenization already complete; reusing {phase2_out}. Use --force to rerun.")
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config',type=Path,default=ROOT/'config/pipeline.json')
+    parser.add_argument('--phase',choices=['2','3','all'],default='all')
+    parser.add_argument('--force',action='store_true')
+    args=parser.parse_args()
+    os.environ['IR_CONFIG']=str(args.config.resolve())
+    config=load_pipeline_config(args.config)
+    settings=config['classical'];paths=config['paths']
+    records=resolve_path(paths['classical_records']);queries=resolve_path(paths['queries'])
+    outputs=resolve_path(paths['classical_output_dir']);logs=resolve_path(paths['classical_logs_dir'])
+    stage2=outputs/'stage_02_tokenization';stage3=outputs/'stage_03_retrieval'
+    files=[ROOT/'classical/src/classical_preprocessing'/f for f in ('tokenizer.py','normalizer.py','porter_stemmer.py')]
+    token_signature=digest(records)+''.join(digest(p) for p in files)+str(settings['max_docs'])
+    stage2_signature=hashlib.sha256(token_signature.encode()).hexdigest()
+    if args.phase in {'2','all'}:
+        marker=stage2/'stage.done.json'
+        complete=marker.exists() and (stage2/'tokenized_corpus.jsonl').exists() and json.loads(marker.read_text()).get('fingerprint')==stage2_signature
+        if complete and not args.force: print('Classical tokenization unchanged; reusing it.',flush=True)
         else:
-            run_tokenization(
-                records_path=records_path,
-                output_dir=phase2_out,
-                logger=logger2,
-                max_documents=args.max_docs,
-                num_workers=args.workers,
-            )
-            marker.write_text("completed\n", encoding="utf-8")
-
-    # Execute Phase 3
-    if phase in ["3", "all"]:
-        phase3_out = args.output_dir / "stage_03_retrieval"
-        phase3_log = args.logs_dir / "stage_03_retrieval.log"
-        logger3 = setup_logger("phase3_classic_ir", phase3_log)
-
-        tokenized_path = args.output_dir / "stage_02_tokenization" / "tokenized_corpus.jsonl"
-        structured_path = args.records_path
-
-        if not tokenized_path.exists():
-            print(
-                f"ERROR: Phase 2 output not found at {tokenized_path}. "
-                "Run Phase 2 first: python run_pipeline.py --phase 2"
-            )
-            sys.exit(1)
-        if not structured_path.exists():
-            print(
-                f"ERROR: Phase 1 output not found at {structured_path}. "
-                "Run Phase 1 first: python run_pipeline.py --phase 1"
-            )
-            sys.exit(1)
-
-        marker = phase3_out / "stage.done"
-        if marker.exists() and not args.force:
-            print(f"Retrieval already complete; reusing {phase3_out}. Use --force to rerun.")
-            return
-        run_classic_ir(
-            tokenized_path=tokenized_path,
-            structured_path=structured_path,
-            queries_path=args.queries_path,
-            output_dir=phase3_out,
-            logger=logger3,
-            k1=args.k1,
-            b=args.b,
-            top_k=args.top_k,
-            scorer_type=args.scorer,
-            zone_weights=settings["zone_weights"],
-            zone_b=settings["zone_b"],
-            hierarchical_boost=args.hierarchical_boost,
-            routing_mode=args.routing_mode,
-        )
-        marker.write_text("completed\n", encoding="utf-8")
-
-    # Compile / update visual interactive dashboard
-    p0_json_path = args.output_dir / "stage_00_audit" / "audit_report.json"
-    p1_json_path = args.output_dir / "stage_01_extraction" / "corpus_statistics.json"
-    p2_json_path = args.output_dir / "stage_02_tokenization" / "tokenization_stats.json"
-    p0_data = json.loads(p0_json_path.read_text(encoding="utf-8")) if p0_json_path.exists() else None
-    p1_data = json.loads(p1_json_path.read_text(encoding="utf-8")) if p1_json_path.exists() else None
-    p2_data = json.loads(p2_json_path.read_text(encoding="utf-8")) if p2_json_path.exists() else None
-
-    dashboard_path = args.output_dir / "dashboard.html"
-    generate_interactive_dashboard_html(p0_data, p1_data, dashboard_path)
-    print(f"Visual dashboard generated: {dashboard_path}")
-
-    print("=== Pipeline Step Finished Successfully ===")
+            run_tokenization(records,stage2,setup_logger('tokenization',logs/'tokenization.log'),settings['max_docs'],settings['workers'])
+            marker.write_text(json.dumps({'fingerprint':stage2_signature})+'\n')
+    if args.phase in {'3','all'}:
+        tokenized=stage2/'tokenized_corpus.jsonl'
+        source_files=[ROOT/'classical/src/retrieval'/f for f in ('inverted_index.py','bm25_scorer.py','bm25f_scorer.py','query_processor.py')]
+        signature=hashlib.sha256((digest(tokenized)+digest(records)+digest(queries)+json.dumps(settings,sort_keys=True)+''.join(digest(p) for p in source_files)).encode()).hexdigest()
+        marker=stage3/'stage.done.json'
+        complete=marker.exists() and all((stage3/f).exists() for f in ('inverted_index.json','document_catalog.json','bm25_results.json','bm25f_results.json')) and json.loads(marker.read_text()).get('fingerprint')==signature
+        if complete and not args.force: print('Classical index and query runs unchanged; reusing them.',flush=True)
+        else:
+            run_classic_ir(tokenized,records,queries,stage3,setup_logger('retrieval',logs/'retrieval.log'),settings['k1'],settings['b'],settings['top_k'],settings['scorer'],settings['zone_weights'],settings['zone_b'],settings['hierarchical_boost'],settings['routing_mode'])
+            marker.write_text(json.dumps({'fingerprint':signature})+'\n')
 
 
-if __name__ == "__main__":
-    main()
+if __name__=='__main__': main()

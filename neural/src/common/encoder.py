@@ -3,6 +3,8 @@
 from __future__ import annotations
 from src.common.artifacts import MODEL_ID, MODEL_REVISION, QUERY_INSTRUCTION
 
+ENCODING_CONTRACT = "qwen3-causal-right-padding-last-token-l2-fp16-v1"
+
 
 def download_model(path, model_id=None, revision=None, expected_sha256=None):
     from pathlib import Path
@@ -21,13 +23,14 @@ def download_model(path, model_id=None, revision=None, expected_sha256=None):
         ):
             return
     from huggingface_hub import snapshot_download
+    from src.common.config import load_config
 
     snapshot_download(
         model_id,
         revision=revision,
         allow_patterns=["*.json", "*.txt", "*.safetensors"],
         local_dir=path,
-        max_workers=8,
+        max_workers=load_config()["workers"],
     )
     from src.common.config import load_config
 
@@ -65,7 +68,8 @@ class Encoder:
                 "CUDA is unavailable. Select --device cpu or use a compatible PyTorch/CUDA installation."
             )
         self.device = device
-        torch.set_num_threads(8 if device == "cuda" else 1)
+        from src.common.config import load_pipeline_config
+        torch.set_num_threads(load_pipeline_config()["execution"]["cpu_threads"])
         self.tokenizer = tokenizer(path)
         self.tokenizer.padding_side = "right"
         self.model = (

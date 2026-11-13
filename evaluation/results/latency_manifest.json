@@ -1,0 +1,29 @@
+{
+  "run_id": "2026-11-13T11:54:56.318223+00:00",
+  "queries_sha256": "acb954b8071dad0fb7f2847c990e6bd5b6941a48f9c7c0d4f9d43833a8df27aa",
+  "corpus_manifest_sha256": "41916e361bde42fcdbe166d9d6833a1a4e7e850ccb6d7a210e582515852cdb14",
+  "corpus_documents": 45881,
+  "query_count": 20,
+  "results_per_query": 10,
+  "device": "cuda",
+  "model_precision": "bfloat16",
+  "vector_precision": "float32 from persisted float16",
+  "caches": false,
+  "settings": {
+    "repetitions": 3,
+    "cpu_threads": 1,
+    "warmup_queries": 1
+  },
+  "residency": {
+    "classical_terms": 957382,
+    "classical_documents": 45881,
+    "neural_vectors": 313359,
+    "device": "cuda",
+    "cpu_threads": 1,
+    "interop_threads": 1,
+    "rss_bytes": 8416935936,
+    "cuda_allocated_bytes": 2499853312
+  },
+  "scope": "Backend query encoding/tokenization, scoring, top-k selection and in-memory result materialization; excludes index/model loading, UI, document JSON, HTTP and browser",
+  "scheduling": "One process, one CPU thread, one GPU workload; sequential queries and rotated method order"
+}

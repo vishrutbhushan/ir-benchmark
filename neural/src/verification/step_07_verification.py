@@ -20,21 +20,28 @@ def verify(engine, root):
     started = time.perf_counter()
     from src.verification.learning_audit import audit_learning_data
 
-    audit_learning_data(root)
-    learning_data_audit = "passed"
+    if engine.config["use_learned_zone_weights"]:
+        audit_learning_data(root)
+    learning_data_audit = "passed" if engine.config["use_learned_zone_weights"] else "disabled"
     assignments = engine.clusters.labels
     if assignments.shape != (len(engine.documents),) or np.any(
         assignments < 0
     ) or np.any(assignments >= engine.clusters.model["clusters"]):
         raise RuntimeError("Invalid full-corpus cluster assignments")
     for c in range(engine.clusters.model["clusters"]):
-        allowed = assignments == c
+        allowed = np.any(engine.clusters.memberships == c, axis=1)
         for z in ZONES:
             expected = np.flatnonzero(allowed[engine.mappings[z]])
             if not np.array_equal(expected, engine.routing_rows[f"{c}_{z}"]):
                 raise RuntimeError(
                     "Cluster row lists do not match document assignments"
                 )
+    with np.load(root / "step_05_clustering/zone_vectors.npz") as saved:
+        for column in range(2):
+            vectors=saved["vectors"][:,column].astype(np.float32)
+            norms=np.linalg.norm(vectors[saved["present"][:,column]],axis=1)
+            if np.any(np.abs(norms-1)>0.002):
+                raise RuntimeError("Clustering zone vectors are not normalized")
     coverage = audit_zone_coverage(engine.document_db, engine.stores)
     q = engine._query("Python asynchronous task cancellation")
     actual, _, _ = engine.zone_scores(q)

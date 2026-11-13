@@ -43,7 +43,6 @@ def parse_and_run():
             "05",
             "06",
             "07",
-            "08",
         ],
         default="all",
     )
@@ -70,7 +69,6 @@ def parse_and_run():
     parser.add_argument("--workers", type=int, default=settings["workers"])
     parser.add_argument("--batch-size", type=int, default=settings["batch_size"])
     parser.add_argument("--device", choices=["cuda", "cpu"], default=settings["device"])
-    parser.add_argument("--force", action="store_true", help="Re-run completed stages.")
     args = parser.parse_args()
     if args.workers < 1 or args.batch_size < 1:
         parser.error("Workers and batch size must be positive")
@@ -88,11 +86,9 @@ def parse_and_run():
 def run(args, parser):
     root = args.output_dir
     from src.common.logging import run_stage
-    from src.common.artifacts import digest_file
     from src.common.config import load_config, load_pipeline_config
 
     pipeline = load_pipeline_config()
-    analysis_root = configured_path(pipeline, "neural_analysis_dir")
     markers = {
         stage: root / f"step_{stage}_{name}" / "stage.done"
         for stage, name in {
@@ -107,52 +103,9 @@ def run(args, parser):
     }
 
     def run_if_needed(stage, function, *stage_args):
-        complete = markers[stage].exists()
-        if stage == "04":
-            model_path = root / "step_04_weights/model.json"
-            weights_path = analysis_root / "step_04_weights/weights.csv"
-            complete = complete and model_path.exists() and weights_path.exists()
-            if complete:
-                model = json.loads(model_path.read_text(encoding="utf-8"))
-                settings = load_config()
-                inputs = {
-                    "queries_csv_sha256": REPO_ROOT / settings["weight_queries"],
-                    "judgments_csv_sha256": REPO_ROOT / settings["weight_judgments"],
-                }
-                complete = all(
-                    model.get(key) == digest_file(path)
-                    for key, path in inputs.items()
-                )
-        if stage == "05":
-            model_path = root / "step_05_clustering/model.json"
-            complete = complete and model_path.exists() and (
-                root / "step_05_clustering/zone_vectors.npz"
-            ).exists()
-            if complete:
-                model = json.loads(model_path.read_text())
-                complete = (
-                    model.get("schema") == "unsupervised-zone-kmeans-v1"
-                )
-        if stage == "06":
-            model_path = root / "step_06_routing/model.json"
-            complete = complete and model_path.exists()
-            if complete:
-                complete = json.loads(model_path.read_text()).get(
-                    "schema"
-                ) == "cluster-postings-v1"
-        if stage == "07":
-            report_path = analysis_root / "step_07_verification/summary.json"
-            complete = complete and report_path.exists()
-            if complete:
-                complete = json.loads(report_path.read_text()).get(
-                    "all_cluster_row_lists_checked", False
-                )
-        if complete and not args.force:
-            print(f"Stage {stage} already complete; reusing {markers[stage].parent}.")
-            return
-        run_stage(stage, function, *stage_args)
-        markers[stage].parent.mkdir(parents=True, exist_ok=True)
-        markers[stage].write_text("completed\n", encoding="utf-8")
+        run_stage(stage,function,*stage_args)
+        markers[stage].parent.mkdir(parents=True,exist_ok=True)
+        markers[stage].write_text("completed\n",encoding="utf-8")
 
     if args.step in {"all", "01", "02", "03"}:
         from src.extraction.step_01_extraction import (
@@ -194,22 +147,7 @@ def run(args, parser):
     )
     startup_seconds = time.perf_counter() - startup
     try:
-        if args.step == "08":
-            from src.retrieval.export_results import export_results
-
-            run_stage(
-                "08",
-                export_results,
-                engine,
-                configured_path(pipeline, "queries", "evaluation/queries/final_queries.jsonl"),
-                pipeline["evaluation"]["neural_variants"],
-                configured_path(pipeline, "neural_results_dir", "evaluation/results/neural"),
-                startup_seconds,
-                pipeline["evaluation"]["neural_timing_repeats"],
-                pipeline["evaluation"]["results_per_query"],
-            )
-            return
-        if args.step == "all":
+        if args.step == "all" and engine.config["use_learned_zone_weights"]:
             from src.learning.step_04_weights import configure_weights
 
             run_if_needed("04", configure_weights, root, engine)
@@ -255,7 +193,7 @@ def main():
     preview.add_argument("--step", default="all")
     args, _ = preview.parse_known_args()
     step = args.step
-    if step not in {"all", *[f"{i:02}" for i in range(1, 9)]}:
+    if step not in {"all", *[f"{i:02}" for i in range(1, 8)]}:
         step = "all"
     configured_logs = configured_path(load_pipeline_config(), "neural_logs_dir")
     with run_log(step, configured_logs):

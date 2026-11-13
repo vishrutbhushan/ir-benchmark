@@ -1,0 +1,22 @@
+{
+  "Q01": "pytorch cuda out of memory error during training",
+  "Q02": "kubernetes readiness probe zero downtime deployment",
+  "Q03": "postgresql jsonb gin index performance",
+  "Q04": "python asyncio background task without blocking",
+  "Q05": "docker build --mount=type=cache syntax",
+  "Q06": "redis rdb vs aof persistence memory",
+  "Q07": "elasticsearch ilm rollover policy",
+  "Q08": "spring boot custom health check actuator endpoint",
+  "Q09": "linux sysctl tcp socket buffer size",
+  "Q10": "envoy proxy circuit breaker connection pool limits",
+  "Q11": "quickest way to initialize a basic spring boot rest service without bloated boilerplate",
+  "Q12": "sql databse conection keeps timing out when backend tries to connect to mysql",
+  "Q13": "why does my deployed pod keep restarting constantly with exit code 137",
+  "Q14": "docker build is crawling sluggishly because dependencies re-download on every layer change",
+  "Q15": "how to prevent redis from eating all server ram and crashing when cache fills up",
+  "Q16": "My Python service keeps running out of memory after processing requests for a few hours. How can I find objects that aren’t being released?",
+  "Q17": "A Kubernetes pod keeps restarting because it runs out of memory. How can I find which container exceeded its limit?",
+  "Q18": "Redis evicts keys sooner than expected when the cache fills up. How can I control which keys it removes?",
+  "Q19": "In PostgreSQL, what happens when `ON CONFLICT DO UPDATE` hits a unique constraint violation?",
+  "Q20": "When `asyncio.wait_for()` reaches its timeout, does it cancel the underlying task?"
+}

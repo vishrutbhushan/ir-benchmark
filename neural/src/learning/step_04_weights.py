@@ -128,7 +128,8 @@ def configure_weights(root, engine=None):
     out_dir = root / "step_04_weights"
     out_dir.mkdir(parents=True, exist_ok=True)
     write_json(out_dir / "model.json", model)
-    engine.weights = weights.astype(np.float32)
+    if settings["use_learned_zone_weights"]:
+        engine.weights = weights.astype(np.float32)
 
     weights_csv = configured_path("neural_analysis_dir") / "step_04_weights/weights.csv"
     weights_csv.parent.mkdir(parents=True, exist_ok=True)

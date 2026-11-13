@@ -1,153 +1,46 @@
 #!/usr/bin/env python3
-"""Master pipeline runner for the full technical web corpus.
+"""Run the corpus, indexing, retrieval, strict judging and evaluation stages in order."""
 
-Executes all 4 pipeline components in sequence:
-  1. filter/run_filter.py (Validation, Repair, Quality Filtering, Deduplication, Archive Packaging)
-  2. classical/run_pipeline.py (Tokenization, Inverted Index, BM25 & BM25F Scoring)
-  3. neural/run_pipeline.py (Extraction, Windows, Embeddings, Zone Weights, Clustering, Routing, Verification, Query Export)
-  4. evaluation/run_evaluation.py (Strict pooled metrics and charts for six engines)
-"""
-
-from __future__ import annotations
-
+import argparse
 import os
+from pathlib import Path
 import subprocess
 import sys
 import time
-from pathlib import Path
-
-REPO_ROOT = Path(__file__).resolve().parent
-PYTHON = sys.executable or str(REPO_ROOT / ".venv/bin/python")
-
-sys.path.insert(0, str(REPO_ROOT))
-from config import load_pipeline_config, resolve_path
-
-PIPELINE_CONFIG = load_pipeline_config()
-PIPELINE_LOG = resolve_path(PIPELINE_CONFIG["paths"]["pipeline_log"])
-
-
-def log(msg: str) -> None:
-    now = time.strftime("%Y-%m-%d %H:%M:%S")
-    line = f"[{now}] {msg}"
-    print(line, flush=True)
-    PIPELINE_LOG.parent.mkdir(parents=True, exist_ok=True)
-    with open(PIPELINE_LOG, "a", encoding="utf-8") as f:
-        f.write(line + "\n")
-
-
-def run_stage(name: str, cmd: list[str]) -> float:
-    log(f"=== STARTING STAGE: {name} ===")
-    log(f"Command: {' '.join(cmd)}")
-    t0 = time.perf_counter()
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(REPO_ROOT)
-    env["NEURAL_CONFIG"] = str(resolve_path("config/pipeline.json"))
-    process = subprocess.Popen(
-        cmd,
-        cwd=str(REPO_ROOT),
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-    )
-    for line in iter(process.stdout.readline, ""):
-        line_str = line.rstrip()
-        if line_str:
-            print(f"[{name}] {line_str}", flush=True)
-    process.stdout.close()
-    return_code = process.wait()
-    elapsed = time.perf_counter() - t0
-    if return_code != 0:
-        log(f"FAILED: Stage {name} exited with code {return_code} after {elapsed:.1f}s")
-        sys.exit(return_code)
-    log(f"=== FINISHED STAGE: {name} in {elapsed:.1f}s ({elapsed/60:.1f}m) ===")
-    return elapsed
+from config import ROOT,load_pipeline_config,resolve_path
 
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--stage",
-        choices=["all", "up-to-engine", "filter", "classical", "neural", "evaluation", "search-ui"],
-        default="all",
-        help="Pipeline stages to run ('up-to-engine' builds the indexes; 'search-ui' starts the six-engine UI)"
-    )
-    args = parser.parse_args()
-
-    log(f"Starting IR Benchmark Master Pipeline Execution (target: {args.stage})")
-    source_archive = resolve_path(PIPELINE_CONFIG["paths"]["source_archive"])
-    if args.stage in {"all", "up-to-engine", "filter"} and not source_archive.exists():
-        log(f"FATAL: Source archive not found at {source_archive}")
-        log("Place the corpus archive at the configured source_archive path.")
-        sys.exit(1)
-
-    timings = {}
-    master_start = time.perf_counter()
-
-    # 1. Filter Stage
-    if args.stage in {"all", "up-to-engine", "filter"}:
-        timings["filter"] = run_stage(
-            "filter",
-            [PYTHON, "filter/run_filter.py", "--config", "config/pipeline.json", "--step", "all"]
-        )
-
-    # 2. Classical Stage
-    if args.stage in {"all", "up-to-engine", "classical"}:
-        timings["classical"] = run_stage(
-            "classical",
-            [PYTHON, "classical/run_pipeline.py", "--config", "config/pipeline.json", "--phase", "all", "--force"]
-        )
-
-    # 3. Neural Stage
-    if args.stage in {"all", "up-to-engine", "neural"}:
-        timings["neural"] = run_stage(
-            "neural",
-            [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "all"]
-        )
-
-    # A full run exports current neural rankings and then derives BM25/BM25F
-    # snapshots plus RRF before calculating metrics. Saved rankings are reused
-    # when the evaluation-only target is selected.
-    if args.stage == "all":
-        timings["neural_query_export"] = run_stage(
-            "neural_query_export",
-            [PYTHON, "neural/run_pipeline.py", "--config", "config/pipeline.json", "--step", "08"],
-        )
-        timings["classical_evaluation_csvs"] = run_stage(
-            "classical_evaluation_csvs",
-            [PYTHON, "evaluation/update_classical_runs.py", "--config", "config/pipeline.json"],
-        )
-
-    if args.stage == "classical":
-        timings["classical_evaluation_csvs"] = run_stage(
-            "classical_evaluation_csvs",
-            [PYTHON, "evaluation/update_classical_runs.py", "--config", "config/pipeline.json"],
-        )
-
-    # 4. Evaluation Stage
-    if args.stage in {"all", "evaluation"}:
-        timings["evaluation_prepare"] = run_stage(
-            "evaluation_prepare",
-            [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--prepare"]
-        )
-        timings["evaluation_metrics"] = run_stage(
-            "evaluation_metrics",
-            [PYTHON, "evaluation/run_evaluation.py", "--config", "config/pipeline.json", "--metrics", "--force"]
-        )
-
-    if args.stage == "search-ui":
-        run_stage("search-ui", [PYTHON, "run_search_ui.py"])
-
-    total_time = time.perf_counter() - master_start
-    log("==================================================")
-    log("ALL PIPELINE STAGES COMPLETED SUCCESSFULLY!")
-    log(f"Total Elapsed Time: {total_time:.1f}s ({total_time/60:.1f}m)")
-    for name, dur in timings.items():
-        log(f"  - {name}: {dur:.1f}s ({dur/60:.1f}m)")
-    log("==================================================")
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config',type=Path,default=ROOT/'config/pipeline.json')
+    parser.add_argument('--stage',choices=['all','up-to-engine','filter','classical','neural','retrieve','judge','evaluation','search-ui'],default='all')
+    args=parser.parse_args()
+    config_path=args.config.resolve();config=load_pipeline_config(config_path)
+    env=os.environ.copy();env['PYTHONPATH']=str(ROOT);env['IR_CONFIG']=env['NEURAL_CONFIG']=str(config_path)
+    for key in ('OMP_NUM_THREADS','MKL_NUM_THREADS','OPENBLAS_NUM_THREADS','NUMEXPR_NUM_THREADS'):
+        env[key]=str(config['execution']['cpu_threads'])
+    env['TOKENIZERS_PARALLELISM']='false'
+    commands={
+        'filter':['filter/run_filter.py','--step','all'],
+        'classical':['classical/run_pipeline.py','--phase','all'],
+        'neural':['neural/run_pipeline.py','--step','all'],
+        'retrieve':['evaluation/run_evaluation.py','--retrieve'],
+        'judge':['evaluation/run_evaluation.py','--judge'],
+        'evaluation':['evaluation/run_evaluation.py','--metrics','--force'],
+        'search-ui':['run_search_ui.py'],
+    }
+    stages=['filter','classical','neural','retrieve','judge','evaluation'] if args.stage=='all' else ['filter','classical','neural'] if args.stage=='up-to-engine' else [args.stage]
+    log_path=resolve_path(config['paths']['pipeline_log']);log_path.parent.mkdir(parents=True,exist_ok=True)
+    with log_path.open('a',encoding='utf-8',buffering=1) as log:
+        for stage in stages:
+            started=time.perf_counter();print(f'Starting {stage}',flush=True);log.write(f'Starting {stage}\n')
+            command=[sys.executable,*commands[stage]]
+            if stage!='search-ui':command+=['--config',str(config_path)]
+            process=subprocess.Popen(command,cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+            for line in process.stdout:
+                print(line.rstrip(),flush=True);log.write(line)
+            if process.wait():raise SystemExit(f'{stage} failed; completed artifacts remain saved')
+            print(f'{stage} completed in {time.perf_counter()-started:.1f}s',flush=True)
 
 
-if __name__ == "__main__":
-    main()
+if __name__=='__main__':main()
